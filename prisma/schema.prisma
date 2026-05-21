@@ -34,7 +34,6 @@ enum SpotlightKey {
   EVENTS
   RESTAURANTS
   TOURS
-  BOOKING
 }
 
 enum HomeSectionKind {
@@ -44,20 +43,19 @@ enum HomeSectionKind {
 }
 
 model Locale {
-  id                         Int                         @id @default(autoincrement())
-  code                       LocaleCode                  @unique
-  name                       String
-  createdAt                  DateTime                    @default(now())
-  updatedAt                  DateTime                    @updatedAt
-  eventTranslations          EventTranslation[]
-  featurePageTranslations    FeaturePageTranslation[]
-  homeCtaTranslations        HomeCtaTranslation[]
-  homePageTranslations       HomePageTranslation[]
+  id                          Int                         @id @default(autoincrement())
+  code                        LocaleCode                  @unique
+  name                        String
+  createdAt                   DateTime                    @default(now())
+  updatedAt                   DateTime                    @updatedAt
+  eventTranslations           EventTranslation[]
+  featurePageTranslations     FeaturePageTranslation[]
+  homePageTranslations        HomePageTranslation[]
   homeSectionCardTranslations HomeSectionCardTranslation[]
-  homeSectionTranslations    HomeSectionTranslation[]
-  homeSpotlightTranslations  HomeSpotlightEntryTranslation[]
-  restaurantTranslations     RestaurantTranslation[]
-  tourTranslations           TourTranslation[]
+  homeSectionTranslations     HomeSectionTranslation[]
+  homeSpotlightTranslations   HomeSpotlightEntryTranslation[]
+  restaurantTranslations      RestaurantTranslation[]
+  tourTranslations            TourTranslation[]
 }
 
 model FeaturePage {
@@ -90,93 +88,93 @@ model FeaturePageTranslation {
 }
 
 model Event {
-  id           String             @id @default(cuid())
-  slug         String             @unique
-  status       ContentStatus      @default(PUBLISHED)
-  category     EventCategory
-  sortOrder    Int                @default(0)
-  startsAt     DateTime?
-  endsAt       DateTime?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  publishedAt  DateTime?
-  createdBy    String?
-  updatedBy    String?
-  translations EventTranslation[]
+  id            String             @id @default(cuid())
+  slug          String             @unique
+  status        ContentStatus      @default(PUBLISHED)
+  category      EventCategory
+  sortOrder     Int                @default(0)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  publishedAt   DateTime?
+  createdBy     String?
+  updatedBy     String?
+  translations  EventTranslation[]
 }
 
 model EventTranslation {
-  id          String   @id @default(cuid())
+  id           String   @id @default(cuid())
   eventId      String
-  localeId    Int
-  title       String
-  dateLabel   String
-  venue       String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  locale      Locale   @relation(fields: [localeId], references: [id], onDelete: Restrict)
+  localeId     Int
+  title        String
+  dateLabel    String
+  venue        String
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  locale       Locale   @relation(fields: [localeId], references: [id], onDelete: Restrict)
 
   @@unique([eventId, localeId])
 }
 
 model Restaurant {
-  id           String                  @id @default(cuid())
-  slug         String                  @unique
-  status       ContentStatus           @default(PUBLISHED)
-  priceBand    String
-  sortOrder    Int                     @default(0)
-  createdAt    DateTime                @default(now())
-  updatedAt    DateTime                @updatedAt
-  publishedAt  DateTime?
-  createdBy    String?
-  updatedBy    String?
-  translations RestaurantTranslation[]
+  id            String                  @id @default(cuid())
+  slug          String                  @unique
+  status        ContentStatus           @default(PUBLISHED)
+  priceBand     String
+  sortOrder     Int                     @default(0)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  publishedAt   DateTime?
+  createdBy     String?
+  updatedBy     String?
+  translations  RestaurantTranslation[]
 }
 
 model RestaurantTranslation {
-  id          String     @id @default(cuid())
-  restaurantId String
-  localeId    Int
-  name        String
-  cuisine     String
-  vibe        String
-  description String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  restaurant  Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  locale      Locale     @relation(fields: [localeId], references: [id], onDelete: Restrict)
+  id            String     @id @default(cuid())
+  restaurantId  String
+  localeId      Int
+  name          String
+  cuisine       String
+  vibe          String
+  description   String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  locale        Locale     @relation(fields: [localeId], references: [id], onDelete: Restrict)
 
   @@unique([restaurantId, localeId])
 }
 
 model Tour {
-  id           String            @id @default(cuid())
-  slug         String            @unique
-  status       ContentStatus     @default(PUBLISHED)
+  id            String            @id @default(cuid())
+  slug          String            @unique
+  status        ContentStatus     @default(PUBLISHED)
   durationHours Int
-  priceFrom    Int
-  sortOrder    Int               @default(0)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  publishedAt  DateTime?
-  createdBy    String?
-  updatedBy    String?
-  translations TourTranslation[]
+  priceFrom     Int
+  sortOrder     Int               @default(0)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  publishedAt   DateTime?
+  createdBy     String?
+  updatedBy     String?
+  translations  TourTranslation[]
 }
 
 model TourTranslation {
-  id          String   @id @default(cuid())
+  id           String   @id @default(cuid())
   tourId       String
-  localeId    Int
-  name        String
-  category    String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  tour        Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
-  locale      Locale   @relation(fields: [localeId], references: [id], onDelete: Restrict)
+  localeId     Int
+  name         String
+  category     String
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tour         Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  locale       Locale   @relation(fields: [localeId], references: [id], onDelete: Restrict)
 
   @@unique([tourId, localeId])
 }
@@ -194,72 +192,72 @@ model HomePage {
   translations     HomePageTranslation[]
   spotlightEntries HomeSpotlightEntry[]
   sections         HomeSection[]
-  cta              HomeCta?
 }
 
 model HomePageTranslation {
-  id               String   @id @default(cuid())
-  homePageId       String
-  localeId         Int
-  heroEyebrow      String
-  heroTitle        String
-  heroDescription  String
-  calloutEyebrow   String
-  calloutTitle     String
+  id                 String   @id @default(cuid())
+  homePageId         String
+  localeId           Int
+  heroEyebrow        String
+  heroTitle          String
+  heroDescription    String
+  calloutEyebrow     String
+  calloutTitle       String
   calloutDescription String
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  homePage         HomePage  @relation(fields: [homePageId], references: [id], onDelete: Cascade)
-  locale           Locale    @relation(fields: [localeId], references: [id], onDelete: Restrict)
+  calloutItems       String[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  homePage           HomePage @relation(fields: [homePageId], references: [id], onDelete: Cascade)
+  locale             Locale   @relation(fields: [localeId], references: [id], onDelete: Restrict)
 
   @@unique([homePageId, localeId])
 }
 
 model HomeSpotlightEntry {
-  id            String                       @id @default(cuid())
-  homePageId    String
-  key           SpotlightKey
-  route         String
-  sortOrder     Int                          @default(0)
-  createdAt     DateTime                     @default(now())
-  updatedAt     DateTime                     @updatedAt
-  homePage      HomePage                     @relation(fields: [homePageId], references: [id], onDelete: Cascade)
-  translations  HomeSpotlightEntryTranslation[]
+  id           String                       @id @default(cuid())
+  homePageId   String
+  key          SpotlightKey
+  route        String
+  sortOrder    Int                          @default(0)
+  createdAt    DateTime                     @default(now())
+  updatedAt    DateTime                     @updatedAt
+  homePage     HomePage                     @relation(fields: [homePageId], references: [id], onDelete: Cascade)
+  translations HomeSpotlightEntryTranslation[]
 
   @@unique([homePageId, key])
 }
 
 model HomeSpotlightEntryTranslation {
-  id            String               @id @default(cuid())
-  entryId        String
-  localeId      Int
-  actionLabel   String
-  title         String
-  description   String
-  ctaLabel      String
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
-  entry         HomeSpotlightEntry   @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  locale        Locale               @relation(fields: [localeId], references: [id], onDelete: Restrict)
-  metrics       HomeSpotlightMetric[]
+  id          String                        @id @default(cuid())
+  entryId     String
+  localeId    Int
+  actionLabel String
+  title       String
+  description String
+  ctaLabel    String
+  createdAt   DateTime                      @default(now())
+  updatedAt   DateTime                      @updatedAt
+  entry       HomeSpotlightEntry            @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  locale      Locale                        @relation(fields: [localeId], references: [id], onDelete: Restrict)
+  metrics     HomeSpotlightMetric[]
 
   @@unique([entryId, localeId])
 }
 
 model HomeSpotlightMetric {
-  id          String                        @id @default(cuid())
+  id            String                        @id @default(cuid())
   translationId String
-  sortOrder   Int                           @default(0)
-  label       String
-  value       String
-  createdAt   DateTime                      @default(now())
-  updatedAt   DateTime                      @updatedAt
-  translation HomeSpotlightEntryTranslation @relation(fields: [translationId], references: [id], onDelete: Cascade)
+  sortOrder     Int                           @default(0)
+  label         String
+  value         String
+  createdAt     DateTime                      @default(now())
+  updatedAt     DateTime                      @updatedAt
+  translation   HomeSpotlightEntryTranslation @relation(fields: [translationId], references: [id], onDelete: Cascade)
 }
 
 model HomeSection {
   id           String                   @id @default(cuid())
-  homePageId    String
+  homePageId   String
   kind         HomeSectionKind
   sortOrder    Int                      @default(0)
   createdAt    DateTime                 @default(now())
@@ -273,7 +271,7 @@ model HomeSection {
 
 model HomeSectionTranslation {
   id          String      @id @default(cuid())
-  sectionId    String
+  sectionId   String
   localeId    Int
   eyebrow     String
   title       String
@@ -288,7 +286,7 @@ model HomeSectionTranslation {
 
 model HomeSectionCard {
   id           String                     @id @default(cuid())
-  sectionId     String
+  sectionId    String
   route        String
   sortOrder    Int                        @default(0)
   createdAt    DateTime                   @default(now())
@@ -299,7 +297,7 @@ model HomeSectionCard {
 
 model HomeSectionCardTranslation {
   id          String          @id @default(cuid())
-  cardId       String
+  cardId      String
   localeId    Int
   label       String?
   title       String
@@ -311,32 +309,4 @@ model HomeSectionCardTranslation {
   locale      Locale          @relation(fields: [localeId], references: [id], onDelete: Restrict)
 
   @@unique([cardId, localeId])
-}
-
-model HomeCta {
-  id             String               @id @default(cuid())
-  homePageId      String               @unique
-  primaryRoute   String
-  secondaryRoute String
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  homePage       HomePage             @relation(fields: [homePageId], references: [id], onDelete: Cascade)
-  translations   HomeCtaTranslation[]
-}
-
-model HomeCtaTranslation {
-  id             String    @id @default(cuid())
-  ctaId           String
-  localeId       Int
-  eyebrow        String
-  title          String
-  description    String
-  primaryLabel   String
-  secondaryLabel String
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  cta            HomeCta   @relation(fields: [ctaId], references: [id], onDelete: Cascade)
-  locale         Locale    @relation(fields: [localeId], references: [id], onDelete: Restrict)
-
-  @@unique([ctaId, localeId])
 }

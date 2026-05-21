@@ -1,7 +1,7 @@
 export type AppLanguage = 'en' | 'es'
 
 export type EventCategory = 'music' | 'wellness' | 'food'
-export type ExperienceKey = 'events' | 'restaurants' | 'tours' | 'booking'
+export type ExperienceKey = 'events' | 'restaurants' | 'tours'
 
 export type HomeSpotlightMetric = {
   label: string
@@ -59,19 +59,6 @@ export type HomeContent = {
   weeklyHappenings: {
     intro: HomeSectionIntro
     items: HomeSuggestionCard[]
-  }
-  bookingCta: {
-    eyebrow: string
-    title: string
-    description: string
-    primaryAction: {
-      label: string
-      route: string
-    }
-    secondaryAction: {
-      label: string
-      route: string
-    }
   }
 }
 

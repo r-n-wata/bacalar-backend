@@ -12,14 +12,13 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
       eyebrow: 'Plan Bacalar with intention',
       title: 'Help travelers build an easy, beautiful first plan for Bacalar.',
       description:
-        'This page should feel like a calm travel concierge: lead with the lagoon, suggest the best next decisions, and make booking feel straightforward from the very first screen.',
+        'This page should feel like a calm travel concierge: lead with the lagoon, suggest the best next decisions, and make the first plan feel simple from the start.',
     },
     spotlight: {
       actions: [
         { key: 'events', label: 'Events' },
         { key: 'restaurants', label: 'Restaurants' },
         { key: 'tours', label: 'Tours' },
-        { key: 'booking', label: 'Booking' },
       ],
       entries: {
         events: {
@@ -58,30 +57,18 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
             { label: 'Value', value: 'Easy comparison' },
           ],
         },
-        booking: {
-          title: 'Make booking feel clear, calm, and trustworthy',
-          description:
-            'Once guests decide what they want, move them into a straightforward flow for dates, party size, and confirmation.',
-          route: '/booking',
-          cta: 'Open booking flow',
-          metrics: [
-            { label: 'Best for', value: 'Conversion' },
-            { label: 'Focus', value: 'Guest details' },
-            { label: 'Value', value: 'Low friction' },
-          ],
-        },
       },
     },
     planningCallout: {
       eyebrow: 'Start here',
       title: 'A clear first plan beats a crowded homepage',
       description:
-        'Lead with the lagoon, support the day with a few strong restaurant picks, add timely events as optional upgrades, and keep the booking path visible from the start.',
+        'Lead with the lagoon, support the day with a few strong restaurant picks, and add timely events only when they genuinely improve the stay.',
       items: [
         'Choose one standout lagoon experience first.',
         'Pair it with the right breakfast, lunch, or dinner stop.',
         'Add an event only if it improves the day, not because it fills space.',
-        'Offer a booking path that feels simple and reassuring.',
+        'Keep the page focused on the next best decision.',
       ],
     },
     featuredExperiences: {
@@ -177,25 +164,11 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           label: 'Sunday sunrise',
           title: 'Lagoon Breathwork Session',
           description:
-            'A wellness-forward option that reinforces Bacalar’s quieter, restorative side.',
+            'A wellness-forward option that reinforces Bacalar\'s quieter, restorative side.',
           meta: 'Isla Yoga Garden · 8:00 AM',
           route: '/events',
         },
       ],
-    },
-    bookingCta: {
-      eyebrow: 'Ready to book',
-      title: 'Make the next step obvious once someone is ready.',
-      description:
-        'Keep the final handoff simple: travel date, guest count, and clear confirmation expectations. The homepage should end by showing that the booking flow is easy to start.',
-      primaryAction: {
-        label: 'Start booking',
-        route: '/booking',
-      },
-      secondaryAction: {
-        label: 'Compare tours first',
-        route: '/tours',
-      },
     },
   },
   es: {
@@ -204,14 +177,13 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
       title:
         'Ayuda a las personas viajeras a construir un primer plan facil y bonito para Bacalar.',
       description:
-        'Esta pagina debe sentirse como una concierge tranquila de viaje: lidera con la laguna, sugiere las siguientes decisiones y haz que reservar se sienta sencillo desde la primera pantalla.',
+        'Esta pagina debe sentirse como una concierge tranquila de viaje: lidera con la laguna, sugiere las siguientes decisiones y haz que el primer plan se sienta sencillo desde la primera pantalla.',
     },
     spotlight: {
       actions: [
         { key: 'events', label: 'Eventos' },
         { key: 'restaurants', label: 'Restaurantes' },
         { key: 'tours', label: 'Tours' },
-        { key: 'booking', label: 'Reservas' },
       ],
       entries: {
         events: {
@@ -250,58 +222,46 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
             { label: 'Valor', value: 'Comparacion facil' },
           ],
         },
-        booking: {
-          title: 'Haz que reservar se sienta claro, calmado y confiable',
-          description:
-            'Una vez que la gente decide lo que quiere, llevala a un flujo sencillo para fecha, tamano del grupo y confirmacion.',
-          route: '/booking',
-          cta: 'Abrir reservas',
-          metrics: [
-            { label: 'Ideal para', value: 'Conversion' },
-            { label: 'Enfoque', value: 'Datos del grupo' },
-            { label: 'Valor', value: 'Baja friccion' },
-          ],
-        },
       },
     },
     planningCallout: {
       eyebrow: 'Comienza aqui',
-      title: 'Un primer plan claro supera una homepage saturada',
+      title: 'Un primer plan claro funciona mejor que una portada saturada',
       description:
-        'Lidera con la laguna, acompana el dia con algunos restaurantes fuertes, agrega eventos solo como mejoras y manten visible la ruta de reserva.',
+        'Lidera con la laguna, acompana el dia con unos pocos restaurantes fuertes y agrega eventos solo cuando realmente mejoran la estancia.',
       items: [
         'Elige primero una experiencia destacada en la laguna.',
-        'Acompanala con el desayuno, comida o cena correctos.',
-        'Agrega un evento solo si mejora el dia, no para llenar espacio.',
-        'Ofrece una ruta de reserva que se sienta simple y confiable.',
+        'Combinala con el desayuno, almuerzo o cena adecuados.',
+        'Agrega un evento solo si mejora el dia, no solo para llenar espacio.',
+        'Manten la pagina enfocada en la siguiente mejor decision.',
       ],
     },
     featuredExperiences: {
       intro: {
         eyebrow: 'Experiencias destacadas en la laguna',
-        title: 'Comienza con algunas experiencias fuertes en la laguna',
+        title: 'Comienza con unas pocas experiencias fuertes en la laguna',
         description:
-          'Manten la homepage enfocada en un pequeno numero de opciones de alta confianza en lugar de mostrarlo todo.',
+          'La pagina principal funciona mejor cuando enfoca unas opciones de alta confianza en vez de intentar mostrarlo todo.',
       },
       items: [
         {
-          title: 'Velero privado al amanecer',
+          title: 'Vela privada al amanecer',
           description:
-            'Una experiencia distintiva en Bacalar para quienes quieren agua calma, luz suave y un recuerdo premium.',
+            'Una experiencia insignia de Bacalar para quienes buscan agua tranquila, luz suave y un primer recuerdo premium.',
           meta: '4 horas · Desde 2,100 MXN',
           route: '/tours',
         },
         {
           title: 'Recorrido familiar en ponton',
           description:
-            'Una opcion sencilla de mediodia para grupos que quieren nadar, pasear y tomarse el recorrido con calma.',
+            'Una opcion facil al mediodia para grupos que quieren nadar, conocer la laguna y avanzar sin prisa.',
           meta: '3 horas · Desde 1,450 MXN',
           route: '/tours',
         },
         {
-          title: 'Kayak guiado por manglares',
+          title: 'Kayak guiado por manglar',
           description:
-            'Una salida mas ligera y activa para quienes quieren explorar en silencio y cerca de la naturaleza.',
+            'Una salida mas ligera y activa para quienes quieren explorar en silencio y mantenerse cerca de la naturaleza.',
           meta: '2 horas · Desde 680 MXN',
           route: '/tours',
         },
@@ -310,24 +270,24 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
     diningMoments: {
       intro: {
         eyebrow: 'Donde comer segun el momento',
-        title: 'Desayuno, comida y cena en Bacalar',
+        title: 'Picks de desayuno, almuerzo y cena para Bacalar',
         description:
-          'El contenido de restaurantes funciona mejor cuando apoya discretamente el plan del dia.',
+          'El contenido de restaurantes funciona mejor cuando acompana el plan del dia sin competir con el.',
       },
       items: [
         {
           label: 'Desayuno',
           title: 'Cielo de Maiz',
           description:
-            'Comienza con un desayuno en jardin, tranquilo y local, antes de salir hacia el agua.',
+            'Empieza con un desayuno de jardin que se siente local y sin prisa antes de ir hacia el agua.',
           meta: 'Vegetariano · $$',
           route: '/restaurants',
         },
         {
-          label: 'Comida',
+          label: 'Almuerzo',
           title: 'Ixchel Cocina',
           description:
-            'Un favorito local casual que funciona bien despues de un tour matutino cuando se quiere algo facil y rico.',
+            'Un favorito local casual que funciona bien despues de un tour matutino cuando la gente quiere algo facil y rico.',
           meta: 'Mexicana regional · $$',
           route: '/restaurants',
         },
@@ -335,7 +295,7 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           label: 'Cena',
           title: 'Nao',
           description:
-            'Una cena de mariscos frente a la laguna para las noches que merecen una comida mas especial.',
+            'Una cena frente a la laguna para noches en las que el viaje pide una comida mas especial.',
           meta: 'Mariscos · $$$',
           route: '/restaurants',
         },
@@ -344,7 +304,7 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
     weeklyHappenings: {
       intro: {
         eyebrow: 'Esta semana en Bacalar',
-        title: 'Usa eventos como extras locales oportunos',
+        title: 'Usa eventos como extras locales y oportunos',
         description:
           'Manten la cobertura de eventos selectiva para que aporte textura sin competir con el flujo principal del plan.',
       },
@@ -353,41 +313,27 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           label: 'Viernes por la tarde',
           title: 'Jazz al atardecer junto a la laguna',
           description:
-            'Una gran mejora de fin de dia para quienes quieren un evento local memorable sin sobreplanear.',
-          meta: 'Terraza Casa Laguna · 7:00 PM',
+            'Una mejora fuerte para cerrar el dia si alguien quiere un momento local memorable sin planear demasiado.',
+          meta: 'Deck Casa Laguna · 7:00 PM',
           route: '/events',
         },
         {
           label: 'Sabado por la manana',
-          title: 'Ruta de brunch por el mercado local',
+          title: 'Ruta brunch por el mercado local',
           description:
-            'Ideal para quienes quieren dedicar una manana al centro y mezclar descubrimiento gastronomico con la estancia.',
-          meta: 'Centro de Bacalar · 10:30 AM',
+            'Util para quienes quieren dedicar una manana al centro y mezclar descubrimiento gastronomico en la estancia.',
+          meta: 'Centro Bacalar · 10:30 AM',
           route: '/events',
         },
         {
           label: 'Domingo al amanecer',
           title: 'Sesion de respiracion frente a la laguna',
           description:
-            'Una opcion orientada al bienestar que refuerza el lado mas tranquilo y restaurador de Bacalar.',
-          meta: 'Jardin Isla Yoga · 8:00 AM',
+            'Una opcion de bienestar que refuerza el lado mas tranquilo y restaurador de Bacalar.',
+          meta: 'Isla Yoga Garden · 8:00 AM',
           route: '/events',
         },
       ],
-    },
-    bookingCta: {
-      eyebrow: 'Lista para reservar',
-      title: 'Haz obvio el siguiente paso cuando alguien ya esta lista.',
-      description:
-        'Manten simple la entrega final: fecha de viaje, numero de huespedes y expectativas claras de confirmacion. La homepage debe cerrar mostrando que iniciar la reserva es facil.',
-      primaryAction: {
-        label: 'Empezar reserva',
-        route: '/booking',
-      },
-      secondaryAction: {
-        label: 'Comparar tours primero',
-        route: '/tours',
-      },
     },
   },
 }

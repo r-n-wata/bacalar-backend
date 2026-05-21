@@ -1,4 +1,12 @@
-import { PrismaClient, ContentStatus, EventCategory, FeatureType, HomeSectionKind, LocaleCode, SpotlightKey } from '@prisma/client'
+import {
+  ContentStatus,
+  EventCategory,
+  FeatureType,
+  HomeSectionKind,
+  LocaleCode,
+  PrismaClient,
+  SpotlightKey,
+} from '@prisma/client'
 import {
   eventsContentByLanguage,
   homeContentByLanguage,
@@ -16,8 +24,6 @@ async function main() {
   await prisma.homeSectionCard.deleteMany()
   await prisma.homeSectionTranslation.deleteMany()
   await prisma.homeSection.deleteMany()
-  await prisma.homeCtaTranslation.deleteMany()
-  await prisma.homeCta.deleteMany()
   await prisma.homePageTranslation.deleteMany()
   await prisma.homePage.deleteMany()
   await prisma.eventTranslation.deleteMany()
@@ -216,6 +222,7 @@ async function main() {
         calloutEyebrow: homeContentByLanguage.en.planningCallout.eyebrow,
         calloutTitle: homeContentByLanguage.en.planningCallout.title,
         calloutDescription: homeContentByLanguage.en.planningCallout.description,
+        calloutItems: homeContentByLanguage.en.planningCallout.items,
       },
       {
         homePageId: homePage.id,
@@ -226,6 +233,7 @@ async function main() {
         calloutEyebrow: homeContentByLanguage.es.planningCallout.eyebrow,
         calloutTitle: homeContentByLanguage.es.planningCallout.title,
         calloutDescription: homeContentByLanguage.es.planningCallout.description,
+        calloutItems: homeContentByLanguage.es.planningCallout.items,
       },
     ],
   })
@@ -253,6 +261,7 @@ async function main() {
         ctaLabel: enEntry.cta,
       },
     })
+
     const esTranslation = await prisma.homeSpotlightEntryTranslation.create({
       data: {
         entryId: entry.id,
@@ -282,17 +291,17 @@ async function main() {
     })
   }
 
-  const sectionMappings = [
+  const homeSections = [
     ['featuredExperiences', HomeSectionKind.FEATURED_EXPERIENCES],
     ['diningMoments', HomeSectionKind.DINING_MOMENTS],
     ['weeklyHappenings', HomeSectionKind.WEEKLY_HAPPENINGS],
   ] as const
 
-  for (const [sectionKey, kind] of sectionMappings) {
+  for (const [sectionKey, sectionKind] of homeSections) {
     const section = await prisma.homeSection.create({
       data: {
         homePageId: homePage.id,
-        kind,
+        kind: sectionKind,
       },
     })
 
@@ -315,32 +324,30 @@ async function main() {
       ],
     })
 
-    for (const [index, card] of homeContentByLanguage.en[sectionKey].items.entries()) {
-      const sectionCard = await prisma.homeSectionCard.create({
+    for (const [index, enCard] of homeContentByLanguage.en[sectionKey].items.entries()) {
+      const esCard = homeContentByLanguage.es[sectionKey].items[index]
+      const card = await prisma.homeSectionCard.create({
         data: {
           sectionId: section.id,
-          route: card.route,
+          route: enCard.route,
           sortOrder: index,
         },
       })
 
-      const enCard = homeContentByLanguage.en[sectionKey].items[index]
-      const esCard = homeContentByLanguage.es[sectionKey].items[index]
-
       await prisma.homeSectionCardTranslation.createMany({
         data: [
           {
-            cardId: sectionCard.id,
+            cardId: card.id,
             localeId: en.id,
-            label: enCard.label ?? null,
+            label: enCard.label,
             title: enCard.title,
             description: enCard.description,
             meta: enCard.meta,
           },
           {
-            cardId: sectionCard.id,
+            cardId: card.id,
             localeId: es.id,
-            label: esCard.label ?? null,
+            label: esCard.label,
             title: esCard.title,
             description: esCard.description,
             meta: esCard.meta,
@@ -349,45 +356,14 @@ async function main() {
       })
     }
   }
-
-  const homeCta = await prisma.homeCta.create({
-    data: {
-      homePageId: homePage.id,
-      primaryRoute: homeContentByLanguage.en.bookingCta.primaryAction.route,
-      secondaryRoute: homeContentByLanguage.en.bookingCta.secondaryAction.route,
-    },
-  })
-
-  await prisma.homeCtaTranslation.createMany({
-    data: [
-      {
-        ctaId: homeCta.id,
-        localeId: en.id,
-        eyebrow: homeContentByLanguage.en.bookingCta.eyebrow,
-        title: homeContentByLanguage.en.bookingCta.title,
-        description: homeContentByLanguage.en.bookingCta.description,
-        primaryLabel: homeContentByLanguage.en.bookingCta.primaryAction.label,
-        secondaryLabel: homeContentByLanguage.en.bookingCta.secondaryAction.label,
-      },
-      {
-        ctaId: homeCta.id,
-        localeId: es.id,
-        eyebrow: homeContentByLanguage.es.bookingCta.eyebrow,
-        title: homeContentByLanguage.es.bookingCta.title,
-        description: homeContentByLanguage.es.bookingCta.description,
-        primaryLabel: homeContentByLanguage.es.bookingCta.primaryAction.label,
-        secondaryLabel: homeContentByLanguage.es.bookingCta.secondaryAction.label,
-      },
-    ],
-  })
 }
 
-void main()
-  .catch(async (error) => {
-    console.error(error)
-    process.exitCode = 1
+main()
+  .then(async () => {
     await prisma.$disconnect()
   })
-  .finally(async () => {
+  .catch(async (error) => {
+    console.error('seed-failed', error)
     await prisma.$disconnect()
+    process.exit(1)
   })

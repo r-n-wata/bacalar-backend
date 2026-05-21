@@ -7,54 +7,26 @@ This backend is the MVP read API for Bacalar. It serves structured, localized co
 - restaurants
 - tours
 
-Booking is intentionally out of MVP scope and is not exposed as an active backend API.
+Booking is future-only and intentionally excluded from the active API contract.
 
 ## What this app does
 
 The service provides frontend-ready JSON payloads for the Bacalar experience using:
 
 - Express + TypeScript for the HTTP runtime
-- Prisma for data access and schema management
+- Prisma for schema management and data access
 - PostgreSQL as the primary database target
 - localized content resolution for `en` and `es`
-- service-layer caching behind a swappable in-memory cache implementation
+- service-layer caching with a swappable in-memory cache provider
+- CORS and lightweight rate limiting for a public read-only MVP
 
-The current public endpoints are:
+Current public endpoints:
 
 - `GET /api/health`
 - `GET /api/home`
 - `GET /api/events`
 - `GET /api/restaurants`
 - `GET /api/tours`
-
-## Project structure
-
-```txt
-backend/
-  prisma/
-    schema.prisma
-    seed.ts
-  proposals/
-    mvp-read-api-spec.md
-    performance-caching.md
-    schema-design.md
-  src/
-    config/
-    controllers/
-    data/
-    middlewares/
-    repositories/
-    routes/
-    services/
-    types/
-    utils/
-    app.ts
-    server.ts
-  tests/
-  architecture.md
-  package.json
-  README.md
-```
 
 ## Runtime architecture
 
@@ -63,31 +35,37 @@ Request flow:
 1. route receives the request
 2. controller resolves locale and delegates work
 3. service assembles the response and applies cache-aware reads
-4. repository reads structured content from Prisma-backed data sources
-5. response is returned as a frontend-oriented payload
+4. repository reads structured content from Prisma-backed storage
+5. middleware applies CORS, rate limiting, and standardized error handling
+6. response is returned as a frontend-oriented payload
 
 Layer ownership:
 
 - `src/routes`: public endpoint registration
 - `src/controllers`: HTTP boundary and locale selection
-- `src/services`: content assembly and cache-aware read logic
-- `src/repositories`: persistence access
-- `src/utils/cache.ts`: swappable cache provider used by services
-- `src/data/seedContent.ts`: seed content aligned with the frontend's current contract
+- `src/services`: content assembly and cache-aware reads
+- `src/repositories`: Prisma-backed persistence access
+- `src/middlewares`: CORS, rate limiting, request logging, and error handling
+- `src/data/seedContent.ts`: local/dev seed content aligned with the frontend contract
 
-For deeper system notes, see `/Users/ruth.wata/Projects/bacalar/backend/architecture.md`.
+For deeper notes, see `/Users/ruth.wata/Projects/bacalar/backend/architecture.md`.
 
 ## Environment
 
-The app expects these variables:
+The backend expects these variables:
 
 ```bash
+NODE_ENV=development
 PORT=4000
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/bacalar?schema=public"
 DEFAULT_LOCALE=en
+ALLOWED_ORIGINS="http://localhost:5173"
+NETLIFY_SITE_NAME=your-netlify-site-name
+RATE_LIMIT_WINDOW_MS=60000
+RATE_LIMIT_MAX_REQUESTS=120
 ```
 
-A starter file is available at `/Users/ruth.wata/Projects/bacalar/backend/.env.example`.
+Starter values live in `/Users/ruth.wata/Projects/bacalar/backend/.env.example`.
 
 ## Local setup
 
@@ -111,23 +89,19 @@ cp .env.example .env
 npm run prisma:generate
 ```
 
-5. Validate the Prisma schema:
+5. Create or update the local schema using Prisma migrations:
 
 ```bash
-npm run prisma:validate
+npm run prisma:migrate:dev -- --name init
 ```
 
-6. Apply the schema to your database using your Prisma workflow.
-
-If you are bootstrapping locally and want the quickest path, `npx prisma db push` is the simplest option for now.
-
-7. Seed the database with the MVP content set:
+6. Seed the local database with the MVP content set:
 
 ```bash
 npm run prisma:seed
 ```
 
-8. Start the development server:
+7. Start the development server:
 
 ```bash
 npm run dev
@@ -135,17 +109,60 @@ npm run dev
 
 The API will then be available at [http://localhost:4000](http://localhost:4000) unless `PORT` is changed.
 
-## Available scripts
+## Prisma workflow
+
+Migrations are the official schema workflow for MVP.
+
+Useful commands:
 
 ```bash
-npm run dev
-npm run build
-npm run start
-npm run typecheck
-npm run test
 npm run prisma:generate
 npm run prisma:validate
+npm run prisma:migrate:dev -- --name your_change_name
+npm run prisma:migrate:deploy
+npm run prisma:migrate:status
 npm run prisma:seed
+```
+
+Seed policy:
+
+- local/dev: required
+- preview/demo: optional if you want content bootstrap automatically
+- production: only when intentionally bootstrapping a new environment
+
+## Netlify + Render deployment
+
+Deployment targets are explicit:
+
+- frontend: Netlify
+- backend: Render
+- database: PostgreSQL connected to Render through `DATABASE_URL`
+
+### Render backend settings
+
+Recommended Render configuration is captured in `/Users/ruth.wata/Projects/bacalar/backend/render.yaml`.
+
+Key expectations:
+
+- build command: `npm ci && npm run prisma:generate && npm run build`
+- pre-deploy command: `npm run prisma:migrate:deploy`
+- start command: `npm run start`
+- health check path: `/api/health`
+
+### CORS behavior
+
+The backend defaults closed and only allows configured origins.
+
+Use:
+
+- `ALLOWED_ORIGINS` for exact origins such as local dev and the production Netlify site
+- `NETLIFY_SITE_NAME` to allow Netlify production and preview deploy domains for that site
+
+Example:
+
+```bash
+ALLOWED_ORIGINS="http://localhost:5173,https://bacalar.netlify.app"
+NETLIFY_SITE_NAME=bacalar
 ```
 
 ## API behavior
@@ -155,54 +172,61 @@ npm run prisma:seed
 The backend resolves locale using frontend-compatible request patterns:
 
 - query param first: `?lang=en` or `?lang=es`
-- default fallback from `DEFAULT_LOCALE`
+- `Accept-Language` fallback
+- `DEFAULT_LOCALE` fallback when neither is provided
 
-This keeps the runtime aligned with the frontend's current localized request flow.
+If `lang` is provided but unsupported, the API returns `400` with a standardized error shape.
 
 ### Response shape
 
-The API intentionally returns frontend-ready payloads rather than heavily normalized entities. That keeps the MVP simple and compatible with the MSW contracts already used by the frontend.
+The API returns frontend-ready payloads instead of heavily normalized response contracts. This keeps the MVP aligned with the current frontend feature contracts.
 
-### Caching
+### Caching and protection
 
 Caching is implemented in the service layer, not in controllers.
 
-Current design:
+Current cache intent:
 
 - `home`: longest cache window
 - `restaurants`: long cache window
 - `tours`: medium cache window
 - `events`: shortest cache window among MVP endpoints
 
-The current implementation uses an in-memory cache abstraction so we can swap in a stronger backend cache later without changing controller contracts.
+Runtime hardening included now:
+
+- explicit CORS policy
+- lightweight in-memory rate limiting
+- sanitized error responses
+- request logging
 
 ## Testing and validation
 
 Recommended local verification:
 
 ```bash
-npm run typecheck
-npm run test
-npm run build
+npm run ci
 ```
 
-Prisma-specific checks:
+That runs:
 
-```bash
-npm run prisma:generate
-npm run prisma:validate
-```
+- Prisma client generation
+- Prisma schema validation
+- TypeScript checks
+- backend tests
+- production build
 
 ## Frontend compatibility
 
-This backend is designed to replace MSW for the frontend's active MVP read paths without requiring major frontend response reshaping.
+This backend is designed to replace MSW for the frontend's active MVP read paths without major frontend response reshaping.
 
-The active compatibility targets are:
+Compatibility targets:
 
 - `/api/home`
 - `/api/events`
 - `/api/restaurants`
 - `/api/tours`
+
+The homepage contract is intentionally booking-free to match the current frontend MVP.
 
 ## Non-MVP scope
 

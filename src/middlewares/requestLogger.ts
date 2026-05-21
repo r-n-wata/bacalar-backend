@@ -10,6 +10,8 @@ export function createRequestLogger(logger: Logger) {
     logger.info('request', {
       method: request.method,
       path: request.path,
+      origin: request.headers.origin,
+      ip: request.ip,
     })
     next()
   }

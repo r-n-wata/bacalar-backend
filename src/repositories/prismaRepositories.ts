@@ -2,17 +2,16 @@ import {
   ContentStatus,
   FeatureType,
   HomeSectionKind,
-  SpotlightKey,
   type PrismaClient,
 } from '@prisma/client'
 import type {
+  AppLanguage,
   EventsContent,
   HomeContent,
   HomeSuggestionCard,
   RestaurantsContent,
   ToursContent,
 } from '../types/content'
-import type { AppLanguage } from '../types/content'
 import type { ContentRepositories } from './interfaces'
 
 function getLocaleWhere(language: AppLanguage) {
@@ -23,9 +22,9 @@ function getLocaleWhere(language: AppLanguage) {
   }
 }
 
-function assertFeaturePageTranslation<T extends { translations: Array<{ eyebrow: string; title: string; description: string }> }>(
-  page: T | null,
-) {
+function assertFeaturePageTranslation<
+  T extends { translations: Array<{ eyebrow: string; title: string; description: string }> },
+>(page: T | null) {
   if (!page || page.translations.length === 0) {
     return null
   }
@@ -106,17 +105,10 @@ export function createPrismaRepositories(
                 },
               },
             },
-            cta: {
-              include: {
-                translations: {
-                  where: getLocaleWhere(language),
-                },
-              },
-            },
           },
         })
 
-        if (!homePage || homePage.translations.length === 0 || !homePage.cta) {
+        if (!homePage || homePage.translations.length === 0) {
           return null
         }
 
@@ -163,16 +155,10 @@ export function createPrismaRepositories(
           featuredSection.translations.length === 0 ||
           diningSection.translations.length === 0 ||
           weeklySection.translations.length === 0 ||
-          homePage.cta.translations.length === 0
+          spotlightActions.length === 0
         ) {
           return null
         }
-
-        const ctaTranslation = homePage.cta.translations[0]
-        const planningItems = homePage.sections
-          .find((section) => section.kind === HomeSectionKind.DINING_MOMENTS)
-          ?.cards.map((card) => card.translations[0]?.label)
-          .filter((item): item is string => Boolean(item))
 
         return {
           hero: {
@@ -188,15 +174,7 @@ export function createPrismaRepositories(
             eyebrow: translation.calloutEyebrow,
             title: translation.calloutTitle,
             description: translation.calloutDescription,
-            items:
-              planningItems && planningItems.length > 0
-                ? planningItems
-                : [
-                    'Choose one standout lagoon experience first.',
-                    'Pair it with the right breakfast, lunch, or dinner stop.',
-                    'Add an event only if it improves the day, not because it fills space.',
-                    'Offer a booking path that feels simple and reassuring.',
-                  ],
+            items: translation.calloutItems,
           },
           featuredExperiences: {
             intro: {
@@ -221,19 +199,6 @@ export function createPrismaRepositories(
               description: weeklySection.translations[0].description,
             },
             items: mapSectionCards(weeklySection.cards),
-          },
-          bookingCta: {
-            eyebrow: ctaTranslation.eyebrow,
-            title: ctaTranslation.title,
-            description: ctaTranslation.description,
-            primaryAction: {
-              label: ctaTranslation.primaryLabel,
-              route: homePage.cta.primaryRoute,
-            },
-            secondaryAction: {
-              label: ctaTranslation.secondaryLabel,
-              route: homePage.cta.secondaryRoute,
-            },
           },
         }
       },

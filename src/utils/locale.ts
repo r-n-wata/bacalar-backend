@@ -1,5 +1,6 @@
 import type { Request } from 'express'
 import type { AppLanguage } from '../types/content'
+import { HttpError } from './httpError'
 
 export const supportedLanguages: AppLanguage[] = ['en', 'es']
 
@@ -15,11 +16,20 @@ export function resolveLanguage(
   request: Request,
   defaultLanguage: AppLanguage,
 ): AppLanguage {
-  const fromQuery = parseLanguage(
-    typeof request.query.lang === 'string' ? request.query.lang : undefined,
-  )
+  const rawQueryLanguage =
+    typeof request.query.lang === 'string' ? request.query.lang : undefined
 
-  if (fromQuery) {
+  if (rawQueryLanguage) {
+    const fromQuery = parseLanguage(rawQueryLanguage)
+
+    if (!fromQuery) {
+      throw new HttpError(
+        400,
+        'Unsupported language query parameter',
+        'INVALID_LANGUAGE',
+      )
+    }
+
     return fromQuery
   }
 

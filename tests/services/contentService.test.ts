@@ -13,26 +13,17 @@ describe('contentService', () => {
           { key: 'events', label: 'Events' },
           { key: 'restaurants', label: 'Restaurants' },
           { key: 'tours', label: 'Tours' },
-          { key: 'booking', label: 'Booking' },
         ],
         entries: {
           events: { title: 'a', description: 'b', route: '/events', cta: 'c', metrics: [] },
           restaurants: { title: 'a', description: 'b', route: '/restaurants', cta: 'c', metrics: [] },
           tours: { title: 'a', description: 'b', route: '/tours', cta: 'c', metrics: [] },
-          booking: { title: 'a', description: 'b', route: '/booking', cta: 'c', metrics: [] },
         },
       },
       planningCallout: { eyebrow: 'a', title: 'b', description: 'c', items: [] },
       featuredExperiences: { intro: { eyebrow: 'a', title: 'b', description: 'c' }, items: [] },
       diningMoments: { intro: { eyebrow: 'a', title: 'b', description: 'c' }, items: [] },
       weeklyHappenings: { intro: { eyebrow: 'a', title: 'b', description: 'c' }, items: [] },
-      bookingCta: {
-        eyebrow: 'a',
-        title: 'b',
-        description: 'c',
-        primaryAction: { label: 'one', route: '/a' },
-        secondaryAction: { label: 'two', route: '/b' },
-      },
     }
     const home = vi.fn(async () => homePayload)
 

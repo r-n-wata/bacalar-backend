@@ -18,7 +18,10 @@ describe('contentController', () => {
 
     getHealth({} as never, response as never)
 
-    expect(response.json).toHaveBeenCalledWith({ status: 'ok' })
+    expect(response.json).toHaveBeenCalledWith({
+      status: 'ok',
+      service: 'bacalar-backend',
+    })
   })
 
   it('returns localized home content', async () => {
@@ -33,13 +36,11 @@ describe('contentController', () => {
           { key: 'events', label: 'Eventos' },
           { key: 'restaurants', label: 'Restaurantes' },
           { key: 'tours', label: 'Tours' },
-          { key: 'booking', label: 'Reservas' },
         ],
         entries: {
           events: { title: 'a', description: 'b', route: '/events', cta: 'c', metrics: [] },
           restaurants: { title: 'a', description: 'b', route: '/restaurants', cta: 'c', metrics: [] },
           tours: { title: 'a', description: 'b', route: '/tours', cta: 'c', metrics: [] },
-          booking: { title: 'a', description: 'b', route: '/booking', cta: 'c', metrics: [] },
         },
       },
       planningCallout: {
@@ -59,13 +60,6 @@ describe('contentController', () => {
       weeklyHappenings: {
         intro: { eyebrow: 'x', title: 'y', description: 'z' },
         items: [],
-      },
-      bookingCta: {
-        eyebrow: 'x',
-        title: 'y',
-        description: 'z',
-        primaryAction: { label: 'uno', route: '/booking' },
-        secondaryAction: { label: 'dos', route: '/tours' },
       },
     }
 
