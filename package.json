@@ -10,7 +10,8 @@
     "test": "vitest run",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:seed": "tsx prisma/seed.ts",
+    "ci": "npm run prisma:generate && DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bacalar?schema=public npm run prisma:validate && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
     "@prisma/client": "^6.11.1",
