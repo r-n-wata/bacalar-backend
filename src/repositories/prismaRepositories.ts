@@ -53,10 +53,27 @@ function mapSectionCards(
       id: card.id,
       label: card.translations[0].label ?? undefined,
       title: card.translations[0].title,
+      subtitle: deriveCardSubtitle(card.route, card.translations[0].label),
       description: card.translations[0].description,
       meta: card.translations[0].meta,
       route: card.route,
     }))
+}
+
+function deriveCardSubtitle(route: string, label: string | null) {
+  if (route.startsWith('/tours/')) {
+    return 'Lagoon, Bacalar'
+  }
+
+  if (route.startsWith('/restaurants/')) {
+    return label ?? 'Bacalar dining'
+  }
+
+  if (route.startsWith('/events/')) {
+    return 'Bacalar this week'
+  }
+
+  return label ?? 'Bacalar'
 }
 
 export function createPrismaRepositories(

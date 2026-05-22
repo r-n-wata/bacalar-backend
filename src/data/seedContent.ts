@@ -590,8 +590,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
         {
           id: 'tour-sailing',
           title: 'Private Sailing at Sunrise',
-          description:
-            'A premium first memory for travelers who want still water and soft morning light.',
+          subtitle: 'Lagoon, Bacalar',
+          description: 'Private crew, sunrise light, slower pace.',
           meta: '4 hours · From 2,100 MXN',
           route: '/tours/tour-sailing',
           image: images.tourSailing,
@@ -599,8 +599,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
         {
           id: 'tour-pontoon',
           title: 'Family Pontoon Loop',
-          description:
-            'A relaxed midday option for groups who want swimming and sightseeing without overplanning.',
+          subtitle: 'South lagoon circuit',
+          description: 'Easy group route with swim stops and shade.',
           meta: '3 hours · From 1,450 MXN',
           route: '/tours/tour-pontoon',
           image: images.tourPontoon,
@@ -608,8 +608,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
         {
           id: 'tour-kayak',
           title: 'Guided Mangrove Kayak',
-          description:
-            'A quieter, active route for travelers who want something lighter and closer to nature.',
+          subtitle: 'Mangrove edge route',
+          description: 'Lighter active outing, closer to nature.',
           meta: '2 hours · From 680 MXN',
           route: '/tours/tour-kayak',
           image: images.tourKayak,
@@ -628,8 +628,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'rest-cielo',
           label: 'Breakfast',
           title: 'Cielo de Maiz',
-          description:
-            'A garden breakfast stop before a lagoon morning.',
+          subtitle: 'Garden breakfast spot',
+          description: 'Quiet first meal before heading to the water.',
           meta: 'Vegetarian · $$',
           route: '/restaurants/rest-cielo',
           image: images.restaurantCielo,
@@ -638,8 +638,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'rest-ixchel',
           label: 'Lunch',
           title: 'Ixchel Cocina',
-          description:
-            'A casual local lunch that works well after a tour.',
+          subtitle: 'Regional Mexican',
+          description: 'Casual lunch stop after a morning tour.',
           meta: 'Regional Mexican · $$',
           route: '/restaurants/rest-ixchel',
           image: images.restaurantIxchel,
@@ -648,8 +648,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'rest-naao',
           label: 'Dinner',
           title: 'Nao',
-          description:
-            'A lagoon-facing dinner pick for the one more elevated meal of the trip.',
+          subtitle: 'Lagoon-facing seafood',
+          description: 'Stronger dinner pick when the day slows down.',
           meta: 'Seafood · $$$',
           route: '/restaurants/rest-naao',
           image: images.restaurantNao,
@@ -668,8 +668,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'event-sunset-jazz',
           label: 'Friday evening',
           title: 'Sunset Jazz by the Lagoon',
-          description:
-            'A memorable evening add-on with very little planning overhead.',
+          subtitle: 'Casa Laguna Deck',
+          description: 'Live music with an easy sunset time slot.',
           meta: 'Casa Laguna Deck · 7:00 PM',
           route: '/events/event-sunset-jazz',
           image: images.eventJazz,
@@ -678,8 +678,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'event-market-brunch',
           label: 'Saturday morning',
           title: 'Local Market Brunch Crawl',
-          description:
-            'A useful town morning for travelers who want one social food outing.',
+          subtitle: 'Centro Bacalar',
+          description: 'Town morning with food discovery and low effort.',
           meta: 'Centro Bacalar · 10:30 AM',
           route: '/events/event-market-brunch',
           image: images.eventMarket,
@@ -688,8 +688,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'event-breathwork',
           label: 'Sunday sunrise',
           title: 'Lagoon Breathwork Session',
-          description:
-            'A quieter wellness option that leans into Bacalar calm.',
+          subtitle: 'Isla Yoga Garden',
+          description: 'Restorative start for a quieter final morning.',
           meta: 'Isla Yoga Garden · 8:00 AM',
           route: '/events/event-breathwork',
           image: images.eventBreathwork,
@@ -783,8 +783,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
         {
           id: 'tour-sailing',
           title: 'Vela privada al amanecer',
-          description:
-            'Un primer recuerdo premium para quienes buscan agua quieta y luz suave.',
+          subtitle: 'Laguna, Bacalar',
+          description: 'Tripulacion privada, luz suave, ritmo lento.',
           meta: '4 horas · Desde 2,100 MXN',
           route: '/tours/tour-sailing',
           image: {
@@ -795,8 +795,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
         {
           id: 'tour-pontoon',
           title: 'Recorrido familiar en ponton',
-          description:
-            'Una opcion relajada al mediodia para grupos que quieren nadar y pasear sin planear demasiado.',
+          subtitle: 'Circuito sur de la laguna',
+          description: 'Ruta simple para grupos con paradas para nadar.',
           meta: '3 horas · Desde 1,450 MXN',
           route: '/tours/tour-pontoon',
           image: {
@@ -807,8 +807,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
         {
           id: 'tour-kayak',
           title: 'Kayak guiado por manglares',
-          description:
-            'Una ruta mas tranquila y activa para quienes quieren algo ligero y cercano a la naturaleza.',
+          subtitle: 'Ruta junto al manglar',
+          description: 'Salida activa y ligera, mas cerca de la naturaleza.',
           meta: '2 horas · Desde 680 MXN',
           route: '/tours/tour-kayak',
           image: {
@@ -830,8 +830,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'rest-cielo',
           label: 'Desayuno',
           title: 'Cielo de Maiz',
-          description:
-            'Una parada de desayuno en jardin antes de la manana de laguna.',
+          subtitle: 'Desayuno en jardin',
+          description: 'Primera comida tranquila antes de ir al agua.',
           meta: 'Vegetariano · $$',
           route: '/restaurants/rest-cielo',
           image: {
@@ -843,8 +843,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'rest-ixchel',
           label: 'Almuerzo',
           title: 'Ixchel Cocina',
-          description:
-            'Un almuerzo local y casual que funciona muy bien despues de un tour.',
+          subtitle: 'Mexicana regional',
+          description: 'Almuerzo casual para despues del tour.',
           meta: 'Mexicana regional · $$',
           route: '/restaurants/rest-ixchel',
           image: {
@@ -856,8 +856,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'rest-naao',
           label: 'Cena',
           title: 'Nao',
-          description:
-            'Una cena frente a la laguna para esa comida mas especial del viaje.',
+          subtitle: 'Mariscos frente a la laguna',
+          description: 'Mejor opcion cuando el dia pide una cena fuerte.',
           meta: 'Mariscos · $$$',
           route: '/restaurants/rest-naao',
           image: {
@@ -879,8 +879,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'event-sunset-jazz',
           label: 'Viernes por la tarde',
           title: 'Jazz al atardecer junto a la laguna',
-          description:
-            'Un plan nocturno memorable con muy poca friccion para decidir.',
+          subtitle: 'Terraza Casa Laguna',
+          description: 'Musica en vivo en una franja facil de sumar.',
           meta: 'Terraza Casa Laguna · 7:00 PM',
           route: '/events/event-sunset-jazz',
           image: {
@@ -892,8 +892,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'event-market-brunch',
           label: 'Sabado por la manana',
           title: 'Ruta de brunch por el mercado local',
-          description:
-            'Una manana util en el pueblo para quienes quieren una salida social alrededor de la comida.',
+          subtitle: 'Centro Bacalar',
+          description: 'Manana social con comida y poco esfuerzo.',
           meta: 'Centro Bacalar · 10:30 AM',
           route: '/events/event-market-brunch',
           image: {
@@ -905,8 +905,8 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
           id: 'event-breathwork',
           label: 'Domingo al amanecer',
           title: 'Sesion de respiracion frente a la laguna',
-          description:
-            'Una opcion de bienestar mas silenciosa que se apoya en la calma de Bacalar.',
+          subtitle: 'Jardin Isla Yoga',
+          description: 'Inicio restaurador para una manana mas tranquila.',
           meta: 'Jardin Isla Yoga · 8:00 AM',
           route: '/events/event-breathwork',
           image: {
