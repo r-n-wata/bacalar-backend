@@ -29,9 +29,18 @@ describe('contentService', () => {
 
     const repositories: ContentRepositories = {
       home: { getHomeContent: home },
-      events: { getEventsContent: vi.fn() as never },
-      restaurants: { getRestaurantsContent: vi.fn() as never },
-      tours: { getToursContent: vi.fn() as never },
+      events: {
+        getEventsContent: vi.fn() as never,
+        getEventDetail: vi.fn() as never,
+      },
+      restaurants: {
+        getRestaurantsContent: vi.fn() as never,
+        getRestaurantDetail: vi.fn() as never,
+      },
+      tours: {
+        getToursContent: vi.fn() as never,
+        getTourDetail: vi.fn() as never,
+      },
     }
 
     const service = createContentService(repositories, new InMemoryCache())
@@ -40,5 +49,42 @@ describe('contentService', () => {
     await service.getHome('en')
 
     expect(home).toHaveBeenCalledTimes(1)
+  })
+
+  it('caches repeated tour detail reads by id and language', async () => {
+    const detailPayload = {
+      id: 'tour-sailing',
+      name: 'Private Sailing at Sunrise',
+      category: 'Premium',
+      durationHours: 4,
+      priceFrom: 2100,
+      description: 'A quiet sunrise departure.',
+      route: '/tours/tour-sailing',
+    }
+    const getTourDetail = vi.fn(async () => detailPayload)
+
+    const repositories: ContentRepositories = {
+      home: { getHomeContent: vi.fn() as never },
+      events: {
+        getEventsContent: vi.fn() as never,
+        getEventDetail: vi.fn() as never,
+      },
+      restaurants: {
+        getRestaurantsContent: vi.fn() as never,
+        getRestaurantDetail: vi.fn() as never,
+      },
+      tours: {
+        getToursContent: vi.fn() as never,
+        getTourDetail,
+      },
+    }
+
+    const service = createContentService(repositories, new InMemoryCache())
+
+    await service.getTourDetail('tour-sailing', 'en')
+    await service.getTourDetail('tour-sailing', 'en')
+
+    expect(getTourDetail).toHaveBeenCalledTimes(1)
+    expect(getTourDetail).toHaveBeenCalledWith('tour-sailing', 'en')
   })
 })

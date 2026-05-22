@@ -6,10 +6,13 @@ import {
 } from '@prisma/client'
 import type {
   AppLanguage,
+  EventDetail,
   EventsContent,
   HomeContent,
   HomeSuggestionCard,
+  RestaurantDetail,
   RestaurantsContent,
+  TourDetail,
   ToursContent,
 } from '../types/content'
 import type { ContentRepositories } from './interfaces'
@@ -34,6 +37,7 @@ function assertFeaturePageTranslation<
 
 function mapSectionCards(
   cards: Array<{
+    id: string
     route: string
     translations: Array<{
       label: string | null
@@ -46,6 +50,7 @@ function mapSectionCards(
   return cards
     .filter((card) => card.translations.length > 0)
     .map((card) => ({
+      id: card.id,
       label: card.translations[0].label ?? undefined,
       title: card.translations[0].title,
       description: card.translations[0].description,
@@ -249,7 +254,39 @@ export function createPrismaRepositories(
               dateLabel: event.translations[0].dateLabel,
               venue: event.translations[0].venue,
               category: event.category,
+              route: `/events/${event.slug}`,
             })),
+        }
+      },
+      async getEventDetail(id, language): Promise<EventDetail | null> {
+        const event = await prisma.event.findFirst({
+          where: {
+            slug: id,
+            status: ContentStatus.PUBLISHED,
+          },
+          include: {
+            translations: {
+              where: getLocaleWhere(language),
+            },
+          },
+        })
+
+        if (!event || event.translations.length === 0) {
+          return null
+        }
+
+        const translation = event.translations[0]
+
+        return {
+          id: event.slug,
+          title: translation.title,
+          category: event.category,
+          dateLabel: translation.dateLabel,
+          venue: translation.venue,
+          description:
+            translation.description ??
+            `${translation.title} in ${translation.venue} during ${translation.dateLabel}.`,
+          route: `/events/${event.slug}`,
         }
       },
     },
@@ -299,7 +336,42 @@ export function createPrismaRepositories(
               cuisine: restaurant.translations[0].cuisine,
               vibe: restaurant.translations[0].vibe,
               priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
+              route: `/restaurants/${restaurant.slug}`,
             })),
+        }
+      },
+      async getRestaurantDetail(
+        id,
+        language,
+      ): Promise<RestaurantDetail | null> {
+        const restaurant = await prisma.restaurant.findFirst({
+          where: {
+            slug: id,
+            status: ContentStatus.PUBLISHED,
+          },
+          include: {
+            translations: {
+              where: getLocaleWhere(language),
+            },
+          },
+        })
+
+        if (!restaurant || restaurant.translations.length === 0) {
+          return null
+        }
+
+        const translation = restaurant.translations[0]
+
+        return {
+          id: restaurant.slug,
+          name: translation.name,
+          cuisine: translation.cuisine,
+          vibe: translation.vibe,
+          priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
+          description:
+            translation.description ??
+            `${translation.name} offers a ${translation.vibe.toLowerCase()} experience.`,
+          route: `/restaurants/${restaurant.slug}`,
         }
       },
     },
@@ -349,7 +421,39 @@ export function createPrismaRepositories(
               category: tour.translations[0].category,
               durationHours: tour.durationHours,
               priceFrom: tour.priceFrom,
+              route: `/tours/${tour.slug}`,
             })),
+        }
+      },
+      async getTourDetail(id, language): Promise<TourDetail | null> {
+        const tour = await prisma.tour.findFirst({
+          where: {
+            slug: id,
+            status: ContentStatus.PUBLISHED,
+          },
+          include: {
+            translations: {
+              where: getLocaleWhere(language),
+            },
+          },
+        })
+
+        if (!tour || tour.translations.length === 0) {
+          return null
+        }
+
+        const translation = tour.translations[0]
+
+        return {
+          id: tour.slug,
+          name: translation.name,
+          category: translation.category,
+          durationHours: tour.durationHours,
+          priceFrom: tour.priceFrom,
+          description:
+            translation.description ??
+            `${translation.name} is a ${tour.durationHours}-hour lagoon experience.`,
+          route: `/tours/${tour.slug}`,
         }
       },
     },

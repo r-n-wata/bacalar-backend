@@ -21,11 +21,11 @@ describe('mvp contract and runtime foundations', () => {
     expect(home?.spotlight.actions).toHaveLength(3)
     expect(home?.spotlight.entries).not.toHaveProperty('booking')
     expect(home?.planningCallout.items).toEqual([
-      'Choose one standout lagoon experience first.',
-      'Pair it with the right breakfast, lunch, or dinner stop.',
-      'Add an event only if it improves the day, not because it fills space.',
-      'Keep the page focused on the next best decision.',
+      'Start with one tour that sets the rhythm of the day.',
+      'Use restaurants to support the itinerary, not distract from it.',
+      'Treat events as selective upgrades for guests who want something current.',
     ])
+    expect(home?.featuredExperiences.items[0]?.route).toBe('/tours/tour-sailing')
   })
 
   it('allows configured Netlify preview origins through CORS', () => {

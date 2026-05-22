@@ -14,8 +14,11 @@ export function createApiRoutes(dependencies: {
   router.get('/health', getHealth)
   router.get('/home', contentController.getHome)
   router.get('/events', contentController.getEvents)
+  router.get('/events/:id', contentController.getEventDetail)
   router.get('/restaurants', contentController.getRestaurants)
+  router.get('/restaurants/:id', contentController.getRestaurantDetail)
   router.get('/tours', contentController.getTours)
+  router.get('/tours/:id', contentController.getTourDetail)
 
   return router
 }

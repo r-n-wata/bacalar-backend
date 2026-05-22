@@ -8,12 +8,18 @@ export type HomeSpotlightMetric = {
   value: string
 }
 
+export type HomeImage = {
+  src: string
+  alt: string
+}
+
 export type HomeSpotlightEntry = {
   title: string
   description: string
   route: string
   cta: string
   metrics: HomeSpotlightMetric[]
+  image?: HomeImage
 }
 
 export type HomeSpotlightAction = {
@@ -28,11 +34,13 @@ export type HomeSectionIntro = {
 }
 
 export type HomeSuggestionCard = {
+  id: string
   label?: string
   title: string
   description: string
   meta: string
   route: string
+  image?: HomeImage
 }
 
 export type HomeContent = {
@@ -68,6 +76,7 @@ export type EventItem = {
   dateLabel: string
   venue: string
   category: EventCategory
+  route: string
 }
 
 export type EventsContent = {
@@ -83,6 +92,7 @@ export type RestaurantItem = {
   cuisine: string
   vibe: string
   priceBand: '$' | '$$' | '$$$'
+  route: string
 }
 
 export type RestaurantsContent = {
@@ -98,6 +108,7 @@ export type TourItem = {
   category: string
   durationHours: number
   priceFrom: number
+  route: string
 }
 
 export type ToursContent = {
@@ -105,4 +116,37 @@ export type ToursContent = {
   title: string
   description: string
   items: TourItem[]
+}
+
+export type EventDetail = {
+  id: string
+  title: string
+  category: EventCategory
+  dateLabel: string
+  venue: string
+  description: string
+  route: string
+  image?: HomeImage
+}
+
+export type RestaurantDetail = {
+  id: string
+  name: string
+  cuisine: string
+  vibe: string
+  priceBand: '$' | '$$' | '$$$'
+  description: string
+  route: string
+  image?: HomeImage
+}
+
+export type TourDetail = {
+  id: string
+  name: string
+  category: string
+  durationHours: number
+  priceFrom: number
+  description: string
+  route: string
+  image?: HomeImage
 }

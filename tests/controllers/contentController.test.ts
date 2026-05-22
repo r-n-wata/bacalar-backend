@@ -66,8 +66,11 @@ describe('contentController', () => {
     const contentService = {
       getHome: vi.fn().mockResolvedValue(homeContent),
       getEvents: vi.fn(),
+      getEventDetail: vi.fn(),
       getRestaurants: vi.fn(),
+      getRestaurantDetail: vi.fn(),
       getTours: vi.fn(),
+      getTourDetail: vi.fn(),
     }
     const controller = createContentController({
       contentService,
@@ -97,8 +100,11 @@ describe('contentController', () => {
     const contentService = {
       getHome: vi.fn(),
       getEvents: vi.fn().mockResolvedValue(payload),
+      getEventDetail: vi.fn(),
       getRestaurants: vi.fn(),
+      getRestaurantDetail: vi.fn(),
       getTours: vi.fn(),
+      getTourDetail: vi.fn(),
     }
     const controller = createContentController({
       contentService,
@@ -115,6 +121,47 @@ describe('contentController', () => {
     )
 
     expect(contentService.getEvents).toHaveBeenCalledWith('en')
+    expect(response.json).toHaveBeenCalledWith(payload)
+  })
+
+  it('returns a localized tour detail payload', async () => {
+    const payload = {
+      id: 'tour-sailing',
+      name: 'Private Sailing at Sunrise',
+      category: 'Premium',
+      durationHours: 4,
+      priceFrom: 2100,
+      description: 'A quiet sunrise departure.',
+      route: '/tours/tour-sailing',
+    }
+    const contentService = {
+      getHome: vi.fn(),
+      getEvents: vi.fn(),
+      getEventDetail: vi.fn(),
+      getRestaurants: vi.fn(),
+      getRestaurantDetail: vi.fn(),
+      getTours: vi.fn(),
+      getTourDetail: vi.fn().mockResolvedValue(payload),
+    }
+    const controller = createContentController({
+      contentService,
+      defaultLanguage: 'en',
+    })
+    const response = createResponse()
+
+    await controller.getTourDetail(
+      {
+        params: { id: 'tour-sailing' },
+        query: { lang: 'es' },
+        headers: {},
+      } as never,
+      response as never,
+    )
+
+    expect(contentService.getTourDetail).toHaveBeenCalledWith(
+      'tour-sailing',
+      'es',
+    )
     expect(response.json).toHaveBeenCalledWith(payload)
   })
 })
