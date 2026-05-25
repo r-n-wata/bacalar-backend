@@ -86,4 +86,60 @@ describe('contentService', () => {
     expect(getTourDetail).toHaveBeenCalledTimes(1)
     expect(getTourDetail).toHaveBeenCalledWith('tour-sailing', 'en')
   })
+
+  it('caches paginated event reads by language, category, and cursor', async () => {
+    const listPayload = {
+      eyebrow: 'Events',
+      title: 'This week in Bacalar',
+      description: 'Desc',
+      items: [],
+      pagination: {
+        hasMore: false,
+        nextCursor: null,
+      },
+    }
+    const getEventsContent = vi.fn(async () => listPayload)
+
+    const repositories: ContentRepositories = {
+      home: { getHomeContent: vi.fn() as never },
+      events: {
+        getEventsContent,
+        getEventDetail: vi.fn() as never,
+      },
+      restaurants: {
+        getRestaurantsContent: vi.fn() as never,
+        getRestaurantDetail: vi.fn() as never,
+      },
+      tours: {
+        getToursContent: vi.fn() as never,
+        getTourDetail: vi.fn() as never,
+      },
+    }
+
+    const service = createContentService(repositories, new InMemoryCache())
+
+    await service.getEvents('en', { limit: 6, category: 'music' })
+    await service.getEvents('en', { limit: 6, category: 'music' })
+    await service.getEvents('en', {
+      limit: 6,
+      cursor: 'next-page',
+      category: 'music',
+    })
+    await service.getEvents('en', { limit: 6, category: 'food' })
+
+    expect(getEventsContent).toHaveBeenCalledTimes(3)
+    expect(getEventsContent).toHaveBeenNthCalledWith(1, 'en', {
+      limit: 6,
+      category: 'music',
+    })
+    expect(getEventsContent).toHaveBeenNthCalledWith(2, 'en', {
+      limit: 6,
+      cursor: 'next-page',
+      category: 'music',
+    })
+    expect(getEventsContent).toHaveBeenNthCalledWith(3, 'en', {
+      limit: 6,
+      category: 'food',
+    })
+  })
 })

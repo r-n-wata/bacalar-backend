@@ -8,6 +8,7 @@ import {
   SpotlightKey,
 } from '@prisma/client'
 import {
+  eventDetailsByLanguage,
   eventsContentByLanguage,
   homeContentByLanguage,
   restaurantsContentByLanguage,
@@ -113,11 +114,15 @@ async function main() {
         status: ContentStatus.PUBLISHED,
         category: item.category as EventCategory,
         sortOrder: index,
+        startsAt: item.startsAt ? new Date(item.startsAt) : null,
+        endsAt: item.endsAt ? new Date(item.endsAt) : null,
       },
     })
 
     const enTranslation = eventsContentByLanguage.en.items[index]
     const esTranslation = eventsContentByLanguage.es.items[index]
+    const enDetail = eventDetailsByLanguage.en[item.id]
+    const esDetail = eventDetailsByLanguage.es[item.id]
 
     await prisma.eventTranslation.createMany({
       data: [
@@ -127,6 +132,7 @@ async function main() {
           title: enTranslation.title,
           dateLabel: enTranslation.dateLabel,
           venue: enTranslation.venue,
+          description: enDetail?.description,
         },
         {
           eventId: event.id,
@@ -134,6 +140,7 @@ async function main() {
           title: esTranslation.title,
           dateLabel: esTranslation.dateLabel,
           venue: esTranslation.venue,
+          description: esDetail?.description,
         },
       ],
     })

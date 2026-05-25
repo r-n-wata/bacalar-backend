@@ -90,6 +90,10 @@ describe('contentController', () => {
       title: 'Recent and upcoming events',
       description: 'Desc',
       items: [],
+      pagination: {
+        hasMore: false,
+        nextCursor: null,
+      },
     }
     const contentService = {
       getHome: vi.fn(),
@@ -114,7 +118,58 @@ describe('contentController', () => {
       response as never,
     )
 
-    expect(contentService.getEvents).toHaveBeenCalledWith('en')
+    expect(contentService.getEvents).toHaveBeenCalledWith('en', {
+      limit: 10,
+      cursor: undefined,
+      category: undefined,
+    })
+    expect(response.json).toHaveBeenCalledWith(payload)
+  })
+
+  it('passes deterministic pagination inputs for events', async () => {
+    const payload = {
+      eyebrow: 'Events feature',
+      title: 'Recent and upcoming events',
+      description: 'Desc',
+      items: [],
+      pagination: {
+        hasMore: true,
+        nextCursor: 'next-cursor',
+      },
+    }
+    const contentService = {
+      getHome: vi.fn(),
+      getEvents: vi.fn().mockResolvedValue(payload),
+      getEventDetail: vi.fn(),
+      getRestaurants: vi.fn(),
+      getRestaurantDetail: vi.fn(),
+      getTours: vi.fn(),
+      getTourDetail: vi.fn(),
+    }
+    const controller = createContentController({
+      contentService,
+      defaultLanguage: 'en',
+    })
+    const response = createResponse()
+
+    await controller.getEvents(
+      {
+        query: {
+          lang: 'es',
+          limit: '9',
+          cursor: 'cursor-token',
+          category: 'music',
+        },
+        headers: {},
+      } as never,
+      response as never,
+    )
+
+    expect(contentService.getEvents).toHaveBeenCalledWith('es', {
+      limit: 9,
+      cursor: 'cursor-token',
+      category: 'music',
+    })
     expect(response.json).toHaveBeenCalledWith(payload)
   })
 

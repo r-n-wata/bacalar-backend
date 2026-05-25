@@ -7,7 +7,6 @@ import {
 import type {
   AppLanguage,
   EventDetail,
-  EventsContent,
   HomeContent,
   HomeSuggestionCard,
   RestaurantDetail,
@@ -16,6 +15,7 @@ import type {
   ToursContent,
 } from '../types/content'
 import type { ContentRepositories } from './interfaces'
+import { paginateEvents } from './eventsPagination'
 
 function getLocaleWhere(language: AppLanguage) {
   return {
@@ -220,7 +220,7 @@ export function createPrismaRepositories(
       },
     },
     events: {
-      async getEventsContent(language): Promise<EventsContent | null> {
+      async getEventsContent(language, pagination) {
         const page = await prisma.featurePage.findUnique({
           where: {
             feature: FeatureType.EVENTS,
@@ -242,9 +242,11 @@ export function createPrismaRepositories(
         const events = await prisma.event.findMany({
           where: {
             status: ContentStatus.PUBLISHED,
-          },
-          orderBy: {
-            sortOrder: 'asc',
+            ...(pagination.category
+              ? {
+                  category: pagination.category,
+                }
+              : {}),
           },
           include: {
             translations: {
@@ -253,11 +255,8 @@ export function createPrismaRepositories(
           },
         })
 
-        return {
-          eyebrow: intro.eyebrow,
-          title: intro.title,
-          description: intro.description,
-          items: events
+        const paginatedEvents = paginateEvents(
+          events
             .filter((event) => event.translations.length > 0)
             .map((event) => ({
               id: event.slug,
@@ -265,8 +264,20 @@ export function createPrismaRepositories(
               dateLabel: event.translations[0].dateLabel,
               venue: event.translations[0].venue,
               category: event.category,
+              startsAt: event.startsAt?.toISOString(),
+              endsAt: event.endsAt?.toISOString(),
               route: `/events/${event.slug}`,
+              sortOrder: event.sortOrder,
             })),
+          pagination,
+        )
+
+        return {
+          eyebrow: intro.eyebrow,
+          title: intro.title,
+          description: intro.description,
+          items: paginatedEvents.items,
+          pagination: paginatedEvents.pagination,
         }
       },
       async getEventDetail(id, language): Promise<EventDetail | null> {
@@ -297,6 +308,8 @@ export function createPrismaRepositories(
           description:
             translation.description ??
             `${translation.title} in ${translation.venue} during ${translation.dateLabel}.`,
+          startsAt: event.startsAt?.toISOString(),
+          endsAt: event.endsAt?.toISOString(),
           route: `/events/${event.slug}`,
         }
       },

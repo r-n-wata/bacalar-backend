@@ -11,6 +11,7 @@ import type {
 import type { CacheProvider } from '../utils/cache'
 import { HttpError } from '../utils/httpError'
 import type { ContentRepositories } from '../repositories/interfaces'
+import type { EventPaginationInput } from '../repositories/eventsPagination'
 
 type CachePolicy = {
   ttlMs: number
@@ -18,7 +19,10 @@ type CachePolicy = {
 
 export type ContentService = {
   getHome(language: AppLanguage): Promise<HomeContent>
-  getEvents(language: AppLanguage): Promise<EventsContent>
+  getEvents(
+    language: AppLanguage,
+    pagination: EventPaginationInput,
+  ): Promise<EventsContent>
   getEventDetail(id: string, language: AppLanguage): Promise<EventDetail>
   getRestaurants(language: AppLanguage): Promise<RestaurantsContent>
   getRestaurantDetail(id: string, language: AppLanguage): Promise<RestaurantDetail>
@@ -72,12 +76,12 @@ export function createContentService(
         () => repositories.home.getHomeContent(language),
       )
     },
-    getEvents(language) {
+    getEvents(language, pagination) {
       return getCachedContent(
         cache,
-        `events:${language}`,
+        `events:${language}:${pagination.category ?? 'all'}:${pagination.limit}:${pagination.cursor ?? 'start'}`,
         cachePolicies.events,
-        () => repositories.events.getEventsContent(language),
+        () => repositories.events.getEventsContent(language, pagination),
       )
     },
     getEventDetail(id, language) {

@@ -8,6 +8,7 @@ import {
   toursContentByLanguage,
 } from '../data/seedContent'
 import type { ContentRepositories } from './interfaces'
+import { paginateEvents } from './eventsPagination'
 
 export function createInMemoryRepositories(): ContentRepositories {
   return {
@@ -17,8 +18,30 @@ export function createInMemoryRepositories(): ContentRepositories {
       },
     },
     events: {
-      async getEventsContent(language) {
-        return eventsContentByLanguage[language] ?? null
+      async getEventsContent(language, pagination) {
+        const content = eventsContentByLanguage[language]
+
+        if (!content) {
+          return null
+        }
+
+        const { items, pagination: pageMeta } = paginateEvents(
+          content.items
+            .map((item, index) => ({
+              ...item,
+              sortOrder: index,
+            }))
+            .filter((item) =>
+              pagination.category ? item.category === pagination.category : true,
+            ),
+          pagination,
+        )
+
+        return {
+          ...content,
+          items,
+          pagination: pageMeta,
+        }
       },
       async getEventDetail(id, language) {
         return eventDetailsByLanguage[language]?.[id] ?? null
