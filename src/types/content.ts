@@ -54,9 +54,6 @@ export type HomeContent = {
     actions: HomeSpotlightAction[]
     entries: Record<ExperienceKey, HomeSpotlightEntry>
   }
-  planningCallout: HomeSectionIntro & {
-    items: string[]
-  }
   featuredExperiences: {
     intro: HomeSectionIntro
     items: HomeSuggestionCard[]

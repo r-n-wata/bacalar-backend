@@ -43,12 +43,6 @@ describe('contentController', () => {
           tours: { title: 'a', description: 'b', route: '/tours', cta: 'c', metrics: [] },
         },
       },
-      planningCallout: {
-        eyebrow: 'x',
-        title: 'y',
-        description: 'z',
-        items: [],
-      },
       featuredExperiences: {
         intro: { eyebrow: 'x', title: 'y', description: 'z' },
         items: [],

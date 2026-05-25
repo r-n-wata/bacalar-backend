@@ -20,7 +20,6 @@ describe('contentService', () => {
           tours: { title: 'a', description: 'b', route: '/tours', cta: 'c', metrics: [] },
         },
       },
-      planningCallout: { eyebrow: 'a', title: 'b', description: 'c', items: [] },
       featuredExperiences: { intro: { eyebrow: 'a', title: 'b', description: 'c' }, items: [] },
       diningMoments: { intro: { eyebrow: 'a', title: 'b', description: 'c' }, items: [] },
       weeklyHappenings: { intro: { eyebrow: 'a', title: 'b', description: 'c' }, items: [] },

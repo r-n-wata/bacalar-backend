@@ -192,12 +192,6 @@ export function createPrismaRepositories(
             actions: spotlightActions,
             entries: spotlightEntries,
           },
-          planningCallout: {
-            eyebrow: translation.calloutEyebrow,
-            title: translation.calloutTitle,
-            description: translation.calloutDescription,
-            items: translation.calloutItems,
-          },
           featuredExperiences: {
             intro: {
               eyebrow: featuredSection.translations[0].eyebrow,

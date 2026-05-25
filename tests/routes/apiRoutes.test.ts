@@ -14,17 +14,13 @@ function createResponse() {
 }
 
 describe('mvp contract and runtime foundations', () => {
-  it('keeps the in-memory home contract booking-free', async () => {
+  it('keeps the in-memory home contract booking-free and focused on browse sections', async () => {
     const repositories = createInMemoryRepositories()
     const home = await repositories.home.getHomeContent('en')
 
     expect(home?.spotlight.actions).toHaveLength(3)
     expect(home?.spotlight.entries).not.toHaveProperty('booking')
-    expect(home?.planningCallout.items).toEqual([
-      'Start with one tour that sets the rhythm of the day.',
-      'Use restaurants to support the itinerary, not distract from it.',
-      'Treat events as selective upgrades for guests who want something current.',
-    ])
+    expect(home).not.toHaveProperty('planningCallout')
     expect(home?.featuredExperiences.items[0]?.route).toBe('/tours/tour-sailing')
   })
 
