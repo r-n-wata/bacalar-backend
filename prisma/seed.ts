@@ -27,6 +27,8 @@ async function main() {
   await prisma.homeSection.deleteMany()
   await prisma.homePageTranslation.deleteMany()
   await prisma.homePage.deleteMany()
+  await prisma.eventSubmissionImage.deleteMany()
+  await prisma.eventSubmission.deleteMany()
   await prisma.eventTranslation.deleteMany()
   await prisma.event.deleteMany()
   await prisma.restaurantTranslation.deleteMany()

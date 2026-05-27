@@ -7,10 +7,12 @@ import { createCorsMiddleware } from './middlewares/cors'
 import { createRateLimitMiddleware } from './middlewares/rateLimit'
 import type { Logger } from './config/logger'
 import type { ContentService } from './services/contentService'
+import type { EventSubmissionService } from './services/eventSubmissionService'
 import type { AppLanguage } from './types/content'
 
 type AppDependencies = {
   contentService: ContentService
+  eventSubmissionService: EventSubmissionService
   logger: Logger
   defaultLanguage: AppLanguage
   allowedOrigins: string[]
@@ -40,6 +42,7 @@ export function createApp(dependencies: AppDependencies) {
     '/api',
     createApiRoutes({
       contentService: dependencies.contentService,
+      eventSubmissionService: dependencies.eventSubmissionService,
       defaultLanguage: dependencies.defaultLanguage,
     }),
   )

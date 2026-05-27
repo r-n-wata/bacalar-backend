@@ -49,7 +49,7 @@ export function createCorsMiddleware({
       response.header('Access-Control-Allow-Origin', origin)
       response.header('Vary', 'Origin')
       response.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Accept-Language')
-      response.header('Access-Control-Allow-Methods', 'GET,OPTIONS')
+      response.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
     }
 
     if (request.method === 'OPTIONS') {

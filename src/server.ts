@@ -3,7 +3,12 @@ import { createLogger } from './config/logger'
 import { createPrismaClient } from './config/prisma'
 import { loadEnv } from './config/env'
 import { createPrismaRepositories } from './repositories/prismaRepositories'
+import { createPrismaEventSubmissionRepository } from './repositories/eventSubmissionRepository'
+import { createSubmissionAdminNotifier } from './services/adminNotifications'
 import { createContentService } from './services/contentService'
+import { createEventSubmissionService } from './services/eventSubmissionService'
+import { createExternalImageValidator } from './services/externalImageValidation'
+import { createSupabaseSubmissionMediaService } from './services/mediaService'
 import { InMemoryCache } from './utils/cache'
 
 function parseAllowedOrigins(rawOrigins: string) {
@@ -18,10 +23,35 @@ async function main() {
   const logger = createLogger()
   const prisma = createPrismaClient()
   const repositories = createPrismaRepositories(prisma)
+  const eventSubmissionRepository = createPrismaEventSubmissionRepository(prisma)
   const cache = new InMemoryCache()
   const contentService = createContentService(repositories, cache)
+  const mediaService = createSupabaseSubmissionMediaService(logger, {
+    supabaseUrl: env.SUPABASE_URL,
+    serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
+    bucketName: env.SUPABASE_STORAGE_BUCKET,
+  })
+  const adminNotifier = createSubmissionAdminNotifier(logger, {
+    adminEmail: env.ADMIN_NOTIFICATION_EMAIL,
+    fromEmail: env.NOTIFICATION_FROM_EMAIL,
+    smtpHost: env.SMTP_HOST,
+    smtpPort: env.SMTP_PORT,
+    smtpUser: env.SMTP_USER,
+    smtpPassword: env.SMTP_PASSWORD,
+  })
+  const externalImageValidator = createExternalImageValidator(logger, {
+    timeoutMs: env.EXTERNAL_IMAGE_VALIDATION_TIMEOUT_MS,
+  })
+  const eventSubmissionService = createEventSubmissionService({
+    repository: eventSubmissionRepository,
+    mediaService,
+    adminNotifier,
+    externalImageValidator,
+    logger,
+  })
   const app = createApp({
     contentService,
+    eventSubmissionService,
     logger,
     defaultLanguage: env.DEFAULT_LOCALE,
     allowedOrigins: parseAllowedOrigins(env.ALLOWED_ORIGINS),

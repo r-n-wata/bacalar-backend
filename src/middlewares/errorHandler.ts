@@ -14,6 +14,7 @@ export function createErrorHandler(logger: Logger) {
         error: {
           code: error.code,
           message: error.message,
+          details: error.details,
         },
       })
       return
