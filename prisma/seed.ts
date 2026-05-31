@@ -10,6 +10,7 @@ import {
 import {
   eventDetailsByLanguage,
   eventsContentByLanguage,
+  featuredEventOrderById,
   homeContentByLanguage,
   restaurantsContentByLanguage,
   toursContentByLanguage,
@@ -116,6 +117,11 @@ async function main() {
         status: ContentStatus.PUBLISHED,
         category: item.category as EventCategory,
         sortOrder: index,
+        isFeatured: item.id in featuredEventOrderById,
+        featuredOrder:
+          item.id in featuredEventOrderById
+            ? featuredEventOrderById[item.id as keyof typeof featuredEventOrderById]
+            : null,
         startsAt: item.startsAt ? new Date(item.startsAt) : null,
         endsAt: item.endsAt ? new Date(item.endsAt) : null,
       },

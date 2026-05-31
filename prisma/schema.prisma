@@ -100,20 +100,22 @@ model FeaturePageTranslation {
 }
 
 model Event {
-  id            String             @id @default(cuid())
-  slug          String             @unique
-  status        ContentStatus      @default(PUBLISHED)
-  category      EventCategory
-  sortOrder     Int                @default(0)
-  startsAt      DateTime?
-  endsAt        DateTime?
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
-  publishedAt   DateTime?
-  createdBy     String?
-  updatedBy     String?
+  id                  String             @id @default(cuid())
+  slug                String             @unique
+  status              ContentStatus      @default(PUBLISHED)
+  category            EventCategory
+  sortOrder           Int                @default(0)
+  isFeatured          Boolean            @default(false)
+  featuredOrder       Int?
+  startsAt            DateTime?
+  endsAt              DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  publishedAt         DateTime?
+  createdBy           String?
+  updatedBy           String?
   approvedSubmissions EventSubmission[]
-  translations  EventTranslation[]
+  translations        EventTranslation[]
 }
 
 model EventTranslation {

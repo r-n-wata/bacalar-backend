@@ -196,6 +196,58 @@ export const eventsContentByLanguage: Record<AppLanguage, EventsContent> = {
     title: 'See what feels current in Bacalar this week',
     description:
       'Use events as texture for the trip: a timely extra when the right night or morning opens up.',
+    featuredItems: [
+      {
+        id: 'event-sunset-jazz',
+        title: 'Sunset Jazz by the Lagoon',
+        dateLabel: 'Friday, 7:00 PM',
+        venue: 'Casa Laguna Deck',
+        category: 'music',
+        startsAt: '2026-05-29T19:00:00-05:00',
+        endsAt: '2026-05-29T21:00:00-05:00',
+        route: '/events/event-sunset-jazz',
+      },
+      {
+        id: 'event-market-brunch',
+        title: 'Local Market Brunch Crawl',
+        dateLabel: 'Saturday, 10:30 AM',
+        venue: 'Centro Bacalar',
+        category: 'food',
+        startsAt: '2026-05-30T10:30:00-05:00',
+        endsAt: '2026-05-30T13:00:00-05:00',
+        route: '/events/event-market-brunch',
+      },
+      {
+        id: 'event-rooftop-dj',
+        title: 'Rooftop DJ Session',
+        dateLabel: 'Saturday, 9:30 PM',
+        venue: 'Mirador Azul',
+        category: 'music',
+        startsAt: '2026-05-30T21:30:00-05:00',
+        endsAt: '2026-05-31T00:00:00-05:00',
+        route: '/events/event-rooftop-dj',
+      },
+      {
+        id: 'event-breathwork',
+        title: 'Lagoon Breathwork Session',
+        dateLabel: 'Sunday, 8:00 AM',
+        venue: 'Isla Yoga Garden',
+        category: 'wellness',
+        startsAt: '2026-05-31T08:00:00-05:00',
+        endsAt: '2026-05-31T09:30:00-05:00',
+        route: '/events/event-breathwork',
+      },
+      {
+        id: 'event-taco-walk',
+        title: 'Lagoon Taco Walk',
+        dateLabel: 'Sunday, 1:00 PM',
+        venue: 'Centro Bacalar',
+        category: 'food',
+        startsAt: '2026-05-31T13:00:00-05:00',
+        endsAt: '2026-05-31T15:00:00-05:00',
+        route: '/events/event-taco-walk',
+      },
+    ],
     items: [
       {
         id: 'event-sunset-jazz',
@@ -276,6 +328,58 @@ export const eventsContentByLanguage: Record<AppLanguage, EventsContent> = {
     title: 'Mira que se siente vigente en Bacalar esta semana',
     description:
       'Usa los eventos como textura del viaje: un extra oportuno cuando aparece la noche o la manana correcta.',
+    featuredItems: [
+      {
+        id: 'event-sunset-jazz',
+        title: 'Jazz al atardecer junto a la laguna',
+        dateLabel: 'Viernes, 7:00 PM',
+        venue: 'Terraza Casa Laguna',
+        category: 'music',
+        startsAt: '2026-05-29T19:00:00-05:00',
+        endsAt: '2026-05-29T21:00:00-05:00',
+        route: '/events/event-sunset-jazz',
+      },
+      {
+        id: 'event-market-brunch',
+        title: 'Ruta de brunch por el mercado local',
+        dateLabel: 'Sabado, 10:30 AM',
+        venue: 'Centro de Bacalar',
+        category: 'food',
+        startsAt: '2026-05-30T10:30:00-05:00',
+        endsAt: '2026-05-30T13:00:00-05:00',
+        route: '/events/event-market-brunch',
+      },
+      {
+        id: 'event-rooftop-dj',
+        title: 'Sesion DJ en la azotea',
+        dateLabel: 'Sabado, 9:30 PM',
+        venue: 'Mirador Azul',
+        category: 'music',
+        startsAt: '2026-05-30T21:30:00-05:00',
+        endsAt: '2026-05-31T00:00:00-05:00',
+        route: '/events/event-rooftop-dj',
+      },
+      {
+        id: 'event-breathwork',
+        title: 'Sesion de respiracion frente a la laguna',
+        dateLabel: 'Domingo, 8:00 AM',
+        venue: 'Jardin Isla Yoga',
+        category: 'wellness',
+        startsAt: '2026-05-31T08:00:00-05:00',
+        endsAt: '2026-05-31T09:30:00-05:00',
+        route: '/events/event-breathwork',
+      },
+      {
+        id: 'event-taco-walk',
+        title: 'Recorrido de tacos junto a la laguna',
+        dateLabel: 'Domingo, 1:00 PM',
+        venue: 'Centro de Bacalar',
+        category: 'food',
+        startsAt: '2026-05-31T13:00:00-05:00',
+        endsAt: '2026-05-31T15:00:00-05:00',
+        route: '/events/event-taco-walk',
+      },
+    ],
     items: [
       {
         id: 'event-sunset-jazz',
@@ -522,6 +626,16 @@ export const restaurantDetailsByLanguage: Record<
     },
   },
 }
+
+export const featuredEventOrderById = {
+  'event-sunset-jazz': 0,
+  'event-market-brunch': 1,
+  'event-rooftop-dj': 2,
+  'event-breathwork': 3,
+  'event-taco-walk': 4,
+} as const
+
+export const featuredEventIds = Object.keys(featuredEventOrderById)
 
 export const eventDetailsByLanguage: Record<
   AppLanguage,

@@ -92,6 +92,7 @@ describe('contentService', () => {
       eyebrow: 'Events',
       title: 'This week in Bacalar',
       description: 'Desc',
+      featuredItems: [],
       items: [],
       pagination: {
         hasMore: false,

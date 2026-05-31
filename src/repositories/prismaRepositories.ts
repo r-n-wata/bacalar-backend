@@ -15,7 +15,7 @@ import type {
   ToursContent,
 } from '../types/content'
 import type { ContentRepositories } from './interfaces'
-import { paginateEvents } from './eventsPagination'
+import { paginateEvents, selectFeaturedEvents } from './eventsPagination'
 
 function getLocaleWhere(language: AppLanguage) {
   return {
@@ -239,43 +239,67 @@ export function createPrismaRepositories(
           return null
         }
 
-        const events = await prisma.event.findMany({
-          where: {
-            status: ContentStatus.PUBLISHED,
-            ...(pagination.category
-              ? {
-                  category: pagination.category,
-                }
-              : {}),
-          },
-          include: {
-            translations: {
-              where: getLocaleWhere(language),
+        const [listEvents, featuredEvents] = await Promise.all([
+          prisma.event.findMany({
+            where: {
+              status: ContentStatus.PUBLISHED,
+              ...(pagination.category
+                ? {
+                    category: pagination.category,
+                  }
+                : {}),
             },
-          },
+            include: {
+              translations: {
+                where: getLocaleWhere(language),
+              },
+            },
+          }),
+          prisma.event.findMany({
+            where: {
+              status: ContentStatus.PUBLISHED,
+              isFeatured: true,
+            },
+            include: {
+              translations: {
+                where: getLocaleWhere(language),
+              },
+            },
+          }),
+        ])
+
+        const mapEventItem = (event: (typeof listEvents)[number]) => ({
+          id: event.slug,
+          title: event.translations[0].title,
+          dateLabel: event.translations[0].dateLabel,
+          venue: event.translations[0].venue,
+          category: event.category,
+          startsAt: event.startsAt?.toISOString(),
+          endsAt: event.endsAt?.toISOString(),
+          route: `/events/${event.slug}`,
+          sortOrder: event.sortOrder,
+          featuredOrder: event.featuredOrder,
         })
 
         const paginatedEvents = paginateEvents(
-          events
+          listEvents
             .filter((event) => event.translations.length > 0)
-            .map((event) => ({
-              id: event.slug,
-              title: event.translations[0].title,
-              dateLabel: event.translations[0].dateLabel,
-              venue: event.translations[0].venue,
-              category: event.category,
-              startsAt: event.startsAt?.toISOString(),
-              endsAt: event.endsAt?.toISOString(),
-              route: `/events/${event.slug}`,
-              sortOrder: event.sortOrder,
-            })),
+            .map(mapEventItem),
           pagination,
+        )
+
+        const featuredItems = selectFeaturedEvents(
+          featuredEvents
+            .filter((event) => event.translations.length > 0)
+            .map(mapEventItem),
+          5,
         )
 
         return {
           eyebrow: intro.eyebrow,
           title: intro.title,
           description: intro.description,
+          featuredItems,
           items: paginatedEvents.items,
           pagination: paginatedEvents.pagination,
         }

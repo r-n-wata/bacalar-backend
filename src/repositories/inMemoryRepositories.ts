@@ -39,6 +39,7 @@ export function createInMemoryRepositories(): ContentRepositories {
 
         return {
           ...content,
+          featuredItems: content.featuredItems,
           items,
           pagination: pageMeta,
         }

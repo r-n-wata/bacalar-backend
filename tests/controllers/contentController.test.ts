@@ -89,6 +89,7 @@ describe('contentController', () => {
       eyebrow: 'Events feature',
       title: 'Recent and upcoming events',
       description: 'Desc',
+      featuredItems: [],
       items: [],
       pagination: {
         hasMore: false,
@@ -131,6 +132,7 @@ describe('contentController', () => {
       eyebrow: 'Events feature',
       title: 'Recent and upcoming events',
       description: 'Desc',
+      featuredItems: [],
       items: [],
       pagination: {
         hasMore: true,

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   compareEventOrder,
+  compareFeaturedEventOrder,
   decodeEventsCursor,
   paginateEvents,
+  selectFeaturedEvents,
 } from '../../src/repositories/eventsPagination'
 
 const events = [
@@ -24,6 +26,7 @@ const events = [
     startsAt: '2026-05-30T10:30:00-05:00',
     route: '/events/event-b',
     sortOrder: 4,
+    featuredOrder: 2,
   },
   {
     id: 'event-a',
@@ -34,6 +37,7 @@ const events = [
     startsAt: '2026-05-30T10:30:00-05:00',
     route: '/events/event-a',
     sortOrder: 2,
+    featuredOrder: 1,
   },
 ]
 
@@ -41,6 +45,14 @@ describe('eventsPagination', () => {
   it('sorts deterministically with startsAt, sortOrder, and slug tie-breaks', () => {
     expect(compareEventOrder(events[0], events[1])).toBeGreaterThan(0)
     expect(compareEventOrder(events[1], events[2])).toBeGreaterThan(0)
+  })
+
+  it('sorts featured events by featuredOrder before fallback event ordering', () => {
+    expect(compareFeaturedEventOrder(events[1], events[2])).toBeGreaterThan(0)
+    expect(selectFeaturedEvents(events, 2).map((item) => item.id)).toEqual([
+      'event-a',
+      'event-b',
+    ])
   })
 
   it('paginates without skipping or duplicating items', () => {

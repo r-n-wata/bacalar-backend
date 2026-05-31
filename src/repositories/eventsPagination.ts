@@ -14,6 +14,7 @@ type EventCursorPayload = {
 
 type EventListItem = EventItem & {
   sortOrder: number
+  featuredOrder?: number | null
 }
 
 export function encodeEventsCursor(payload: EventCursorPayload) {
@@ -60,6 +61,22 @@ function compareStartsAt(left?: string, right?: string) {
   return left.localeCompare(right)
 }
 
+function compareFeaturedOrder(left?: number | null, right?: number | null) {
+  if (typeof left !== 'number' && typeof right !== 'number') {
+    return 0
+  }
+
+  if (typeof left !== 'number') {
+    return 1
+  }
+
+  if (typeof right !== 'number') {
+    return -1
+  }
+
+  return left - right
+}
+
 export function compareEventOrder(
   left: Pick<EventListItem, 'startsAt' | 'sortOrder' | 'id'>,
   right: Pick<EventListItem, 'startsAt' | 'sortOrder' | 'id'>,
@@ -79,11 +96,31 @@ export function compareEventOrder(
   return left.id.localeCompare(right.id)
 }
 
+export function compareFeaturedEventOrder(
+  left: Pick<EventListItem, 'featuredOrder' | 'startsAt' | 'sortOrder' | 'id'>,
+  right: Pick<EventListItem, 'featuredOrder' | 'startsAt' | 'sortOrder' | 'id'>,
+) {
+  const featuredOrderComparison = compareFeaturedOrder(
+    left.featuredOrder,
+    right.featuredOrder,
+  )
+
+  if (featuredOrderComparison !== 0) {
+    return featuredOrderComparison
+  }
+
+  return compareEventOrder(left, right)
+}
+
 export function sortEventsDeterministically(items: EventListItem[]) {
   return [...items].sort(compareEventOrder)
 }
 
-function stripSortOrder(item: EventListItem): EventItem {
+export function sortFeaturedEventsDeterministically(items: EventListItem[]) {
+  return [...items].sort(compareFeaturedEventOrder)
+}
+
+function stripSortMetadata(item: EventListItem): EventItem {
   return {
     id: item.id,
     title: item.title,
@@ -117,7 +154,7 @@ export function paginateEvents(
   const hasMore = safeStartIndex + pageItems.length < orderedItems.length
 
   return {
-    items: pageItems.map(stripSortOrder),
+    items: pageItems.map(stripSortMetadata),
     pagination: {
       hasMore,
       nextCursor:
@@ -130,4 +167,8 @@ export function paginateEvents(
           : null,
     },
   }
+}
+
+export function selectFeaturedEvents(items: EventListItem[], limit = 5) {
+  return sortFeaturedEventsDeterministically(items).slice(0, limit).map(stripSortMetadata)
 }
