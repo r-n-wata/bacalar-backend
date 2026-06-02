@@ -2,19 +2,25 @@ import { Router } from 'express'
 import { getHealth } from '../controllers/healthController'
 import { createContentController } from '../controllers/contentController'
 import { createEventSubmissionController } from '../controllers/eventSubmissionController'
+import { createRestaurantSubmissionController } from '../controllers/restaurantSubmissionController'
 import type { ContentService } from '../services/contentService'
 import type { EventSubmissionService } from '../services/eventSubmissionService'
+import type { RestaurantSubmissionService } from '../services/restaurantSubmissionService'
 import type { AppLanguage } from '../types/content'
 
 export function createApiRoutes(dependencies: {
   contentService: ContentService
   eventSubmissionService: EventSubmissionService
+  restaurantSubmissionService: RestaurantSubmissionService
   defaultLanguage: AppLanguage
 }) {
   const router = Router()
   const contentController = createContentController(dependencies)
   const eventSubmissionController = createEventSubmissionController(
     dependencies.eventSubmissionService,
+  )
+  const restaurantSubmissionController = createRestaurantSubmissionController(
+    dependencies.restaurantSubmissionService,
   )
 
   router.get('/health', getHealth)
@@ -23,6 +29,14 @@ export function createApiRoutes(dependencies: {
   router.get('/events/:id', contentController.getEventDetail)
   router.post('/event-submissions', eventSubmissionController.createSubmission)
   router.post('/event-submissions/upload', eventSubmissionController.prepareUpload)
+  router.post(
+    '/restaurant-submissions',
+    restaurantSubmissionController.createSubmission,
+  )
+  router.post(
+    '/restaurant-submissions/upload',
+    restaurantSubmissionController.prepareUpload,
+  )
   router.get('/restaurants', contentController.getRestaurants)
   router.get('/restaurants/:id', contentController.getRestaurantDetail)
   router.get('/tours', contentController.getTours)

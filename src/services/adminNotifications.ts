@@ -1,9 +1,13 @@
 import nodemailer from 'nodemailer'
 import type { Logger } from '../config/logger'
 import type { EventSubmissionRecord } from '../types/eventSubmissions'
+import type { RestaurantSubmissionRecord } from '../types/restaurantSubmissions'
 
 export type SubmissionAdminNotifier = {
   notifyEventSubmission(submission: EventSubmissionRecord): Promise<void>
+  notifyRestaurantSubmission(
+    submission: RestaurantSubmissionRecord,
+  ): Promise<void>
 }
 
 type EmailNotificationConfig = {
@@ -15,7 +19,9 @@ type EmailNotificationConfig = {
   smtpPassword?: string
 }
 
-function formatMediaSummary(submission: EventSubmissionRecord) {
+function formatMediaSummary(
+  submission: { images: Array<{ source: 'UPLOADED' | 'EXTERNAL_URL'; url: string }> },
+) {
   if (submission.images.length === 0) {
     return 'No media attached'
   }
@@ -59,6 +65,15 @@ export function createSubmissionAdminNotifier(
           ),
         })
       },
+      async notifyRestaurantSubmission(submission) {
+        logger.info('submission-email-skipped', {
+          submissionId: submission.id,
+          adminEmailConfigured: Boolean(adminEmail),
+          mailTransportConfigured: Boolean(
+            fromEmail && smtpHost && smtpPort && smtpUser && smtpPassword,
+          ),
+        })
+      },
     }
   }
 
@@ -87,6 +102,34 @@ export function createSubmissionAdminNotifier(
           `Starts at: ${submission.startsAt}`,
           `Location: ${submission.location}`,
           `Category: ${submission.category}`,
+          `Contact name: ${submission.contactName}`,
+          `Contact method: ${submission.contactMethod}`,
+          `Instagram: ${submission.instagram ?? 'N/A'}`,
+          `WhatsApp: ${submission.whatsapp ?? 'N/A'}`,
+          `Submitted locale: ${submission.submittedLocale}`,
+          '',
+          'Description:',
+          submission.description,
+          '',
+          'Media:',
+          formatMediaSummary(submission),
+        ].join('\n'),
+      })
+    },
+    async notifyRestaurantSubmission(submission) {
+      await transporter.sendMail({
+        to: adminEmail,
+        from: fromEmail,
+        subject: `New Bacalar restaurant submission: ${submission.name}`,
+        text: [
+          'A new restaurant submission is pending review.',
+          '',
+          `Submission ID: ${submission.id}`,
+          `Status: ${submission.status}`,
+          `Name: ${submission.name}`,
+          `Cuisine: ${submission.cuisine}`,
+          `Moment: ${submission.moment}`,
+          `Price band: ${submission.priceBand}`,
           `Contact name: ${submission.contactName}`,
           `Contact method: ${submission.contactMethod}`,
           `Instagram: ${submission.instagram ?? 'N/A'}`,

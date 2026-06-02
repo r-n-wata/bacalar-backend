@@ -160,6 +160,7 @@ async function main() {
         slug: item.id,
         status: ContentStatus.PUBLISHED,
         priceBand: item.priceBand,
+        moment: item.moment,
         sortOrder: index,
       },
     })

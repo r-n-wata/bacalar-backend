@@ -17,7 +17,10 @@ type SupabaseMediaServiceConfig = {
   supabaseUrl?: string
   serviceRoleKey?: string
   bucketName?: string
+  folderPrefix?: string
 }
+
+const DEFAULT_EVENT_SUBMISSIONS_FOLDER = 'event-submissions'
 
 function sanitizeFilename(filename: string) {
   const [name = 'image'] = filename.split(/[/\\]/).slice(-1)
@@ -25,12 +28,24 @@ function sanitizeFilename(filename: string) {
   return name.replace(/[^a-zA-Z0-9._-]/g, '-').replace(/-+/g, '-')
 }
 
-function createObjectKey(filename: string) {
+function normalizeFolderPrefix(folderPrefix?: string) {
+  const trimmed = folderPrefix?.trim().replace(/^\/+|\/+$/g, '')
+
+  return trimmed && trimmed.length > 0
+    ? trimmed
+    : DEFAULT_EVENT_SUBMISSIONS_FOLDER
+}
+
+export function createMediaObjectKey(
+  folderPrefix: string | undefined,
+  filename: string,
+) {
   const now = new Date()
   const year = now.getUTCFullYear()
   const month = String(now.getUTCMonth() + 1).padStart(2, '0')
+  const normalizedPrefix = normalizeFolderPrefix(folderPrefix)
 
-  return `event-submissions/${year}/${month}/${randomUUID()}-${sanitizeFilename(filename)}`
+  return `${normalizedPrefix}/${year}/${month}/${randomUUID()}-${sanitizeFilename(filename)}`
 }
 
 function createUnavailableMediaService(
@@ -70,7 +85,7 @@ export function createSupabaseSubmissionMediaService(
   logger: Logger,
   config: SupabaseMediaServiceConfig,
 ): SubmissionMediaService {
-  const { supabaseUrl, serviceRoleKey, bucketName } = config
+  const { supabaseUrl, serviceRoleKey, bucketName, folderPrefix } = config
 
   if (!supabaseUrl || !serviceRoleKey || !bucketName) {
     return createUnavailableMediaService(logger, config)
@@ -80,7 +95,7 @@ export function createSupabaseSubmissionMediaService(
 
   return {
     async prepareImageUpload(input) {
-      const objectKey = createObjectKey(input.filename)
+      const objectKey = createMediaObjectKey(folderPrefix, input.filename)
       const { data, error } = await supabase.storage
         .from(bucketName)
         .createSignedUploadUrl(objectKey)

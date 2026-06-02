@@ -1,8 +1,9 @@
 import type { Request, Response } from 'express'
-import type { AppLanguage, EventCategory } from '../types/content'
+import type { AppLanguage, EventCategory, RestaurantMoment } from '../types/content'
 import { resolveLanguage } from '../utils/locale'
 import type { ContentService } from '../services/contentService'
 import type { EventPaginationInput } from '../repositories/eventsPagination'
+import type { RestaurantPaginationInput } from '../repositories/restaurantsPagination'
 import { HttpError } from '../utils/httpError'
 
 type ContentControllerDependencies = {
@@ -26,7 +27,14 @@ function resolveQueryStringValue(
 
 const DEFAULT_EVENTS_LIMIT = 10
 const MAX_EVENTS_LIMIT = 24
+const DEFAULT_RESTAURANTS_LIMIT = 2
+const MAX_RESTAURANTS_LIMIT = 24
 const eventCategories = ['music', 'wellness', 'food'] satisfies EventCategory[]
+const restaurantMoments = [
+  'breakfast',
+  'lunch',
+  'dinner',
+] satisfies RestaurantMoment[]
 
 function resolveEventCategory(
   value: string | undefined,
@@ -54,6 +62,40 @@ function resolveEventsPagination(query: Request['query']): EventPaginationInput 
     limit,
     cursor: resolveQueryStringValue(query.cursor),
     category: resolveEventCategory(resolveQueryStringValue(query.category)),
+  }
+}
+
+function resolveRestaurantMoment(
+  value: string | undefined,
+): RestaurantMoment | undefined {
+  if (!value || value === 'all') {
+    return undefined
+  }
+
+  if (restaurantMoments.includes(value as RestaurantMoment)) {
+    return value as RestaurantMoment
+  }
+
+  throw new HttpError(400, 'Unsupported restaurant category query parameter')
+}
+
+function resolveRestaurantsPagination(
+  query: Request['query'],
+): RestaurantPaginationInput {
+  const limitValue = resolveQueryStringValue(query.limit)
+  const parsedLimit = Number.parseInt(
+    limitValue ?? String(DEFAULT_RESTAURANTS_LIMIT),
+    10,
+  )
+  const limit =
+    Number.isFinite(parsedLimit) && parsedLimit > 0
+      ? Math.min(parsedLimit, MAX_RESTAURANTS_LIMIT)
+      : DEFAULT_RESTAURANTS_LIMIT
+
+  return {
+    limit,
+    cursor: resolveQueryStringValue(query.cursor),
+    category: resolveRestaurantMoment(resolveQueryStringValue(query.category)),
   }
 }
 
@@ -88,7 +130,10 @@ export function createContentController({
     },
     getRestaurants: async (request: Request, response: Response) => {
       const language = resolveLanguage(request, defaultLanguage)
-      const payload = await contentService.getRestaurants(language)
+      const payload = await contentService.getRestaurants(
+        language,
+        resolveRestaurantsPagination(request.query),
+      )
 
       response.json(payload)
     },

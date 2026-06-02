@@ -143,4 +143,61 @@ describe('contentService', () => {
       category: 'food',
     })
   })
+
+  it('caches paginated restaurant reads by language, category, and cursor', async () => {
+    const listPayload = {
+      eyebrow: 'Restaurants',
+      title: 'Dining moments',
+      description: 'Desc',
+      featuredItems: [],
+      items: [],
+      pagination: {
+        hasMore: false,
+        nextCursor: null,
+      },
+    }
+    const getRestaurantsContent = vi.fn(async () => listPayload)
+
+    const repositories: ContentRepositories = {
+      home: { getHomeContent: vi.fn() as never },
+      events: {
+        getEventsContent: vi.fn() as never,
+        getEventDetail: vi.fn() as never,
+      },
+      restaurants: {
+        getRestaurantsContent,
+        getRestaurantDetail: vi.fn() as never,
+      },
+      tours: {
+        getToursContent: vi.fn() as never,
+        getTourDetail: vi.fn() as never,
+      },
+    }
+
+    const service = createContentService(repositories, new InMemoryCache())
+
+    await service.getRestaurants('en', { limit: 2, category: 'breakfast' })
+    await service.getRestaurants('en', { limit: 2, category: 'breakfast' })
+    await service.getRestaurants('en', {
+      limit: 2,
+      cursor: 'next-page',
+      category: 'breakfast',
+    })
+    await service.getRestaurants('en', { limit: 2, category: 'dinner' })
+
+    expect(getRestaurantsContent).toHaveBeenCalledTimes(3)
+    expect(getRestaurantsContent).toHaveBeenNthCalledWith(1, 'en', {
+      limit: 2,
+      category: 'breakfast',
+    })
+    expect(getRestaurantsContent).toHaveBeenNthCalledWith(2, 'en', {
+      limit: 2,
+      cursor: 'next-page',
+      category: 'breakfast',
+    })
+    expect(getRestaurantsContent).toHaveBeenNthCalledWith(3, 'en', {
+      limit: 2,
+      category: 'dinner',
+    })
+  })
 })

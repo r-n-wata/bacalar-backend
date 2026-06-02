@@ -10,12 +10,17 @@ import type {
   HomeContent,
   HomeSuggestionCard,
   RestaurantDetail,
+  RestaurantMoment,
   RestaurantsContent,
   TourDetail,
   ToursContent,
 } from '../types/content'
 import type { ContentRepositories } from './interfaces'
 import { paginateEvents, selectFeaturedEvents } from './eventsPagination'
+import {
+  paginateRestaurants,
+  selectFeaturedRestaurants,
+} from './restaurantsPagination'
 
 function getLocaleWhere(language: AppLanguage) {
   return {
@@ -74,6 +79,17 @@ function deriveCardSubtitle(route: string, label: string | null) {
   }
 
   return label ?? 'Bacalar'
+}
+
+function deriveRestaurantFeaturedOrder(moment: RestaurantMoment) {
+  switch (moment) {
+    case 'breakfast':
+      return 0
+    case 'lunch':
+      return 1
+    case 'dinner':
+      return 2
+  }
 }
 
 export function createPrismaRepositories(
@@ -339,7 +355,10 @@ export function createPrismaRepositories(
       },
     },
     restaurants: {
-      async getRestaurantsContent(language): Promise<RestaurantsContent | null> {
+      async getRestaurantsContent(
+        language,
+        pagination,
+      ): Promise<RestaurantsContent | null> {
         const page = await prisma.featurePage.findUnique({
           where: {
             feature: FeatureType.RESTAURANTS,
@@ -358,34 +377,69 @@ export function createPrismaRepositories(
           return null
         }
 
-        const restaurants = await prisma.restaurant.findMany({
-          where: {
-            status: ContentStatus.PUBLISHED,
-          },
-          orderBy: {
-            sortOrder: 'asc',
-          },
-          include: {
-            translations: {
-              where: getLocaleWhere(language),
+        const [listRestaurants, featuredRestaurants] = await Promise.all([
+          prisma.restaurant.findMany({
+            where: {
+              status: ContentStatus.PUBLISHED,
+              ...(pagination.category
+                ? {
+                    moment: pagination.category,
+                  }
+                : {}),
             },
-          },
+            include: {
+              translations: {
+                where: getLocaleWhere(language),
+              },
+            },
+          }),
+          prisma.restaurant.findMany({
+            where: {
+              status: ContentStatus.PUBLISHED,
+            },
+            include: {
+              translations: {
+                where: getLocaleWhere(language),
+              },
+            },
+          }),
+        ])
+
+        const mapRestaurantItem = (
+          restaurant: (typeof featuredRestaurants)[number],
+        ) => ({
+          id: restaurant.slug,
+          name: restaurant.translations[0].name,
+          cuisine: restaurant.translations[0].cuisine,
+          vibe: restaurant.translations[0].vibe,
+          priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
+          moment: restaurant.moment as RestaurantMoment,
+          route: `/restaurants/${restaurant.slug}`,
+          sortOrder: restaurant.sortOrder,
+          featuredOrder: deriveRestaurantFeaturedOrder(
+            restaurant.moment as RestaurantMoment,
+          ),
         })
+
+        const restaurantItems = listRestaurants
+          .filter((restaurant) => restaurant.translations.length > 0)
+          .map(mapRestaurantItem)
+        const featuredRestaurantItems = featuredRestaurants
+          .filter((restaurant) => restaurant.translations.length > 0)
+          .map(mapRestaurantItem)
+
+        const paginatedRestaurants = paginateRestaurants(
+          restaurantItems,
+          pagination,
+        )
 
         return {
           eyebrow: intro.eyebrow,
           title: intro.title,
           description: intro.description,
-          items: restaurants
-            .filter((restaurant) => restaurant.translations.length > 0)
-            .map((restaurant) => ({
-              id: restaurant.slug,
-              name: restaurant.translations[0].name,
-              cuisine: restaurant.translations[0].cuisine,
-              vibe: restaurant.translations[0].vibe,
-              priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
-              route: `/restaurants/${restaurant.slug}`,
-            })),
+          featuredItems: selectFeaturedRestaurants(featuredRestaurantItems, 3),
+          items: paginatedRestaurants.items,
+          pagination: paginatedRestaurants.pagination,
         }
       },
       async getRestaurantDetail(
@@ -416,6 +470,7 @@ export function createPrismaRepositories(
           cuisine: translation.cuisine,
           vibe: translation.vibe,
           priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
+          moment: restaurant.moment as RestaurantMoment,
           description:
             translation.description ??
             `${translation.name} offers a ${translation.vibe.toLowerCase()} experience.`,

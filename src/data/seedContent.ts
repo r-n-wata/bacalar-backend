@@ -129,13 +129,14 @@ export const restaurantsContentByLanguage: Record<
     title: 'Pick the right stop for the moment',
     description:
       'Keep dining simple: one strong breakfast, one easy lunch, and one dinner worth slowing down for.',
-    items: [
+    featuredItems: [
       {
         id: 'rest-cielo',
         name: 'Cielo de Maiz',
         cuisine: 'Vegetarian',
         vibe: 'Garden breakfast',
         priceBand: '$$',
+        moment: 'breakfast',
         route: '/restaurants/rest-cielo',
       },
       {
@@ -144,6 +145,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Regional Mexican',
         vibe: 'Casual local favorite',
         priceBand: '$$',
+        moment: 'lunch',
         route: '/restaurants/rest-ixchel',
       },
       {
@@ -152,22 +154,57 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Seafood',
         vibe: 'Lagoon-facing dinner',
         priceBand: '$$$',
+        moment: 'dinner',
         route: '/restaurants/rest-naao',
       },
     ],
+    items: [
+      {
+        id: 'rest-cielo',
+        name: 'Cielo de Maiz',
+        cuisine: 'Vegetarian',
+        vibe: 'Garden breakfast',
+        priceBand: '$$',
+        moment: 'breakfast',
+        route: '/restaurants/rest-cielo',
+      },
+      {
+        id: 'rest-ixchel',
+        name: 'Ixchel Cocina',
+        cuisine: 'Regional Mexican',
+        vibe: 'Casual local favorite',
+        priceBand: '$$',
+        moment: 'lunch',
+        route: '/restaurants/rest-ixchel',
+      },
+      {
+        id: 'rest-naao',
+        name: 'Nao',
+        cuisine: 'Seafood',
+        vibe: 'Lagoon-facing dinner',
+        priceBand: '$$$',
+        moment: 'dinner',
+        route: '/restaurants/rest-naao',
+      },
+    ],
+    pagination: {
+      hasMore: false,
+      nextCursor: null,
+    },
   },
   es: {
     eyebrow: 'Restaurantes',
     title: 'Elige la parada correcta para cada momento',
     description:
       'Haz la comida facil: un gran desayuno, un almuerzo sin vueltas y una cena que valga bajar el ritmo.',
-    items: [
+    featuredItems: [
       {
         id: 'rest-cielo',
         name: 'Cielo de Maiz',
         cuisine: 'Vegetariano',
         vibe: 'Desayuno en jardin',
         priceBand: '$$',
+        moment: 'breakfast',
         route: '/restaurants/rest-cielo',
       },
       {
@@ -176,6 +213,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Mexicana regional',
         vibe: 'Favorito local casual',
         priceBand: '$$',
+        moment: 'lunch',
         route: '/restaurants/rest-ixchel',
       },
       {
@@ -184,9 +222,43 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Mariscos',
         vibe: 'Cena frente a la laguna',
         priceBand: '$$$',
+        moment: 'dinner',
         route: '/restaurants/rest-naao',
       },
     ],
+    items: [
+      {
+        id: 'rest-cielo',
+        name: 'Cielo de Maiz',
+        cuisine: 'Vegetariano',
+        vibe: 'Desayuno en jardin',
+        priceBand: '$$',
+        moment: 'breakfast',
+        route: '/restaurants/rest-cielo',
+      },
+      {
+        id: 'rest-ixchel',
+        name: 'Ixchel Cocina',
+        cuisine: 'Mexicana regional',
+        vibe: 'Favorito local casual',
+        priceBand: '$$',
+        moment: 'lunch',
+        route: '/restaurants/rest-ixchel',
+      },
+      {
+        id: 'rest-naao',
+        name: 'Nao',
+        cuisine: 'Mariscos',
+        vibe: 'Cena frente a la laguna',
+        priceBand: '$$$',
+        moment: 'dinner',
+        route: '/restaurants/rest-naao',
+      },
+    ],
+    pagination: {
+      hasMore: false,
+      nextCursor: null,
+    },
   },
 }
 
@@ -553,6 +625,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Vegetarian',
       vibe: 'Garden breakfast',
       priceBand: '$$',
+      moment: 'breakfast',
       description:
         'A relaxed breakfast stop with garden energy, fresh plates, and enough calm to set up a lagoon morning without rushing anyone through it.',
       route: '/restaurants/rest-cielo',
@@ -564,6 +637,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Regional Mexican',
       vibe: 'Casual local favorite',
       priceBand: '$$',
+      moment: 'lunch',
       description:
         'A dependable lunch option when the day needs something grounded, regional, and easy to say yes to after a morning on the water.',
       route: '/restaurants/rest-ixchel',
@@ -575,6 +649,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Seafood',
       vibe: 'Lagoon-facing dinner',
       priceBand: '$$$',
+      moment: 'dinner',
       description:
         'An evening pick for when the stay calls for one elevated meal, strong seafood, and a setting that makes sunset feel part of dinner.',
       route: '/restaurants/rest-naao',
@@ -588,6 +663,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Vegetariano',
       vibe: 'Desayuno en jardin',
       priceBand: '$$',
+      moment: 'breakfast',
       description:
         'Un desayuno relajado con ambiente de jardin, platos frescos y la calma suficiente para arrancar una manana de laguna sin prisas.',
       route: '/restaurants/rest-cielo',
@@ -602,6 +678,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Mexicana regional',
       vibe: 'Favorito local casual',
       priceBand: '$$',
+      moment: 'lunch',
       description:
         'Una opcion confiable para almorzar cuando el dia pide algo regional, cercano y facil de elegir despues de una manana en el agua.',
       route: '/restaurants/rest-ixchel',
@@ -616,6 +693,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Mariscos',
       vibe: 'Cena frente a la laguna',
       priceBand: '$$$',
+      moment: 'dinner',
       description:
         'Una eleccion nocturna para cuando la estancia pide una comida mas especial, buenos mariscos y un entorno donde el atardecer acompana la cena.',
       route: '/restaurants/rest-naao',

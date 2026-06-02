@@ -63,9 +63,17 @@ ALLOWED_ORIGINS="http://localhost:5173"
 NETLIFY_SITE_NAME=your-netlify-site-name
 RATE_LIMIT_WINDOW_MS=60000
 RATE_LIMIT_MAX_REQUESTS=120
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+SUPABASE_STORAGE_BUCKET=event-submissions
+SUPABASE_EVENT_SUBMISSIONS_FOLDER=event-submissions
+SUPABASE_RESTAURANT_IMAGES_FOLDER=restaurant-images
 ```
 
 Starter values live in `/Users/ruth.wata/Projects/bacalar/backend/.env.example`.
+
+Use separate folder prefixes inside the bucket so event submission uploads and
+restaurant images do not share the same Supabase object path namespace.
 
 ## Local setup
 

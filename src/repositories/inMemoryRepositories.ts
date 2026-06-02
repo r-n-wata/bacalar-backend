@@ -9,6 +9,7 @@ import {
 } from '../data/seedContent'
 import type { ContentRepositories } from './interfaces'
 import { paginateEvents } from './eventsPagination'
+import { paginateRestaurants, selectFeaturedRestaurants } from './restaurantsPagination'
 
 export function createInMemoryRepositories(): ContentRepositories {
   return {
@@ -49,8 +50,31 @@ export function createInMemoryRepositories(): ContentRepositories {
       },
     },
     restaurants: {
-      async getRestaurantsContent(language) {
-        return restaurantsContentByLanguage[language] ?? null
+      async getRestaurantsContent(language, pagination) {
+        const content = restaurantsContentByLanguage[language]
+
+        if (!content) {
+          return null
+        }
+
+        const allItems = content.items.map((item, index) => ({
+          ...item,
+          sortOrder: index,
+          featuredOrder: index,
+        }))
+        const filteredItems = allItems
+          .filter((item) =>
+            pagination.category ? item.moment === pagination.category : true,
+          )
+
+        const paginatedRestaurants = paginateRestaurants(filteredItems, pagination)
+
+        return {
+          ...content,
+          featuredItems: selectFeaturedRestaurants(allItems, 3),
+          items: paginatedRestaurants.items,
+          pagination: paginatedRestaurants.pagination,
+        }
       },
       async getRestaurantDetail(id, language) {
         return restaurantDetailsByLanguage[language]?.[id] ?? null

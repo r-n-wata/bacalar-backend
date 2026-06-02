@@ -8,11 +8,13 @@ import { createRateLimitMiddleware } from './middlewares/rateLimit'
 import type { Logger } from './config/logger'
 import type { ContentService } from './services/contentService'
 import type { EventSubmissionService } from './services/eventSubmissionService'
+import type { RestaurantSubmissionService } from './services/restaurantSubmissionService'
 import type { AppLanguage } from './types/content'
 
 type AppDependencies = {
   contentService: ContentService
   eventSubmissionService: EventSubmissionService
+  restaurantSubmissionService: RestaurantSubmissionService
   logger: Logger
   defaultLanguage: AppLanguage
   allowedOrigins: string[]
@@ -43,6 +45,7 @@ export function createApp(dependencies: AppDependencies) {
     createApiRoutes({
       contentService: dependencies.contentService,
       eventSubmissionService: dependencies.eventSubmissionService,
+      restaurantSubmissionService: dependencies.restaurantSubmissionService,
       defaultLanguage: dependencies.defaultLanguage,
     }),
   )

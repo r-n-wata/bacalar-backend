@@ -1,6 +1,7 @@
 export type AppLanguage = 'en' | 'es'
 
 export type EventCategory = 'music' | 'wellness' | 'food'
+export type RestaurantMoment = 'breakfast' | 'lunch' | 'dinner'
 export type ExperienceKey = 'events' | 'restaurants' | 'tours'
 
 export type HomeSpotlightMetric = {
@@ -99,14 +100,22 @@ export type RestaurantItem = {
   cuisine: string
   vibe: string
   priceBand: '$' | '$$' | '$$$'
+  moment: RestaurantMoment
   route: string
+}
+
+export type RestaurantsPagination = {
+  hasMore: boolean
+  nextCursor: string | null
 }
 
 export type RestaurantsContent = {
   eyebrow: string
   title: string
   description: string
+  featuredItems: RestaurantItem[]
   items: RestaurantItem[]
+  pagination: RestaurantsPagination
 }
 
 export type TourItem = {
@@ -144,6 +153,7 @@ export type RestaurantDetail = {
   cuisine: string
   vibe: string
   priceBand: '$' | '$$' | '$$$'
+  moment: RestaurantMoment
   description: string
   route: string
   image?: HomeImage

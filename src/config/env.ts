@@ -36,6 +36,12 @@ const envSchema = z.object({
   SUPABASE_STORAGE_BUCKET: z.string().trim().optional().transform((value) =>
     value && value.length > 0 ? value : undefined,
   ),
+  SUPABASE_EVENT_SUBMISSIONS_FOLDER: z.string().trim().optional().transform((value) =>
+    value && value.length > 0 ? value : undefined,
+  ),
+  SUPABASE_RESTAURANT_IMAGES_FOLDER: z.string().trim().optional().transform((value) =>
+    value && value.length > 0 ? value : undefined,
+  ),
   EXTERNAL_IMAGE_VALIDATION_TIMEOUT_MS: z.coerce.number().int().positive().default(4000),
 })
 

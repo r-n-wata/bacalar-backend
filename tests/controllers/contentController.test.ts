@@ -175,6 +175,128 @@ describe('contentController', () => {
     expect(response.json).toHaveBeenCalledWith(payload)
   })
 
+  it('falls back to english and default pagination for restaurants when no locale is provided', async () => {
+    const payload = {
+      eyebrow: 'Restaurants feature',
+      title: 'Dining moments',
+      description: 'Desc',
+      featuredItems: [],
+      items: [],
+      pagination: {
+        hasMore: false,
+        nextCursor: null,
+      },
+    }
+    const contentService = {
+      getHome: vi.fn(),
+      getEvents: vi.fn(),
+      getEventDetail: vi.fn(),
+      getRestaurants: vi.fn().mockResolvedValue(payload),
+      getRestaurantDetail: vi.fn(),
+      getTours: vi.fn(),
+      getTourDetail: vi.fn(),
+    }
+    const controller = createContentController({
+      contentService,
+      defaultLanguage: 'en',
+    })
+    const response = createResponse()
+
+    await controller.getRestaurants(
+      {
+        query: {},
+        headers: {},
+      } as never,
+      response as never,
+    )
+
+    expect(contentService.getRestaurants).toHaveBeenCalledWith('en', {
+      limit: 2,
+      cursor: undefined,
+      category: undefined,
+    })
+    expect(response.json).toHaveBeenCalledWith(payload)
+  })
+
+  it('passes deterministic pagination inputs for restaurants', async () => {
+    const payload = {
+      eyebrow: 'Restaurants feature',
+      title: 'Dining moments',
+      description: 'Desc',
+      featuredItems: [],
+      items: [],
+      pagination: {
+        hasMore: true,
+        nextCursor: 'next-cursor',
+      },
+    }
+    const contentService = {
+      getHome: vi.fn(),
+      getEvents: vi.fn(),
+      getEventDetail: vi.fn(),
+      getRestaurants: vi.fn().mockResolvedValue(payload),
+      getRestaurantDetail: vi.fn(),
+      getTours: vi.fn(),
+      getTourDetail: vi.fn(),
+    }
+    const controller = createContentController({
+      contentService,
+      defaultLanguage: 'en',
+    })
+    const response = createResponse()
+
+    await controller.getRestaurants(
+      {
+        query: {
+          lang: 'es',
+          limit: '3',
+          cursor: 'cursor-token',
+          category: 'breakfast',
+        },
+        headers: {},
+      } as never,
+      response as never,
+    )
+
+    expect(contentService.getRestaurants).toHaveBeenCalledWith('es', {
+      limit: 3,
+      cursor: 'cursor-token',
+      category: 'breakfast',
+    })
+    expect(response.json).toHaveBeenCalledWith(payload)
+  })
+
+  it('rejects unsupported restaurant category query parameters', async () => {
+    const contentService = {
+      getHome: vi.fn(),
+      getEvents: vi.fn(),
+      getEventDetail: vi.fn(),
+      getRestaurants: vi.fn(),
+      getRestaurantDetail: vi.fn(),
+      getTours: vi.fn(),
+      getTourDetail: vi.fn(),
+    }
+    const controller = createContentController({
+      contentService,
+      defaultLanguage: 'en',
+    })
+    const response = createResponse()
+
+    await expect(
+      controller.getRestaurants(
+        {
+          query: {
+            category: 'brunch',
+          },
+          headers: {},
+        } as never,
+        response as never,
+      ),
+    ).rejects.toMatchObject({
+      statusCode: 400,
+    })
+  })
+
   it('returns a localized tour detail payload', async () => {
     const payload = {
       id: 'tour-sailing',

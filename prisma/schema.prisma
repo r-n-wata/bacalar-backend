@@ -37,6 +37,12 @@ enum EventSubmissionStatus {
   REJECTED
 }
 
+enum RestaurantSubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum SubmissionImageSource {
   UPLOADED
   EXTERNAL_URL
@@ -171,11 +177,48 @@ model EventSubmissionImage {
   submission       EventSubmission       @relation(fields: [submissionId], references: [id], onDelete: Cascade)
 }
 
+model RestaurantSubmission {
+  id              String                     @id @default(cuid())
+  status          RestaurantSubmissionStatus @default(PENDING)
+  name            String
+  cuisine         String
+  moment          String
+  priceBand       String
+  description     String
+  contactName     String
+  contactMethod   String
+  instagram       String?
+  whatsapp        String?
+  submittedLocale LocaleCode
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  reviewNotes     String?
+  approvedRestaurantId String?
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+  images          RestaurantSubmissionImage[]
+}
+
+model RestaurantSubmissionImage {
+  id               String               @id @default(cuid())
+  submissionId     String
+  source           SubmissionImageSource
+  url              String
+  objectKey        String?
+  mimeType         String?
+  originalFilename String?
+  sortOrder        Int                  @default(0)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  submission       RestaurantSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
 model Restaurant {
   id            String                  @id @default(cuid())
   slug          String                  @unique
   status        ContentStatus           @default(PUBLISHED)
   priceBand     String
+  moment        String
   sortOrder     Int                     @default(0)
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
