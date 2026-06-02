@@ -12,6 +12,7 @@ import type {
   RestaurantDetail,
   RestaurantMoment,
   RestaurantsContent,
+  TourCategory,
   TourDetail,
   ToursContent,
 } from '../types/content'
@@ -21,6 +22,7 @@ import {
   paginateRestaurants,
   selectFeaturedRestaurants,
 } from './restaurantsPagination'
+import { paginateTours, selectFeaturedTours } from './toursPagination'
 
 function getLocaleWhere(language: AppLanguage) {
   return {
@@ -479,7 +481,7 @@ export function createPrismaRepositories(
       },
     },
     tours: {
-      async getToursContent(language): Promise<ToursContent | null> {
+      async getToursContent(language, pagination): Promise<ToursContent | null> {
         const page = await prisma.featurePage.findUnique({
           where: {
             feature: FeatureType.TOURS,
@@ -502,9 +504,7 @@ export function createPrismaRepositories(
           where: {
             status: ContentStatus.PUBLISHED,
           },
-          orderBy: {
-            sortOrder: 'asc',
-          },
+          orderBy: [{ sortOrder: 'asc' }, { slug: 'asc' }],
           include: {
             translations: {
               where: getLocaleWhere(language),
@@ -512,20 +512,59 @@ export function createPrismaRepositories(
           },
         })
 
+        const featuredTours = await prisma.tour.findMany({
+          where: {
+            status: ContentStatus.PUBLISHED,
+            isFeatured: true,
+          },
+          orderBy: [{ featuredOrder: 'asc' }, { sortOrder: 'asc' }, { slug: 'asc' }],
+          include: {
+            translations: {
+              where: getLocaleWhere(language),
+            },
+          },
+        })
+
+        const tourItems = tours
+          .filter((tour) => tour.translations.length > 0)
+          .map((tour) => ({
+            id: tour.slug,
+            name: tour.translations[0].name,
+            category: tour.category as TourCategory,
+            categoryLabel: tour.translations[0].category,
+            durationHours: tour.durationHours,
+            priceFrom: tour.priceFrom,
+            route: `/tours/${tour.slug}`,
+            sortOrder: tour.sortOrder,
+            featuredOrder: tour.featuredOrder,
+          }))
+
+        const featuredTourItems = featuredTours
+          .filter((tour) => tour.translations.length > 0)
+          .map((tour) => ({
+            id: tour.slug,
+            name: tour.translations[0].name,
+            category: tour.category as TourCategory,
+            categoryLabel: tour.translations[0].category,
+            durationHours: tour.durationHours,
+            priceFrom: tour.priceFrom,
+            route: `/tours/${tour.slug}`,
+            sortOrder: tour.sortOrder,
+            featuredOrder: tour.featuredOrder,
+          }))
+
+        const filteredTourItems = tourItems.filter((tour) =>
+          pagination.category ? tour.category === pagination.category : true,
+        )
+        const paginatedTours = paginateTours(filteredTourItems, pagination)
+
         return {
           eyebrow: intro.eyebrow,
           title: intro.title,
           description: intro.description,
-          items: tours
-            .filter((tour) => tour.translations.length > 0)
-            .map((tour) => ({
-              id: tour.slug,
-              name: tour.translations[0].name,
-              category: tour.translations[0].category,
-              durationHours: tour.durationHours,
-              priceFrom: tour.priceFrom,
-              route: `/tours/${tour.slug}`,
-            })),
+          featuredItems: selectFeaturedTours(featuredTourItems, 3),
+          items: paginatedTours.items,
+          pagination: paginatedTours.pagination,
         }
       },
       async getTourDetail(id, language): Promise<TourDetail | null> {
@@ -550,7 +589,8 @@ export function createPrismaRepositories(
         return {
           id: tour.slug,
           name: translation.name,
-          category: translation.category,
+          category: tour.category as TourCategory,
+          categoryLabel: translation.category,
           durationHours: tour.durationHours,
           priceFrom: tour.priceFrom,
           description:

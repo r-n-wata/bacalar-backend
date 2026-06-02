@@ -2,6 +2,7 @@ export type AppLanguage = 'en' | 'es'
 
 export type EventCategory = 'music' | 'wellness' | 'food'
 export type RestaurantMoment = 'breakfast' | 'lunch' | 'dinner'
+export type TourCategory = 'premium' | 'group' | 'adventure'
 export type ExperienceKey = 'events' | 'restaurants' | 'tours'
 
 export type HomeSpotlightMetric = {
@@ -121,17 +122,25 @@ export type RestaurantsContent = {
 export type TourItem = {
   id: string
   name: string
-  category: string
+  category: TourCategory
+  categoryLabel: string
   durationHours: number
   priceFrom: number
   route: string
+}
+
+export type ToursPagination = {
+  hasMore: boolean
+  nextCursor: string | null
 }
 
 export type ToursContent = {
   eyebrow: string
   title: string
   description: string
+  featuredItems: TourItem[]
   items: TourItem[]
+  pagination: ToursPagination
 }
 
 export type EventDetail = {
@@ -162,7 +171,8 @@ export type RestaurantDetail = {
 export type TourDetail = {
   id: string
   name: string
-  category: string
+  category: TourCategory
+  categoryLabel: string
   durationHours: number
   priceFrom: number
   description: string

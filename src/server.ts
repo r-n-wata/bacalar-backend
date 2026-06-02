@@ -5,12 +5,14 @@ import { loadEnv } from './config/env'
 import { createPrismaRepositories } from './repositories/prismaRepositories'
 import { createPrismaEventSubmissionRepository } from './repositories/eventSubmissionRepository'
 import { createPrismaRestaurantSubmissionRepository } from './repositories/restaurantSubmissionRepository'
+import { createPrismaTourSubmissionRepository } from './repositories/tourSubmissionRepository'
 import { createSubmissionAdminNotifier } from './services/adminNotifications'
 import { createContentService } from './services/contentService'
 import { createEventSubmissionService } from './services/eventSubmissionService'
 import { createExternalImageValidator } from './services/externalImageValidation'
 import { createSupabaseSubmissionMediaService } from './services/mediaService'
 import { createRestaurantSubmissionService } from './services/restaurantSubmissionService'
+import { createTourSubmissionService } from './services/tourSubmissionService'
 import { InMemoryCache } from './utils/cache'
 
 function parseAllowedOrigins(rawOrigins: string) {
@@ -28,6 +30,7 @@ async function main() {
   const eventSubmissionRepository = createPrismaEventSubmissionRepository(prisma)
   const restaurantSubmissionRepository =
     createPrismaRestaurantSubmissionRepository(prisma)
+  const tourSubmissionRepository = createPrismaTourSubmissionRepository(prisma)
   const cache = new InMemoryCache()
   const contentService = createContentService(repositories, cache)
   const eventMediaService = createSupabaseSubmissionMediaService(logger, {
@@ -41,6 +44,12 @@ async function main() {
     serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
     bucketName: env.SUPABASE_STORAGE_BUCKET,
     folderPrefix: env.SUPABASE_RESTAURANT_IMAGES_FOLDER,
+  })
+  const tourMediaService = createSupabaseSubmissionMediaService(logger, {
+    supabaseUrl: env.SUPABASE_URL,
+    serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
+    bucketName: env.SUPABASE_STORAGE_BUCKET,
+    folderPrefix: env.SUPABASE_TOUR_IMAGES_FOLDER,
   })
   const adminNotifier = createSubmissionAdminNotifier(logger, {
     adminEmail: env.ADMIN_NOTIFICATION_EMAIL,
@@ -67,10 +76,18 @@ async function main() {
     externalImageValidator,
     logger,
   })
+  const tourSubmissionService = createTourSubmissionService({
+    repository: tourSubmissionRepository,
+    mediaService: tourMediaService,
+    adminNotifier,
+    externalImageValidator,
+    logger,
+  })
   const app = createApp({
     contentService,
     eventSubmissionService,
     restaurantSubmissionService,
+    tourSubmissionService,
     logger,
     defaultLanguage: env.DEFAULT_LOCALE,
     allowedOrigins: parseAllowedOrigins(env.ALLOWED_ORIGINS),

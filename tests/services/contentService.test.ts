@@ -54,7 +54,8 @@ describe('contentService', () => {
     const detailPayload = {
       id: 'tour-sailing',
       name: 'Private Sailing at Sunrise',
-      category: 'Premium',
+      category: 'premium' as const,
+      categoryLabel: 'Premium',
       durationHours: 4,
       priceFrom: 2100,
       description: 'A quiet sunrise departure.',
@@ -85,6 +86,63 @@ describe('contentService', () => {
 
     expect(getTourDetail).toHaveBeenCalledTimes(1)
     expect(getTourDetail).toHaveBeenCalledWith('tour-sailing', 'en')
+  })
+
+  it('caches paginated tour reads by language, category, and cursor', async () => {
+    const listPayload = {
+      eyebrow: 'Tours',
+      title: 'Lagoon plans',
+      description: 'Desc',
+      featuredItems: [],
+      items: [],
+      pagination: {
+        hasMore: false,
+        nextCursor: null,
+      },
+    }
+    const getToursContent = vi.fn(async () => listPayload)
+
+    const repositories: ContentRepositories = {
+      home: { getHomeContent: vi.fn() as never },
+      events: {
+        getEventsContent: vi.fn() as never,
+        getEventDetail: vi.fn() as never,
+      },
+      restaurants: {
+        getRestaurantsContent: vi.fn() as never,
+        getRestaurantDetail: vi.fn() as never,
+      },
+      tours: {
+        getToursContent,
+        getTourDetail: vi.fn() as never,
+      },
+    }
+
+    const service = createContentService(repositories, new InMemoryCache())
+
+    await service.getTours('en', { limit: 2, category: 'premium' })
+    await service.getTours('en', { limit: 2, category: 'premium' })
+    await service.getTours('en', {
+      limit: 2,
+      cursor: 'next-page',
+      category: 'premium',
+    })
+    await service.getTours('en', { limit: 2, category: 'group' })
+
+    expect(getToursContent).toHaveBeenCalledTimes(3)
+    expect(getToursContent).toHaveBeenNthCalledWith(1, 'en', {
+      limit: 2,
+      category: 'premium',
+    })
+    expect(getToursContent).toHaveBeenNthCalledWith(2, 'en', {
+      limit: 2,
+      cursor: 'next-page',
+      category: 'premium',
+    })
+    expect(getToursContent).toHaveBeenNthCalledWith(3, 'en', {
+      limit: 2,
+      category: 'group',
+    })
   })
 
   it('caches paginated event reads by language, category, and cursor', async () => {

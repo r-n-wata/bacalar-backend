@@ -1,18 +1,18 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createRestaurantSubmissionService } from '../../src/services/restaurantSubmissionService'
-import type { RestaurantSubmissionRecord } from '../../src/types/restaurantSubmissions'
+import { createTourSubmissionService } from '../../src/services/tourSubmissionService'
+import type { TourSubmissionRecord } from '../../src/types/tourSubmissions'
 
 function createSubmissionRecord(
-  overrides: Partial<RestaurantSubmissionRecord> = {},
-): RestaurantSubmissionRecord {
+  overrides: Partial<TourSubmissionRecord> = {},
+): TourSubmissionRecord {
   return {
-    id: 'submission-1',
-    name: 'Bruma Azul',
-    cuisine: 'Cafe plates',
-    moment: 'breakfast',
-    priceBand: '$$',
+    id: 'tour-submission-1',
+    name: 'Sunrise Sail',
+    category: 'premium',
+    durationHours: 4,
+    priceFrom: 2100,
     description:
-      'A calm breakfast and coffee stop that works well for travelers easing into the lagoon day.',
+      'A private sunrise sailing experience with a calm route and a polished crew handoff.',
     contactName: 'Maya Cruz',
     contactMethod: 'maya@example.com',
     submittedLocale: 'en',
@@ -50,7 +50,7 @@ function createDependencies() {
   }
 }
 
-describe('restaurantSubmissionService', () => {
+describe('tourSubmissionService', () => {
   it('persists valid submissions as pending and notifies admin', async () => {
     const dependencies = createDependencies()
     dependencies.repository.createSubmission.mockResolvedValue(
@@ -60,7 +60,7 @@ describe('restaurantSubmissionService', () => {
             id: 'image-1',
             source: 'UPLOADED',
             url: 'https://assets.example.com/a.jpg',
-            objectKey: 'restaurant-images/a.jpg',
+            objectKey: 'tour-images/a.jpg',
             mimeType: 'image/jpeg',
             originalFilename: 'a.jpg',
             sortOrder: 0,
@@ -75,14 +75,14 @@ describe('restaurantSubmissionService', () => {
       }),
     )
 
-    const service = createRestaurantSubmissionService(dependencies)
+    const service = createTourSubmissionService(dependencies)
     const result = await service.createSubmission({
-      name: 'Bruma Azul',
-      cuisine: 'Cafe plates',
-      moment: 'breakfast',
-      priceBand: '$$',
+      name: 'Sunrise Sail',
+      category: 'premium',
+      durationHours: 4,
+      priceFrom: 2100,
       description:
-        'A calm breakfast and coffee stop that works well for travelers easing into the lagoon day.',
+        'A private sunrise sailing experience with a calm route and a polished crew handoff.',
       contactName: 'Maya Cruz',
       contactMethod: 'maya@example.com',
       submittedLocale: 'en',
@@ -90,7 +90,7 @@ describe('restaurantSubmissionService', () => {
         {
           kind: 'uploaded',
           url: 'https://assets.example.com/a.jpg',
-          objectKey: 'restaurant-images/a.jpg',
+          objectKey: 'tour-images/a.jpg',
           mimeType: 'image/jpeg',
           filename: 'a.jpg',
         },
@@ -103,8 +103,9 @@ describe('restaurantSubmissionService', () => {
 
     expect(dependencies.repository.createSubmission).toHaveBeenCalledWith(
       expect.objectContaining({
-        moment: 'breakfast',
-        priceBand: '$$',
+        category: 'premium',
+        durationHours: 4,
+        priceFrom: 2100,
         media: [
           expect.objectContaining({ kind: 'uploaded' }),
           { kind: 'external', url: 'https://images.example.com/b.webp' },
@@ -114,11 +115,9 @@ describe('restaurantSubmissionService', () => {
     expect(dependencies.externalImageValidator.validate).toHaveBeenCalledWith(
       'https://images.example.com/b.webp',
     )
-    expect(
-      dependencies.adminNotifier.notifyRestaurantSubmission,
-    ).toHaveBeenCalled()
+    expect(dependencies.adminNotifier.notifyTourSubmission).toHaveBeenCalled()
     expect(result).toEqual({
-      id: 'submission-1',
+      id: 'tour-submission-1',
       status: 'PENDING',
       createdAt: '2026-05-25T12:00:00.000Z',
     })
@@ -127,18 +126,18 @@ describe('restaurantSubmissionService', () => {
   it('does not roll back the submission when email notification fails', async () => {
     const dependencies = createDependencies()
     dependencies.repository.createSubmission.mockResolvedValue(createSubmissionRecord())
-    dependencies.adminNotifier.notifyRestaurantSubmission.mockRejectedValue(
+    dependencies.adminNotifier.notifyTourSubmission.mockRejectedValue(
       new Error('smtp-down'),
     )
 
-    const service = createRestaurantSubmissionService(dependencies)
+    const service = createTourSubmissionService(dependencies)
     const result = await service.createSubmission({
-      name: 'Bruma Azul',
-      cuisine: 'Cafe plates',
-      moment: 'breakfast',
-      priceBand: '$$',
+      name: 'Sunrise Sail',
+      category: 'premium',
+      durationHours: 4,
+      priceFrom: 2100,
       description:
-        'A calm breakfast and coffee stop that works well for travelers easing into the lagoon day.',
+        'A private sunrise sailing experience with a calm route and a polished crew handoff.',
       contactName: 'Maya Cruz',
       contactMethod: 'maya@example.com',
       submittedLocale: 'en',
@@ -148,19 +147,19 @@ describe('restaurantSubmissionService', () => {
     expect(result.status).toBe('PENDING')
     expect(dependencies.logger.error).toHaveBeenCalledWith(
       'submission-admin-notification-failed',
-      expect.objectContaining({ submissionId: 'submission-1' }),
+      expect.objectContaining({ submissionId: 'tour-submission-1' }),
     )
   })
 
   it('rejects invalid payloads with structured validation details', async () => {
-    const service = createRestaurantSubmissionService(createDependencies())
+    const service = createTourSubmissionService(createDependencies())
 
     await expect(
       service.createSubmission({
         name: '',
-        cuisine: '',
-        moment: 'breakfast',
-        priceBand: '$$',
+        category: 'premium',
+        durationHours: 0,
+        priceFrom: 0,
         description: '',
         contactName: '',
         contactMethod: '',
@@ -179,16 +178,16 @@ describe('restaurantSubmissionService', () => {
       new Error('The image URL must return a JPG, PNG, or WEBP file.'),
     )
 
-    const service = createRestaurantSubmissionService(dependencies)
+    const service = createTourSubmissionService(dependencies)
 
     await expect(
       service.createSubmission({
-        name: 'Bruma Azul',
-        cuisine: 'Cafe plates',
-        moment: 'breakfast',
-        priceBand: '$$',
+        name: 'Sunrise Sail',
+        category: 'premium',
+        durationHours: 4,
+        priceFrom: 2100,
         description:
-          'A calm breakfast and coffee stop that works well for travelers easing into the lagoon day.',
+          'A private sunrise sailing experience with a calm route and a polished crew handoff.',
         contactName: 'Maya Cruz',
         contactMethod: 'maya@example.com',
         submittedLocale: 'en',
@@ -210,15 +209,15 @@ describe('restaurantSubmissionService', () => {
     dependencies.mediaService.prepareImageUpload.mockResolvedValue({
       provider: 'supabase',
       bucketName: 'event-submissions',
-      objectKey: 'restaurant-images/mock.jpg',
+      objectKey: 'tour-images/mock.jpg',
       assetUrl:
-        'https://project.supabase.co/storage/v1/object/public/event-submissions/restaurant-images/mock.jpg',
+        'https://project.supabase.co/storage/v1/object/public/event-submissions/tour-images/mock.jpg',
       signedUploadUrl:
-        'https://project.supabase.co/storage/v1/object/upload/sign/event-submissions/restaurant-images/mock.jpg?token=mock-token',
+        'https://project.supabase.co/storage/v1/object/upload/sign/event-submissions/tour-images/mock.jpg?token=mock-token',
       uploadToken: 'mock-token',
     })
 
-    const service = createRestaurantSubmissionService(dependencies)
+    const service = createTourSubmissionService(dependencies)
     const result = await service.prepareUpload({
       filename: 'poster.jpg',
       mimeType: 'image/jpeg',
@@ -226,7 +225,7 @@ describe('restaurantSubmissionService', () => {
     })
 
     expect(dependencies.mediaService.prepareImageUpload).toHaveBeenCalled()
-    expect(result.objectKey).toContain('restaurant-images')
+    expect(result.objectKey).toContain('tour-images')
 
     await expect(
       service.prepareUpload({

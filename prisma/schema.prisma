@@ -31,6 +31,12 @@ enum EventCategory {
   food
 }
 
+enum TourCategory {
+  premium
+  group
+  adventure
+}
+
 enum EventSubmissionStatus {
   PENDING
   APPROVED
@@ -38,6 +44,12 @@ enum EventSubmissionStatus {
 }
 
 enum RestaurantSubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TourSubmissionStatus {
   PENDING
   APPROVED
   REJECTED
@@ -199,6 +211,43 @@ model RestaurantSubmission {
   images          RestaurantSubmissionImage[]
 }
 
+model TourSubmission {
+  id              String               @id @default(cuid())
+  status          TourSubmissionStatus @default(PENDING)
+  name            String
+  category        TourCategory
+  durationHours   Int
+  priceFrom       Int
+  description     String
+  contactName     String
+  contactMethod   String
+  instagram       String?
+  whatsapp        String?
+  submittedLocale LocaleCode
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  reviewNotes     String?
+  approvedTourId  String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  approvedTour    Tour?                @relation(fields: [approvedTourId], references: [id], onDelete: SetNull)
+  images          TourSubmissionImage[]
+}
+
+model TourSubmissionImage {
+  id               String         @id @default(cuid())
+  submissionId     String
+  source           SubmissionImageSource
+  url              String
+  objectKey        String?
+  mimeType         String?
+  originalFilename String?
+  sortOrder        Int            @default(0)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  submission       TourSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+}
+
 model RestaurantSubmissionImage {
   id               String               @id @default(cuid())
   submissionId     String
@@ -248,14 +297,18 @@ model Tour {
   id            String            @id @default(cuid())
   slug          String            @unique
   status        ContentStatus     @default(PUBLISHED)
+  category      TourCategory
   durationHours Int
   priceFrom     Int
   sortOrder     Int               @default(0)
+  isFeatured    Boolean           @default(false)
+  featuredOrder Int?
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
   publishedAt   DateTime?
   createdBy     String?
   updatedBy     String?
+  approvedSubmissions TourSubmission[]
   translations  TourTranslation[]
 }
 

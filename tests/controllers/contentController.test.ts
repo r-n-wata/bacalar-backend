@@ -301,7 +301,8 @@ describe('contentController', () => {
     const payload = {
       id: 'tour-sailing',
       name: 'Private Sailing at Sunrise',
-      category: 'Premium',
+      category: 'premium',
+      categoryLabel: 'Premium',
       durationHours: 4,
       priceFrom: 2100,
       description: 'A quiet sunrise departure.',
@@ -336,5 +337,84 @@ describe('contentController', () => {
       'es',
     )
     expect(response.json).toHaveBeenCalledWith(payload)
+  })
+
+  it('passes deterministic pagination inputs for tours', async () => {
+    const payload = {
+      eyebrow: 'Tours feature',
+      title: 'Lagoon plans',
+      description: 'Desc',
+      featuredItems: [],
+      items: [],
+      pagination: {
+        hasMore: true,
+        nextCursor: 'next-cursor',
+      },
+    }
+    const contentService = {
+      getHome: vi.fn(),
+      getEvents: vi.fn(),
+      getEventDetail: vi.fn(),
+      getRestaurants: vi.fn(),
+      getRestaurantDetail: vi.fn(),
+      getTours: vi.fn().mockResolvedValue(payload),
+      getTourDetail: vi.fn(),
+    }
+    const controller = createContentController({
+      contentService,
+      defaultLanguage: 'en',
+    })
+    const response = createResponse()
+
+    await controller.getTours(
+      {
+        query: {
+          lang: 'es',
+          limit: '3',
+          cursor: 'cursor-token',
+          category: 'premium',
+        },
+        headers: {},
+      } as never,
+      response as never,
+    )
+
+    expect(contentService.getTours).toHaveBeenCalledWith('es', {
+      limit: 3,
+      cursor: 'cursor-token',
+      category: 'premium',
+    })
+    expect(response.json).toHaveBeenCalledWith(payload)
+  })
+
+  it('rejects unsupported tour category query parameters', async () => {
+    const contentService = {
+      getHome: vi.fn(),
+      getEvents: vi.fn(),
+      getEventDetail: vi.fn(),
+      getRestaurants: vi.fn(),
+      getRestaurantDetail: vi.fn(),
+      getTours: vi.fn(),
+      getTourDetail: vi.fn(),
+    }
+    const controller = createContentController({
+      contentService,
+      defaultLanguage: 'en',
+    })
+    const response = createResponse()
+
+    await expect(
+      controller.getTours(
+        {
+          query: {
+            category: 'sailing',
+          },
+          headers: {},
+        } as never,
+        response as never,
+      ),
+    ).rejects.toMatchObject({
+      statusCode: 400,
+    })
   })
 })

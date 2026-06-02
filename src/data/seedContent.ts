@@ -59,11 +59,12 @@ export const toursContentByLanguage: Record<AppLanguage, ToursContent> = {
     title: 'Choose a lagoon experience that fits the day',
     description:
       'Compare a few focused options first, then move into a fuller browse once the right pace becomes clear.',
-    items: [
+    featuredItems: [
       {
         id: 'tour-sailing',
         name: 'Private Sailing at Sunrise',
-        category: 'Premium',
+        category: 'premium',
+        categoryLabel: 'Premium',
         durationHours: 4,
         priceFrom: 2100,
         route: '/tours/tour-sailing',
@@ -71,7 +72,8 @@ export const toursContentByLanguage: Record<AppLanguage, ToursContent> = {
       {
         id: 'tour-pontoon',
         name: 'Family Pontoon Loop',
-        category: 'Group',
+        category: 'group',
+        categoryLabel: 'Group',
         durationHours: 3,
         priceFrom: 1450,
         route: '/tours/tour-pontoon',
@@ -79,23 +81,58 @@ export const toursContentByLanguage: Record<AppLanguage, ToursContent> = {
       {
         id: 'tour-kayak',
         name: 'Guided Mangrove Kayak',
-        category: 'Adventure',
+        category: 'adventure',
+        categoryLabel: 'Adventure',
         durationHours: 2,
         priceFrom: 680,
         route: '/tours/tour-kayak',
       },
     ],
+    items: [
+      {
+        id: 'tour-sailing',
+        name: 'Private Sailing at Sunrise',
+        category: 'premium',
+        categoryLabel: 'Premium',
+        durationHours: 4,
+        priceFrom: 2100,
+        route: '/tours/tour-sailing',
+      },
+      {
+        id: 'tour-pontoon',
+        name: 'Family Pontoon Loop',
+        category: 'group',
+        categoryLabel: 'Group',
+        durationHours: 3,
+        priceFrom: 1450,
+        route: '/tours/tour-pontoon',
+      },
+      {
+        id: 'tour-kayak',
+        name: 'Guided Mangrove Kayak',
+        category: 'adventure',
+        categoryLabel: 'Adventure',
+        durationHours: 2,
+        priceFrom: 680,
+        route: '/tours/tour-kayak',
+      },
+    ],
+    pagination: {
+      hasMore: false,
+      nextCursor: null,
+    },
   },
   es: {
     eyebrow: 'Tours en Bacalar',
     title: 'Elige una experiencia en la laguna que encaje con el dia',
     description:
       'Compara primero unas pocas opciones claras y luego entra a una exploracion mas amplia cuando el ritmo del dia ya este definido.',
-    items: [
+    featuredItems: [
       {
         id: 'tour-sailing',
         name: 'Vela privada al amanecer',
-        category: 'Premium',
+        category: 'premium',
+        categoryLabel: 'Premium',
         durationHours: 4,
         priceFrom: 2100,
         route: '/tours/tour-sailing',
@@ -103,7 +140,8 @@ export const toursContentByLanguage: Record<AppLanguage, ToursContent> = {
       {
         id: 'tour-pontoon',
         name: 'Recorrido familiar en ponton',
-        category: 'Grupo',
+        category: 'group',
+        categoryLabel: 'Grupo',
         durationHours: 3,
         priceFrom: 1450,
         route: '/tours/tour-pontoon',
@@ -111,12 +149,46 @@ export const toursContentByLanguage: Record<AppLanguage, ToursContent> = {
       {
         id: 'tour-kayak',
         name: 'Kayak guiado por manglares',
-        category: 'Aventura',
+        category: 'adventure',
+        categoryLabel: 'Aventura',
         durationHours: 2,
         priceFrom: 680,
         route: '/tours/tour-kayak',
       },
     ],
+    items: [
+      {
+        id: 'tour-sailing',
+        name: 'Vela privada al amanecer',
+        category: 'premium',
+        categoryLabel: 'Premium',
+        durationHours: 4,
+        priceFrom: 2100,
+        route: '/tours/tour-sailing',
+      },
+      {
+        id: 'tour-pontoon',
+        name: 'Recorrido familiar en ponton',
+        category: 'group',
+        categoryLabel: 'Grupo',
+        durationHours: 3,
+        priceFrom: 1450,
+        route: '/tours/tour-pontoon',
+      },
+      {
+        id: 'tour-kayak',
+        name: 'Kayak guiado por manglares',
+        category: 'adventure',
+        categoryLabel: 'Aventura',
+        durationHours: 2,
+        priceFrom: 680,
+        route: '/tours/tour-kayak',
+      },
+    ],
+    pagination: {
+      hasMore: false,
+      nextCursor: null,
+    },
   },
 }
 
@@ -537,7 +609,8 @@ export const tourDetailsByLanguage: Record<
     'tour-sailing': {
       id: 'tour-sailing',
       name: 'Private Sailing at Sunrise',
-      category: 'Premium',
+      category: 'premium',
+      categoryLabel: 'Premium',
       durationHours: 4,
       priceFrom: 2100,
       description:
@@ -548,7 +621,8 @@ export const tourDetailsByLanguage: Record<
     'tour-pontoon': {
       id: 'tour-pontoon',
       name: 'Family Pontoon Loop',
-      category: 'Group',
+      category: 'group',
+      categoryLabel: 'Group',
       durationHours: 3,
       priceFrom: 1450,
       description:
@@ -559,7 +633,8 @@ export const tourDetailsByLanguage: Record<
     'tour-kayak': {
       id: 'tour-kayak',
       name: 'Guided Mangrove Kayak',
-      category: 'Adventure',
+      category: 'adventure',
+      categoryLabel: 'Adventure',
       durationHours: 2,
       priceFrom: 680,
       description:
@@ -572,7 +647,8 @@ export const tourDetailsByLanguage: Record<
     'tour-sailing': {
       id: 'tour-sailing',
       name: 'Vela privada al amanecer',
-      category: 'Premium',
+      category: 'premium',
+      categoryLabel: 'Premium',
       durationHours: 4,
       priceFrom: 2100,
       description:
@@ -586,7 +662,8 @@ export const tourDetailsByLanguage: Record<
     'tour-pontoon': {
       id: 'tour-pontoon',
       name: 'Recorrido familiar en ponton',
-      category: 'Grupo',
+      category: 'group',
+      categoryLabel: 'Grupo',
       durationHours: 3,
       priceFrom: 1450,
       description:
@@ -600,7 +677,8 @@ export const tourDetailsByLanguage: Record<
     'tour-kayak': {
       id: 'tour-kayak',
       name: 'Kayak guiado por manglares',
-      category: 'Aventura',
+      category: 'adventure',
+      categoryLabel: 'Aventura',
       durationHours: 2,
       priceFrom: 680,
       description:

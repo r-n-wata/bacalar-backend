@@ -9,12 +9,14 @@ import type { Logger } from './config/logger'
 import type { ContentService } from './services/contentService'
 import type { EventSubmissionService } from './services/eventSubmissionService'
 import type { RestaurantSubmissionService } from './services/restaurantSubmissionService'
+import type { TourSubmissionService } from './services/tourSubmissionService'
 import type { AppLanguage } from './types/content'
 
 type AppDependencies = {
   contentService: ContentService
   eventSubmissionService: EventSubmissionService
   restaurantSubmissionService: RestaurantSubmissionService
+  tourSubmissionService: TourSubmissionService
   logger: Logger
   defaultLanguage: AppLanguage
   allowedOrigins: string[]
@@ -46,6 +48,7 @@ export function createApp(dependencies: AppDependencies) {
       contentService: dependencies.contentService,
       eventSubmissionService: dependencies.eventSubmissionService,
       restaurantSubmissionService: dependencies.restaurantSubmissionService,
+      tourSubmissionService: dependencies.tourSubmissionService,
       defaultLanguage: dependencies.defaultLanguage,
     }),
   )

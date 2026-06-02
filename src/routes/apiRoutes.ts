@@ -3,15 +3,18 @@ import { getHealth } from '../controllers/healthController'
 import { createContentController } from '../controllers/contentController'
 import { createEventSubmissionController } from '../controllers/eventSubmissionController'
 import { createRestaurantSubmissionController } from '../controllers/restaurantSubmissionController'
+import { createTourSubmissionController } from '../controllers/tourSubmissionController'
 import type { ContentService } from '../services/contentService'
 import type { EventSubmissionService } from '../services/eventSubmissionService'
 import type { RestaurantSubmissionService } from '../services/restaurantSubmissionService'
+import type { TourSubmissionService } from '../services/tourSubmissionService'
 import type { AppLanguage } from '../types/content'
 
 export function createApiRoutes(dependencies: {
   contentService: ContentService
   eventSubmissionService: EventSubmissionService
   restaurantSubmissionService: RestaurantSubmissionService
+  tourSubmissionService: TourSubmissionService
   defaultLanguage: AppLanguage
 }) {
   const router = Router()
@@ -21,6 +24,9 @@ export function createApiRoutes(dependencies: {
   )
   const restaurantSubmissionController = createRestaurantSubmissionController(
     dependencies.restaurantSubmissionService,
+  )
+  const tourSubmissionController = createTourSubmissionController(
+    dependencies.tourSubmissionService,
   )
 
   router.get('/health', getHealth)
@@ -37,6 +43,8 @@ export function createApiRoutes(dependencies: {
     '/restaurant-submissions/upload',
     restaurantSubmissionController.prepareUpload,
   )
+  router.post('/tour-submissions', tourSubmissionController.createSubmission)
+  router.post('/tour-submissions/upload', tourSubmissionController.prepareUpload)
   router.get('/restaurants', contentController.getRestaurants)
   router.get('/restaurants/:id', contentController.getRestaurantDetail)
   router.get('/tours', contentController.getTours)

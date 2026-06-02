@@ -13,6 +13,7 @@ import { HttpError } from '../utils/httpError'
 import type { ContentRepositories } from '../repositories/interfaces'
 import type { EventPaginationInput } from '../repositories/eventsPagination'
 import type { RestaurantPaginationInput } from '../repositories/restaurantsPagination'
+import type { TourPaginationInput } from '../repositories/toursPagination'
 
 type CachePolicy = {
   ttlMs: number
@@ -30,7 +31,10 @@ export type ContentService = {
     pagination: RestaurantPaginationInput,
   ): Promise<RestaurantsContent>
   getRestaurantDetail(id: string, language: AppLanguage): Promise<RestaurantDetail>
-  getTours(language: AppLanguage): Promise<ToursContent>
+  getTours(
+    language: AppLanguage,
+    pagination: TourPaginationInput,
+  ): Promise<ToursContent>
   getTourDetail(id: string, language: AppLanguage): Promise<TourDetail>
 }
 
@@ -112,12 +116,12 @@ export function createContentService(
         () => repositories.restaurants.getRestaurantDetail(id, language),
       )
     },
-    getTours(language) {
+    getTours(language, pagination) {
       return getCachedContent(
         cache,
-        `tours:${language}`,
+        `tours:${language}:${pagination.category ?? 'all'}:${pagination.limit}:${pagination.cursor ?? 'start'}`,
         cachePolicies.tours,
-        () => repositories.tours.getToursContent(language),
+        () => repositories.tours.getToursContent(language, pagination),
       )
     },
     getTourDetail(id, language) {

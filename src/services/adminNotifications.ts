@@ -2,12 +2,14 @@ import nodemailer from 'nodemailer'
 import type { Logger } from '../config/logger'
 import type { EventSubmissionRecord } from '../types/eventSubmissions'
 import type { RestaurantSubmissionRecord } from '../types/restaurantSubmissions'
+import type { TourSubmissionRecord } from '../types/tourSubmissions'
 
 export type SubmissionAdminNotifier = {
   notifyEventSubmission(submission: EventSubmissionRecord): Promise<void>
   notifyRestaurantSubmission(
     submission: RestaurantSubmissionRecord,
   ): Promise<void>
+  notifyTourSubmission(submission: TourSubmissionRecord): Promise<void>
 }
 
 type EmailNotificationConfig = {
@@ -74,6 +76,15 @@ export function createSubmissionAdminNotifier(
           ),
         })
       },
+      async notifyTourSubmission(submission) {
+        logger.info('submission-email-skipped', {
+          submissionId: submission.id,
+          adminEmailConfigured: Boolean(adminEmail),
+          mailTransportConfigured: Boolean(
+            fromEmail && smtpHost && smtpPort && smtpUser && smtpPassword,
+          ),
+        })
+      },
     }
   }
 
@@ -130,6 +141,34 @@ export function createSubmissionAdminNotifier(
           `Cuisine: ${submission.cuisine}`,
           `Moment: ${submission.moment}`,
           `Price band: ${submission.priceBand}`,
+          `Contact name: ${submission.contactName}`,
+          `Contact method: ${submission.contactMethod}`,
+          `Instagram: ${submission.instagram ?? 'N/A'}`,
+          `WhatsApp: ${submission.whatsapp ?? 'N/A'}`,
+          `Submitted locale: ${submission.submittedLocale}`,
+          '',
+          'Description:',
+          submission.description,
+          '',
+          'Media:',
+          formatMediaSummary(submission),
+        ].join('\n'),
+      })
+    },
+    async notifyTourSubmission(submission) {
+      await transporter.sendMail({
+        to: adminEmail,
+        from: fromEmail,
+        subject: `New Bacalar tour submission: ${submission.name}`,
+        text: [
+          'A new tour submission is pending review.',
+          '',
+          `Submission ID: ${submission.id}`,
+          `Status: ${submission.status}`,
+          `Name: ${submission.name}`,
+          `Category: ${submission.category}`,
+          `Duration hours: ${submission.durationHours}`,
+          `Price from: ${submission.priceFrom}`,
           `Contact name: ${submission.contactName}`,
           `Contact method: ${submission.contactMethod}`,
           `Instagram: ${submission.instagram ?? 'N/A'}`,

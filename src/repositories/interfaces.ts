@@ -10,6 +10,7 @@ import type {
 } from '../types/content'
 import type { EventPaginationInput } from './eventsPagination'
 import type { RestaurantPaginationInput } from './restaurantsPagination'
+import type { TourPaginationInput } from './toursPagination'
 
 export type HomeRepository = {
   getHomeContent(language: AppLanguage): Promise<HomeContent | null>
@@ -35,7 +36,10 @@ export type RestaurantsRepository = {
 }
 
 export type ToursRepository = {
-  getToursContent(language: AppLanguage): Promise<ToursContent | null>
+  getToursContent(
+    language: AppLanguage,
+    pagination: TourPaginationInput,
+  ): Promise<ToursContent | null>
   getTourDetail(id: string, language: AppLanguage): Promise<TourDetail | null>
 }
 

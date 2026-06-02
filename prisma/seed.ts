@@ -193,9 +193,12 @@ async function main() {
       data: {
         slug: item.id,
         status: ContentStatus.PUBLISHED,
+        category: item.category,
         durationHours: item.durationHours,
         priceFrom: item.priceFrom,
         sortOrder: index,
+        isFeatured: index < 3,
+        featuredOrder: index < 3 ? index : null,
       },
     })
 
@@ -208,13 +211,13 @@ async function main() {
           tourId: tour.id,
           localeId: en.id,
           name: enTranslation.name,
-          category: enTranslation.category,
+          category: enTranslation.categoryLabel,
         },
         {
           tourId: tour.id,
           localeId: es.id,
           name: esTranslation.name,
-          category: esTranslation.category,
+          category: esTranslation.categoryLabel,
         },
       ],
     })

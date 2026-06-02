@@ -32,6 +32,7 @@ function createDependencies() {
     adminNotifier: {
       notifyEventSubmission: vi.fn(),
       notifyRestaurantSubmission: vi.fn(),
+      notifyTourSubmission: vi.fn(),
     },
     externalImageValidator: {
       validate: vi.fn(async (url: string) => ({

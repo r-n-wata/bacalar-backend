@@ -10,6 +10,7 @@ import {
 import type { ContentRepositories } from './interfaces'
 import { paginateEvents } from './eventsPagination'
 import { paginateRestaurants, selectFeaturedRestaurants } from './restaurantsPagination'
+import { paginateTours, selectFeaturedTours } from './toursPagination'
 
 export function createInMemoryRepositories(): ContentRepositories {
   return {
@@ -81,8 +82,29 @@ export function createInMemoryRepositories(): ContentRepositories {
       },
     },
     tours: {
-      async getToursContent(language) {
-        return toursContentByLanguage[language] ?? null
+      async getToursContent(language, pagination) {
+        const content = toursContentByLanguage[language]
+
+        if (!content) {
+          return null
+        }
+
+        const allItems = content.items.map((item, index) => ({
+          ...item,
+          sortOrder: index,
+          featuredOrder: index,
+        }))
+        const filteredItems = allItems.filter((item) =>
+          pagination.category ? item.category === pagination.category : true,
+        )
+        const paginatedTours = paginateTours(filteredItems, pagination)
+
+        return {
+          ...content,
+          featuredItems: selectFeaturedTours(allItems, 3),
+          items: paginatedTours.items,
+          pagination: paginatedTours.pagination,
+        }
       },
       async getTourDetail(id, language) {
         return tourDetailsByLanguage[language]?.[id] ?? null
