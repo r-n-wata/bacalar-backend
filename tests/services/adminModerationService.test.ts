@@ -2,11 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { createAdminModerationService } from '../../src/services/adminModerationService'
 
 describe('adminModerationService', () => {
-  it('returns pending submissions from the repository', async () => {
+  it('returns filtered submissions from the repository', async () => {
     const repository = {
-      listPendingSubmissions: vi.fn().mockResolvedValue([
+      listSubmissions: vi.fn().mockResolvedValue([
         { id: 'submission-1', type: 'events', status: 'PENDING' },
       ]),
+      getSubmissionDetail: vi.fn(),
       approveSubmission: vi.fn(),
       rejectSubmission: vi.fn(),
     }
@@ -14,15 +15,52 @@ describe('adminModerationService', () => {
       repository,
     })
 
-    const result = await service.listPendingSubmissions('all')
+    const result = await service.listSubmissions({
+      type: 'all',
+      status: 'pending',
+    })
 
-    expect(repository.listPendingSubmissions).toHaveBeenCalledWith('all')
+    expect(repository.listSubmissions).toHaveBeenCalledWith({
+      type: 'all',
+      status: 'pending',
+    })
     expect(result.items).toHaveLength(1)
+  })
+
+  it('returns a single submission detail payload from the repository', async () => {
+    const repository = {
+      listSubmissions: vi.fn(),
+      getSubmissionDetail: vi.fn().mockResolvedValue({
+        id: 'submission-1',
+        type: 'events',
+        status: 'APPROVED',
+      }),
+      approveSubmission: vi.fn(),
+      rejectSubmission: vi.fn(),
+    }
+    const service = createAdminModerationService({
+      repository,
+    })
+
+    const result = await service.getSubmissionDetail('events', 'submission-1')
+
+    expect(repository.getSubmissionDetail).toHaveBeenCalledWith(
+      'events',
+      'submission-1',
+    )
+    expect(result).toEqual({
+      item: {
+        id: 'submission-1',
+        type: 'events',
+        status: 'APPROVED',
+      },
+    })
   })
 
   it('passes the admin email into approval writes', async () => {
     const repository = {
-      listPendingSubmissions: vi.fn(),
+      listSubmissions: vi.fn(),
+      getSubmissionDetail: vi.fn(),
       approveSubmission: vi.fn().mockResolvedValue({
         id: 'submission-1',
         type: 'events',
@@ -50,10 +88,34 @@ describe('adminModerationService', () => {
     )
   })
 
+  it('maps missing detail records into a 404 HttpError', async () => {
+    const repository = {
+      listSubmissions: vi.fn(),
+      getSubmissionDetail: vi
+        .fn()
+        .mockRejectedValue(new Error('EVENT_SUBMISSION_NOT_FOUND')),
+      approveSubmission: vi.fn(),
+      rejectSubmission: vi.fn(),
+    }
+    const service = createAdminModerationService({
+      repository,
+    })
+
+    await expect(
+      service.getSubmissionDetail('events', 'submission-1'),
+    ).rejects.toMatchObject({
+      statusCode: 404,
+      code: 'SUBMISSION_NOT_FOUND',
+    })
+  })
+
   it('maps pending-state conflicts into a 409 HttpError', async () => {
     const repository = {
-      listPendingSubmissions: vi.fn(),
-      approveSubmission: vi.fn().mockRejectedValue(new Error('SUBMISSION_NOT_PENDING')),
+      listSubmissions: vi.fn(),
+      getSubmissionDetail: vi.fn(),
+      approveSubmission: vi
+        .fn()
+        .mockRejectedValue(new Error('SUBMISSION_NOT_PENDING')),
       rejectSubmission: vi.fn(),
     }
     const service = createAdminModerationService({

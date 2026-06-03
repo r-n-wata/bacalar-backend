@@ -11,7 +11,8 @@ function createResponse() {
 describe('adminModerationController', () => {
   it('returns the authenticated admin session', async () => {
     const service = {
-      listPendingSubmissions: vi.fn(),
+      listSubmissions: vi.fn(),
+      getSubmissionDetail: vi.fn(),
       approveSubmission: vi.fn(),
       rejectSubmission: vi.fn(),
     }
@@ -34,31 +35,96 @@ describe('adminModerationController', () => {
     })
   })
 
-  it('passes the submissions filter through to the service', async () => {
+  it('passes the type and status filters through to the service', async () => {
     const service = {
-      listPendingSubmissions: vi.fn().mockResolvedValue({ items: [] }),
+      listSubmissions: vi.fn().mockResolvedValue({ items: [] }),
+      getSubmissionDetail: vi.fn(),
       approveSubmission: vi.fn(),
       rejectSubmission: vi.fn(),
     }
     const controller = createAdminModerationController(service)
     const response = createResponse()
 
-    await controller.listPendingSubmissions(
+    await controller.listSubmissions(
       {
         query: {
           type: 'restaurants',
+          status: 'approved',
         },
       } as never,
       response as never,
     )
 
-    expect(service.listPendingSubmissions).toHaveBeenCalledWith('restaurants')
+    expect(service.listSubmissions).toHaveBeenCalledWith({
+      type: 'restaurants',
+      status: 'approved',
+    })
     expect(response.json).toHaveBeenCalledWith({ items: [] })
+  })
+
+  it('defaults the list status filter to pending', async () => {
+    const service = {
+      listSubmissions: vi.fn().mockResolvedValue({ items: [] }),
+      getSubmissionDetail: vi.fn(),
+      approveSubmission: vi.fn(),
+      rejectSubmission: vi.fn(),
+    }
+    const controller = createAdminModerationController(service)
+    const response = createResponse()
+
+    await controller.listSubmissions(
+      {
+        query: {},
+      } as never,
+      response as never,
+    )
+
+    expect(service.listSubmissions).toHaveBeenCalledWith({
+      type: 'all',
+      status: 'pending',
+    })
+  })
+
+  it('loads a single submission detail', async () => {
+    const service = {
+      listSubmissions: vi.fn(),
+      getSubmissionDetail: vi.fn().mockResolvedValue({
+        item: {
+          id: 'submission-1',
+          type: 'events',
+          status: 'PENDING',
+        },
+      }),
+      approveSubmission: vi.fn(),
+      rejectSubmission: vi.fn(),
+    }
+    const controller = createAdminModerationController(service)
+    const response = createResponse()
+
+    await controller.getSubmissionDetail(
+      {
+        params: { type: 'events', id: 'submission-1' },
+      } as never,
+      response as never,
+    )
+
+    expect(service.getSubmissionDetail).toHaveBeenCalledWith(
+      'events',
+      'submission-1',
+    )
+    expect(response.json).toHaveBeenCalledWith({
+      item: {
+        id: 'submission-1',
+        type: 'events',
+        status: 'PENDING',
+      },
+    })
   })
 
   it('approves an event submission using the authenticated admin', async () => {
     const service = {
-      listPendingSubmissions: vi.fn(),
+      listSubmissions: vi.fn(),
+      getSubmissionDetail: vi.fn(),
       approveSubmission: vi.fn().mockResolvedValue({
         id: 'submission-1',
         type: 'events',

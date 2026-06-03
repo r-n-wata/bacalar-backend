@@ -1,18 +1,26 @@
 import {
   ContentStatus,
   type EventCategory,
+  type EventSubmissionStatus,
   type LocaleCode,
   type Prisma,
   type PrismaClient,
+  type RestaurantSubmissionStatus,
   type TourCategory,
+  type TourSubmissionStatus,
 } from '@prisma/client'
 import type {
-  AdminEventSubmission,
-  AdminRestaurantSubmission,
+  AdminEventSubmissionDetail,
+  AdminEventSubmissionListItem,
+  AdminRestaurantSubmissionDetail,
+  AdminRestaurantSubmissionListItem,
+  AdminSubmissionDetail,
   AdminSubmissionEntityType,
   AdminSubmissionListItem,
   AdminSubmissionListType,
-  AdminTourSubmission,
+  AdminSubmissionStatusFilter,
+  AdminTourSubmissionDetail,
+  AdminTourSubmissionListItem,
   SubmissionModerationResult,
 } from '../types/admin'
 
@@ -20,10 +28,27 @@ type ReviewMetadata = {
   reviewedBy: string
 }
 
+type SubmissionListFilters = {
+  type: AdminSubmissionListType
+  status: AdminSubmissionStatusFilter
+}
+
+type SubmissionImageRow = {
+  id: string
+  source: 'UPLOADED' | 'EXTERNAL_URL'
+  url: string
+  objectKey: string | null
+  mimeType: string | null
+  originalFilename: string | null
+  sortOrder: number
+}
+
 export type AdminModerationRepository = {
-  listPendingSubmissions(
-    type: AdminSubmissionListType,
-  ): Promise<AdminSubmissionListItem[]>
+  listSubmissions(filters: SubmissionListFilters): Promise<AdminSubmissionListItem[]>
+  getSubmissionDetail(
+    type: AdminSubmissionEntityType,
+    submissionId: string,
+  ): Promise<AdminSubmissionDetail>
   approveSubmission(
     type: AdminSubmissionEntityType,
     submissionId: string,
@@ -84,10 +109,7 @@ function formatTourCategoryLabel(category: TourCategory, locale: LocaleCode) {
   }
 }
 
-function formatRestaurantVibe(
-  moment: string,
-  locale: LocaleCode,
-) {
+function formatRestaurantVibe(moment: string, locale: LocaleCode) {
   if (locale === 'es') {
     switch (moment) {
       case 'breakfast':
@@ -158,17 +180,15 @@ function assertPendingStatus<T extends { status: string }>(
   return record
 }
 
-function mapImages(
-  images: Array<{
-    id: string
-    source: 'UPLOADED' | 'EXTERNAL_URL'
-    url: string
-    objectKey: string | null
-    mimeType: string | null
-    originalFilename: string | null
-    sortOrder: number
-  }>,
-) {
+function assertFound<T>(record: T | null, missingMessage: string) {
+  if (!record) {
+    throw new Error(missingMessage)
+  }
+
+  return record
+}
+
+function mapImages(images: SubmissionImageRow[]) {
   return images.map((image) => ({
     id: image.id,
     source: image.source,
@@ -180,7 +200,106 @@ function mapImages(
   }))
 }
 
-function mapEventSubmission(record: {
+function mapThumbnail(images: SubmissionImageRow[]) {
+  const leadImage = images[0]
+
+  if (!leadImage) {
+    return undefined
+  }
+
+  return {
+    id: leadImage.id,
+    source: leadImage.source,
+    url: leadImage.url,
+    objectKey: leadImage.objectKey ?? undefined,
+    mimeType: leadImage.mimeType ?? undefined,
+    originalFilename: leadImage.originalFilename ?? undefined,
+    sortOrder: leadImage.sortOrder,
+  }
+}
+
+function mapEventListItem(record: {
+  id: string
+  title: string
+  startsAt: Date
+  location: string
+  category: EventCategory
+  submittedLocale: LocaleCode
+  status: string
+  createdAt: Date
+  updatedAt: Date
+  images: SubmissionImageRow[]
+}): AdminEventSubmissionListItem {
+  return {
+    id: record.id,
+    type: 'events',
+    title: record.title,
+    startsAt: record.startsAt.toISOString(),
+    location: record.location,
+    category: record.category,
+    submittedLocale: record.submittedLocale,
+    status: record.status as AdminEventSubmissionListItem['status'],
+    createdAt: record.createdAt.toISOString(),
+    updatedAt: record.updatedAt.toISOString(),
+    thumbnail: mapThumbnail(record.images),
+  }
+}
+
+function mapRestaurantListItem(record: {
+  id: string
+  name: string
+  cuisine: string
+  moment: string
+  priceBand: string
+  submittedLocale: LocaleCode
+  status: string
+  createdAt: Date
+  updatedAt: Date
+  images: SubmissionImageRow[]
+}): AdminRestaurantSubmissionListItem {
+  return {
+    id: record.id,
+    type: 'restaurants',
+    name: record.name,
+    cuisine: record.cuisine,
+    moment: record.moment as AdminRestaurantSubmissionListItem['moment'],
+    priceBand: record.priceBand as AdminRestaurantSubmissionListItem['priceBand'],
+    submittedLocale: record.submittedLocale,
+    status: record.status as AdminRestaurantSubmissionListItem['status'],
+    createdAt: record.createdAt.toISOString(),
+    updatedAt: record.updatedAt.toISOString(),
+    thumbnail: mapThumbnail(record.images),
+  }
+}
+
+function mapTourListItem(record: {
+  id: string
+  name: string
+  category: TourCategory
+  durationHours: number
+  priceFrom: number
+  submittedLocale: LocaleCode
+  status: string
+  createdAt: Date
+  updatedAt: Date
+  images: SubmissionImageRow[]
+}): AdminTourSubmissionListItem {
+  return {
+    id: record.id,
+    type: 'tours',
+    name: record.name,
+    category: record.category,
+    durationHours: record.durationHours,
+    priceFrom: record.priceFrom,
+    submittedLocale: record.submittedLocale,
+    status: record.status as AdminTourSubmissionListItem['status'],
+    createdAt: record.createdAt.toISOString(),
+    updatedAt: record.updatedAt.toISOString(),
+    thumbnail: mapThumbnail(record.images),
+  }
+}
+
+function mapEventDetail(record: {
   id: string
   title: string
   startsAt: Date
@@ -195,37 +314,20 @@ function mapEventSubmission(record: {
   status: string
   createdAt: Date
   updatedAt: Date
-  images: Array<{
-    id: string
-    source: 'UPLOADED' | 'EXTERNAL_URL'
-    url: string
-    objectKey: string | null
-    mimeType: string | null
-    originalFilename: string | null
-    sortOrder: number
-  }>
-}): AdminEventSubmission {
+  images: SubmissionImageRow[]
+}): AdminEventSubmissionDetail {
   return {
-    id: record.id,
-    type: 'events',
-    title: record.title,
-    startsAt: record.startsAt.toISOString(),
-    location: record.location,
-    category: record.category,
+    ...mapEventListItem(record),
     description: record.description,
     contactName: record.contactName,
     contactMethod: record.contactMethod,
     instagram: record.instagram ?? undefined,
     whatsapp: record.whatsapp ?? undefined,
-    submittedLocale: record.submittedLocale,
-    status: record.status as AdminEventSubmission['status'],
-    createdAt: record.createdAt.toISOString(),
-    updatedAt: record.updatedAt.toISOString(),
     images: mapImages(record.images),
   }
 }
 
-function mapRestaurantSubmission(record: {
+function mapRestaurantDetail(record: {
   id: string
   name: string
   cuisine: string
@@ -240,37 +342,20 @@ function mapRestaurantSubmission(record: {
   status: string
   createdAt: Date
   updatedAt: Date
-  images: Array<{
-    id: string
-    source: 'UPLOADED' | 'EXTERNAL_URL'
-    url: string
-    objectKey: string | null
-    mimeType: string | null
-    originalFilename: string | null
-    sortOrder: number
-  }>
-}): AdminRestaurantSubmission {
+  images: SubmissionImageRow[]
+}): AdminRestaurantSubmissionDetail {
   return {
-    id: record.id,
-    type: 'restaurants',
-    name: record.name,
-    cuisine: record.cuisine,
-    moment: record.moment as AdminRestaurantSubmission['moment'],
-    priceBand: record.priceBand as AdminRestaurantSubmission['priceBand'],
+    ...mapRestaurantListItem(record),
     description: record.description,
     contactName: record.contactName,
     contactMethod: record.contactMethod,
     instagram: record.instagram ?? undefined,
     whatsapp: record.whatsapp ?? undefined,
-    submittedLocale: record.submittedLocale,
-    status: record.status as AdminRestaurantSubmission['status'],
-    createdAt: record.createdAt.toISOString(),
-    updatedAt: record.updatedAt.toISOString(),
     images: mapImages(record.images),
   }
 }
 
-function mapTourSubmission(record: {
+function mapTourDetail(record: {
   id: string
   name: string
   category: TourCategory
@@ -285,45 +370,56 @@ function mapTourSubmission(record: {
   status: string
   createdAt: Date
   updatedAt: Date
-  images: Array<{
-    id: string
-    source: 'UPLOADED' | 'EXTERNAL_URL'
-    url: string
-    objectKey: string | null
-    mimeType: string | null
-    originalFilename: string | null
-    sortOrder: number
-  }>
-}): AdminTourSubmission {
+  images: SubmissionImageRow[]
+}): AdminTourSubmissionDetail {
   return {
-    id: record.id,
-    type: 'tours',
-    name: record.name,
-    category: record.category,
-    durationHours: record.durationHours,
-    priceFrom: record.priceFrom,
+    ...mapTourListItem(record),
     description: record.description,
     contactName: record.contactName,
     contactMethod: record.contactMethod,
     instagram: record.instagram ?? undefined,
     whatsapp: record.whatsapp ?? undefined,
-    submittedLocale: record.submittedLocale,
-    status: record.status as AdminTourSubmission['status'],
-    createdAt: record.createdAt.toISOString(),
-    updatedAt: record.updatedAt.toISOString(),
     images: mapImages(record.images),
   }
+}
+
+function resolveEventStatus(status: AdminSubmissionStatusFilter) {
+  if (status === 'all') {
+    return undefined
+  }
+
+  return status.toUpperCase() as EventSubmissionStatus
+}
+
+function resolveRestaurantStatus(status: AdminSubmissionStatusFilter) {
+  if (status === 'all') {
+    return undefined
+  }
+
+  return status.toUpperCase() as RestaurantSubmissionStatus
+}
+
+function resolveTourStatus(status: AdminSubmissionStatusFilter) {
+  if (status === 'all') {
+    return undefined
+  }
+
+  return status.toUpperCase() as TourSubmissionStatus
 }
 
 export function createPrismaAdminModerationRepository(
   prisma: PrismaClient,
 ): AdminModerationRepository {
   return {
-    async listPendingSubmissions(type) {
+    async listSubmissions(filters) {
       const [events, restaurants, tours] = await Promise.all([
-        type === 'all' || type === 'events'
+        filters.type === 'all' || filters.type === 'events'
           ? prisma.eventSubmission.findMany({
-              where: { status: 'PENDING' },
+              where: {
+                ...(resolveEventStatus(filters.status)
+                  ? { status: resolveEventStatus(filters.status) }
+                  : {}),
+              },
               orderBy: { createdAt: 'desc' },
               include: {
                 images: {
@@ -334,9 +430,13 @@ export function createPrismaAdminModerationRepository(
               },
             })
           : Promise.resolve([]),
-        type === 'all' || type === 'restaurants'
+        filters.type === 'all' || filters.type === 'restaurants'
           ? prisma.restaurantSubmission.findMany({
-              where: { status: 'PENDING' },
+              where: {
+                ...(resolveRestaurantStatus(filters.status)
+                  ? { status: resolveRestaurantStatus(filters.status) }
+                  : {}),
+              },
               orderBy: { createdAt: 'desc' },
               include: {
                 images: {
@@ -347,9 +447,13 @@ export function createPrismaAdminModerationRepository(
               },
             })
           : Promise.resolve([]),
-        type === 'all' || type === 'tours'
+        filters.type === 'all' || filters.type === 'tours'
           ? prisma.tourSubmission.findMany({
-              where: { status: 'PENDING' },
+              where: {
+                ...(resolveTourStatus(filters.status)
+                  ? { status: resolveTourStatus(filters.status) }
+                  : {}),
+              },
               orderBy: { createdAt: 'desc' },
               include: {
                 images: {
@@ -363,10 +467,62 @@ export function createPrismaAdminModerationRepository(
       ])
 
       return [
-        ...events.map(mapEventSubmission),
-        ...restaurants.map(mapRestaurantSubmission),
-        ...tours.map(mapTourSubmission),
+        ...events.map(mapEventListItem),
+        ...restaurants.map(mapRestaurantListItem),
+        ...tours.map(mapTourListItem),
       ].sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+    },
+    async getSubmissionDetail(type, submissionId) {
+      switch (type) {
+        case 'events':
+          return mapEventDetail(
+            assertFound(
+              await prisma.eventSubmission.findUnique({
+                where: { id: submissionId },
+                include: {
+                  images: {
+                    orderBy: {
+                      sortOrder: 'asc',
+                    },
+                  },
+                },
+              }),
+              'EVENT_SUBMISSION_NOT_FOUND',
+            ),
+          )
+        case 'restaurants':
+          return mapRestaurantDetail(
+            assertFound(
+              await prisma.restaurantSubmission.findUnique({
+                where: { id: submissionId },
+                include: {
+                  images: {
+                    orderBy: {
+                      sortOrder: 'asc',
+                    },
+                  },
+                },
+              }),
+              'RESTAURANT_SUBMISSION_NOT_FOUND',
+            ),
+          )
+        case 'tours':
+          return mapTourDetail(
+            assertFound(
+              await prisma.tourSubmission.findUnique({
+                where: { id: submissionId },
+                include: {
+                  images: {
+                    orderBy: {
+                      sortOrder: 'asc',
+                    },
+                  },
+                },
+              }),
+              'TOUR_SUBMISSION_NOT_FOUND',
+            ),
+          )
+      }
     },
     async approveSubmission(type, submissionId, metadata) {
       const reviewedAt = new Date()
