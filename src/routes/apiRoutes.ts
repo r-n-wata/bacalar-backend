@@ -1,10 +1,12 @@
-import { Router } from 'express'
+import { Router, type RequestHandler } from 'express'
 import { getHealth } from '../controllers/healthController'
 import { createContentController } from '../controllers/contentController'
 import { createEventSubmissionController } from '../controllers/eventSubmissionController'
 import { createRestaurantSubmissionController } from '../controllers/restaurantSubmissionController'
 import { createTourSubmissionController } from '../controllers/tourSubmissionController'
+import { createAdminRoutes } from './adminRoutes'
 import type { ContentService } from '../services/contentService'
+import type { AdminModerationService } from '../services/adminModerationService'
 import type { EventSubmissionService } from '../services/eventSubmissionService'
 import type { RestaurantSubmissionService } from '../services/restaurantSubmissionService'
 import type { TourSubmissionService } from '../services/tourSubmissionService'
@@ -15,6 +17,8 @@ export function createApiRoutes(dependencies: {
   eventSubmissionService: EventSubmissionService
   restaurantSubmissionService: RestaurantSubmissionService
   tourSubmissionService: TourSubmissionService
+  adminModerationService: AdminModerationService
+  adminAuthMiddleware: RequestHandler
   defaultLanguage: AppLanguage
 }) {
   const router = Router()
@@ -49,6 +53,13 @@ export function createApiRoutes(dependencies: {
   router.get('/restaurants/:id', contentController.getRestaurantDetail)
   router.get('/tours', contentController.getTours)
   router.get('/tours/:id', contentController.getTourDetail)
+  router.use(
+    '/admin',
+    dependencies.adminAuthMiddleware,
+    createAdminRoutes({
+      adminModerationService: dependencies.adminModerationService,
+    }),
+  )
 
   return router
 }

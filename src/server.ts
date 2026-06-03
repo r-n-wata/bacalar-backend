@@ -2,11 +2,15 @@ import { createApp } from './app'
 import { createLogger } from './config/logger'
 import { createPrismaClient } from './config/prisma'
 import { loadEnv } from './config/env'
+import { createPrismaAdminAccountRepository } from './repositories/adminAccountRepository'
+import { createPrismaAdminModerationRepository } from './repositories/adminModerationRepository'
 import { createPrismaRepositories } from './repositories/prismaRepositories'
 import { createPrismaEventSubmissionRepository } from './repositories/eventSubmissionRepository'
 import { createPrismaRestaurantSubmissionRepository } from './repositories/restaurantSubmissionRepository'
 import { createPrismaTourSubmissionRepository } from './repositories/tourSubmissionRepository'
 import { createSubmissionAdminNotifier } from './services/adminNotifications'
+import { createSupabaseAdminAuthService } from './services/adminAuthService'
+import { createAdminModerationService } from './services/adminModerationService'
 import { createContentService } from './services/contentService'
 import { createEventSubmissionService } from './services/eventSubmissionService'
 import { createExternalImageValidator } from './services/externalImageValidation'
@@ -31,6 +35,8 @@ async function main() {
   const restaurantSubmissionRepository =
     createPrismaRestaurantSubmissionRepository(prisma)
   const tourSubmissionRepository = createPrismaTourSubmissionRepository(prisma)
+  const adminAccountRepository = createPrismaAdminAccountRepository(prisma)
+  const adminModerationRepository = createPrismaAdminModerationRepository(prisma)
   const cache = new InMemoryCache()
   const contentService = createContentService(repositories, cache)
   const eventMediaService = createSupabaseSubmissionMediaService(logger, {
@@ -62,6 +68,15 @@ async function main() {
   const externalImageValidator = createExternalImageValidator(logger, {
     timeoutMs: env.EXTERNAL_IMAGE_VALIDATION_TIMEOUT_MS,
   })
+  const adminAuthService = createSupabaseAdminAuthService({
+    supabaseUrl: env.SUPABASE_URL,
+    serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
+    adminAccountRepository,
+    logger,
+  })
+  const adminModerationService = createAdminModerationService({
+    repository: adminModerationRepository,
+  })
   const eventSubmissionService = createEventSubmissionService({
     repository: eventSubmissionRepository,
     mediaService: eventMediaService,
@@ -88,6 +103,8 @@ async function main() {
     eventSubmissionService,
     restaurantSubmissionService,
     tourSubmissionService,
+    adminModerationService,
+    adminAuthService,
     logger,
     defaultLanguage: env.DEFAULT_LOCALE,
     allowedOrigins: parseAllowedOrigins(env.ALLOWED_ORIGINS),

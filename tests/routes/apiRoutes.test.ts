@@ -50,6 +50,36 @@ describe('mvp contract and runtime foundations', () => {
     expect(next).toHaveBeenCalled()
   })
 
+  it('allows authorization headers for authenticated admin CORS preflight requests', () => {
+    const middleware = createCorsMiddleware({
+      allowedOrigins: ['https://bacalar.netlify.app'],
+    })
+    const response = createResponse()
+    const next = vi.fn()
+
+    middleware(
+      {
+        method: 'OPTIONS',
+        headers: {
+          origin: 'https://bacalar.netlify.app',
+        },
+      } as never,
+      response as never,
+      next,
+    )
+
+    expect(response.header).toHaveBeenCalledWith(
+      'Access-Control-Allow-Headers',
+      'Content-Type, Accept, Accept-Language, Authorization',
+    )
+    expect(response.header).toHaveBeenCalledWith(
+      'Access-Control-Allow-Methods',
+      'GET,POST,OPTIONS',
+    )
+    expect(response.status).toHaveBeenCalledWith(204)
+    expect(next).not.toHaveBeenCalled()
+  })
+
   it('rejects unsupported language values', () => {
     expect(() =>
       resolveLanguage(
