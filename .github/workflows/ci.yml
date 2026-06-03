@@ -11,6 +11,9 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bacalar?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/bacalar?schema=public
 
     steps:
       - name: Check out repository
@@ -28,13 +31,9 @@ jobs:
 
       - name: Generate Prisma client
         run: npm run prisma:generate
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bacalar?schema=public
 
       - name: Validate Prisma schema
         run: npm run prisma:validate
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bacalar?schema=public
 
       - name: Run type checks
         run: npm run typecheck

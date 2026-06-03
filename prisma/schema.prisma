@@ -208,6 +208,7 @@ model RestaurantSubmission {
   approvedRestaurantId String?
   createdAt       DateTime                   @default(now())
   updatedAt       DateTime                   @updatedAt
+  approvedRestaurant Restaurant?             @relation(fields: [approvedRestaurantId], references: [id], onDelete: SetNull)
   images          RestaurantSubmissionImage[]
 }
 
@@ -274,6 +275,7 @@ model Restaurant {
   publishedAt   DateTime?
   createdBy     String?
   updatedBy     String?
+  approvedSubmissions RestaurantSubmission[]
   translations  RestaurantTranslation[]
 }
 
@@ -310,6 +312,15 @@ model Tour {
   updatedBy     String?
   approvedSubmissions TourSubmission[]
   translations  TourTranslation[]
+}
+
+model AdminAccount {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  supabaseUserId String?  @unique
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model TourTranslation {

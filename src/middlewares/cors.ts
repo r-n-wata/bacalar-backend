@@ -13,6 +13,15 @@ function normalizeOrigin(origin: string) {
   return origin.replace(/\/$/, '')
 }
 
+const ALLOWED_HEADERS = [
+  'Content-Type',
+  'Accept',
+  'Accept-Language',
+  'Authorization',
+].join(', ')
+
+const ALLOWED_METHODS = ['GET', 'POST', 'OPTIONS'].join(',')
+
 function createNetlifyPreviewPattern(siteName: string) {
   return new RegExp(
     `^https://([a-z0-9-]+--)?${escapeRegex(siteName)}\\.netlify\\.app$`,
@@ -48,8 +57,8 @@ export function createCorsMiddleware({
     if (typeof origin === 'string' && isAllowed(origin)) {
       response.header('Access-Control-Allow-Origin', origin)
       response.header('Vary', 'Origin')
-      response.header('Access-Control-Allow-Headers', 'Content-Type, Accept, Accept-Language')
-      response.header('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+      response.header('Access-Control-Allow-Headers', ALLOWED_HEADERS)
+      response.header('Access-Control-Allow-Methods', ALLOWED_METHODS)
     }
 
     if (request.method === 'OPTIONS') {

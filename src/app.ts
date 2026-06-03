@@ -5,8 +5,11 @@ import { notFoundHandler } from './middlewares/notFound'
 import { createApiRoutes } from './routes/apiRoutes'
 import { createCorsMiddleware } from './middlewares/cors'
 import { createRateLimitMiddleware } from './middlewares/rateLimit'
+import { createAdminAuthMiddleware } from './middlewares/adminAuth'
 import type { Logger } from './config/logger'
 import type { ContentService } from './services/contentService'
+import type { AdminAuthService } from './services/adminAuthService'
+import type { AdminModerationService } from './services/adminModerationService'
 import type { EventSubmissionService } from './services/eventSubmissionService'
 import type { RestaurantSubmissionService } from './services/restaurantSubmissionService'
 import type { TourSubmissionService } from './services/tourSubmissionService'
@@ -17,6 +20,8 @@ type AppDependencies = {
   eventSubmissionService: EventSubmissionService
   restaurantSubmissionService: RestaurantSubmissionService
   tourSubmissionService: TourSubmissionService
+  adminModerationService: AdminModerationService
+  adminAuthService: AdminAuthService
   logger: Logger
   defaultLanguage: AppLanguage
   allowedOrigins: string[]
@@ -49,6 +54,10 @@ export function createApp(dependencies: AppDependencies) {
       eventSubmissionService: dependencies.eventSubmissionService,
       restaurantSubmissionService: dependencies.restaurantSubmissionService,
       tourSubmissionService: dependencies.tourSubmissionService,
+      adminModerationService: dependencies.adminModerationService,
+      adminAuthMiddleware: createAdminAuthMiddleware(
+        dependencies.adminAuthService,
+      ),
       defaultLanguage: dependencies.defaultLanguage,
     }),
   )
