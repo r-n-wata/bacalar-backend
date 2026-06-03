@@ -11,7 +11,8 @@ export function createAdminRoutes(dependencies: {
   )
 
   router.get('/session', controller.getSession)
-  router.get('/submissions', controller.listPendingSubmissions)
+  router.get('/submissions', controller.listSubmissions)
+  router.get('/submissions/:type/:id', controller.getSubmissionDetail)
   router.post('/submissions/events/:id/approve', controller.approveEventSubmission)
   router.post('/submissions/events/:id/reject', controller.rejectEventSubmission)
   router.post(

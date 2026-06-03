@@ -1,15 +1,24 @@
 import type { AdminModerationRepository } from '../repositories/adminModerationRepository'
 import type {
+  AdminSubmissionDetailResponse,
   AdminSubmissionEntityType,
   AdminSubmissionListResponse,
   AdminSubmissionListType,
+  AdminSubmissionStatusFilter,
   SubmissionModerationResult,
 } from '../types/admin'
 import { HttpError } from '../utils/httpError'
 import type { AuthenticatedAdminUser } from './adminAuthService'
 
 export type AdminModerationService = {
-  listPendingSubmissions(type: AdminSubmissionListType): Promise<AdminSubmissionListResponse>
+  listSubmissions(filters: {
+    type: AdminSubmissionListType
+    status: AdminSubmissionStatusFilter
+  }): Promise<AdminSubmissionListResponse>
+  getSubmissionDetail(
+    type: AdminSubmissionEntityType,
+    submissionId: string,
+  ): Promise<AdminSubmissionDetailResponse>
   approveSubmission(
     type: AdminSubmissionEntityType,
     submissionId: string,
@@ -55,9 +64,18 @@ export function createAdminModerationService({
   repository,
 }: AdminModerationServiceDependencies): AdminModerationService {
   return {
-    async listPendingSubmissions(type) {
+    async listSubmissions(filters) {
       return {
-        items: await repository.listPendingSubmissions(type),
+        items: await repository.listSubmissions(filters),
+      }
+    },
+    async getSubmissionDetail(type, submissionId) {
+      try {
+        return {
+          item: await repository.getSubmissionDetail(type, submissionId),
+        }
+      } catch (error) {
+        throw toHttpError(error)
       }
     },
     async approveSubmission(type, submissionId, adminUser) {
