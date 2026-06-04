@@ -2,6 +2,14 @@ import { describe, expect, it, vi } from 'vitest'
 import { createAdminModerationService } from '../../src/services/adminModerationService'
 
 describe('adminModerationService', () => {
+  function createPublishedContentRepository() {
+    return {
+      listPublishedContent: vi.fn(),
+      updateFeaturedState: vi.fn(),
+      countFeaturedItems: vi.fn(),
+    }
+  }
+
   it('returns filtered submissions from the repository', async () => {
     const repository = {
       listSubmissions: vi.fn().mockResolvedValue([
@@ -13,6 +21,7 @@ describe('adminModerationService', () => {
     }
     const service = createAdminModerationService({
       repository,
+      publishedContentRepository: createPublishedContentRepository(),
     })
 
     const result = await service.listSubmissions({
@@ -40,6 +49,7 @@ describe('adminModerationService', () => {
     }
     const service = createAdminModerationService({
       repository,
+      publishedContentRepository: createPublishedContentRepository(),
     })
 
     const result = await service.getSubmissionDetail('events', 'submission-1')
@@ -72,6 +82,7 @@ describe('adminModerationService', () => {
     }
     const service = createAdminModerationService({
       repository,
+      publishedContentRepository: createPublishedContentRepository(),
     })
 
     await service.approveSubmission('events', 'submission-1', {
@@ -99,6 +110,7 @@ describe('adminModerationService', () => {
     }
     const service = createAdminModerationService({
       repository,
+      publishedContentRepository: createPublishedContentRepository(),
     })
 
     await expect(
@@ -120,6 +132,7 @@ describe('adminModerationService', () => {
     }
     const service = createAdminModerationService({
       repository,
+      publishedContentRepository: createPublishedContentRepository(),
     })
 
     await expect(

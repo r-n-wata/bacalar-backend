@@ -1,5 +1,8 @@
 import type { AdminModerationRepository } from '../repositories/adminModerationRepository'
+import type { PublishedContentRepository } from '../repositories/interfaces'
 import type {
+  AdminPublishedContentListResponse,
+  AdminPublishedContentType,
   AdminSubmissionDetailResponse,
   AdminSubmissionEntityType,
   AdminSubmissionListResponse,
@@ -15,10 +18,20 @@ export type AdminModerationService = {
     type: AdminSubmissionListType
     status: AdminSubmissionStatusFilter
   }): Promise<AdminSubmissionListResponse>
+  listPublishedContent(
+    type: AdminPublishedContentType,
+    language: 'en' | 'es',
+  ): Promise<AdminPublishedContentListResponse>
   getSubmissionDetail(
     type: AdminSubmissionEntityType,
     submissionId: string,
   ): Promise<AdminSubmissionDetailResponse>
+  updatePublishedContentFeatured(input: {
+    type: AdminPublishedContentType
+    id: string
+    isFeatured: boolean
+    language: 'en' | 'es'
+  }): Promise<AdminPublishedContentListResponse>
   approveSubmission(
     type: AdminSubmissionEntityType,
     submissionId: string,
@@ -33,6 +46,7 @@ export type AdminModerationService = {
 
 type AdminModerationServiceDependencies = {
   repository: AdminModerationRepository
+  publishedContentRepository: PublishedContentRepository
 }
 
 function toHttpError(error: unknown) {
@@ -62,11 +76,24 @@ function toHttpError(error: unknown) {
 
 export function createAdminModerationService({
   repository,
+  publishedContentRepository,
 }: AdminModerationServiceDependencies): AdminModerationService {
   return {
     async listSubmissions(filters) {
       return {
         items: await repository.listSubmissions(filters),
+      }
+    },
+    async listPublishedContent(type, language) {
+      const [items, featuredCount] = await Promise.all([
+        publishedContentRepository.listPublishedContent(type, language),
+        publishedContentRepository.countFeaturedItems(type),
+      ])
+
+      return {
+        items,
+        featuredCount,
+        featuredCap: 5,
       }
     },
     async getSubmissionDetail(type, submissionId) {
@@ -76,6 +103,28 @@ export function createAdminModerationService({
         }
       } catch (error) {
         throw toHttpError(error)
+      }
+    },
+    async updatePublishedContentFeatured(input) {
+      const updated = await publishedContentRepository.updateFeaturedState(input)
+
+      if (!updated) {
+        throw new HttpError(
+          409,
+          'Unable to update featured state.',
+          'FEATURED_UPDATE_FAILED',
+        )
+      }
+
+      const [items, featuredCount] = await Promise.all([
+        publishedContentRepository.listPublishedContent(input.type, input.language),
+        publishedContentRepository.countFeaturedItems(input.type),
+      ])
+
+      return {
+        items,
+        featuredCount,
+        featuredCap: 5,
       }
     },
     async approveSubmission(type, submissionId, adminUser) {

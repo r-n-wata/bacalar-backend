@@ -8,15 +8,24 @@ function createResponse() {
   }
 }
 
+const defaultLanguage = 'en' as const
+
+function createService(overrides: Record<string, unknown> = {}) {
+  return {
+    listSubmissions: vi.fn(),
+    listPublishedContent: vi.fn(),
+    getSubmissionDetail: vi.fn(),
+    updatePublishedContentFeatured: vi.fn(),
+    approveSubmission: vi.fn(),
+    rejectSubmission: vi.fn(),
+    ...overrides,
+  }
+}
+
 describe('adminModerationController', () => {
   it('returns the authenticated admin session', async () => {
-    const service = {
-      listSubmissions: vi.fn(),
-      getSubmissionDetail: vi.fn(),
-      approveSubmission: vi.fn(),
-      rejectSubmission: vi.fn(),
-    }
-    const controller = createAdminModerationController(service)
+    const service = createService()
+    const controller = createAdminModerationController(service, defaultLanguage)
     const response = createResponse()
 
     await controller.getSession(
@@ -36,13 +45,10 @@ describe('adminModerationController', () => {
   })
 
   it('passes the type and status filters through to the service', async () => {
-    const service = {
+    const service = createService({
       listSubmissions: vi.fn().mockResolvedValue({ items: [] }),
-      getSubmissionDetail: vi.fn(),
-      approveSubmission: vi.fn(),
-      rejectSubmission: vi.fn(),
-    }
-    const controller = createAdminModerationController(service)
+    })
+    const controller = createAdminModerationController(service, defaultLanguage)
     const response = createResponse()
 
     await controller.listSubmissions(
@@ -63,13 +69,10 @@ describe('adminModerationController', () => {
   })
 
   it('defaults the list status filter to pending', async () => {
-    const service = {
+    const service = createService({
       listSubmissions: vi.fn().mockResolvedValue({ items: [] }),
-      getSubmissionDetail: vi.fn(),
-      approveSubmission: vi.fn(),
-      rejectSubmission: vi.fn(),
-    }
-    const controller = createAdminModerationController(service)
+    })
+    const controller = createAdminModerationController(service, defaultLanguage)
     const response = createResponse()
 
     await controller.listSubmissions(
@@ -86,8 +89,7 @@ describe('adminModerationController', () => {
   })
 
   it('loads a single submission detail', async () => {
-    const service = {
-      listSubmissions: vi.fn(),
+    const service = createService({
       getSubmissionDetail: vi.fn().mockResolvedValue({
         item: {
           id: 'submission-1',
@@ -95,10 +97,8 @@ describe('adminModerationController', () => {
           status: 'PENDING',
         },
       }),
-      approveSubmission: vi.fn(),
-      rejectSubmission: vi.fn(),
-    }
-    const controller = createAdminModerationController(service)
+    })
+    const controller = createAdminModerationController(service, defaultLanguage)
     const response = createResponse()
 
     await controller.getSubmissionDetail(
@@ -122,9 +122,7 @@ describe('adminModerationController', () => {
   })
 
   it('approves an event submission using the authenticated admin', async () => {
-    const service = {
-      listSubmissions: vi.fn(),
-      getSubmissionDetail: vi.fn(),
+    const service = createService({
       approveSubmission: vi.fn().mockResolvedValue({
         id: 'submission-1',
         type: 'events',
@@ -132,9 +130,8 @@ describe('adminModerationController', () => {
         reviewedAt: '2026-06-02T12:00:00.000Z',
         reviewedBy: 'admin@bacalar.test',
       }),
-      rejectSubmission: vi.fn(),
-    }
-    const controller = createAdminModerationController(service)
+    })
+    const controller = createAdminModerationController(service, defaultLanguage)
     const response = createResponse()
 
     await controller.approveEventSubmission(

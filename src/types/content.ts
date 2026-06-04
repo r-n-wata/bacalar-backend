@@ -46,6 +46,8 @@ export type HomeSuggestionCard = {
   image?: HomeImage
 }
 
+export type FeaturedListItemImage = HomeImage
+
 export type HomeContent = {
   hero: {
     eyebrow: string
@@ -79,6 +81,7 @@ export type EventItem = {
   startsAt?: string
   endsAt?: string
   route: string
+  image?: FeaturedListItemImage
 }
 
 export type EventsPagination = {
@@ -103,6 +106,7 @@ export type RestaurantItem = {
   priceBand: '$' | '$$' | '$$$'
   moment: RestaurantMoment
   route: string
+  image?: FeaturedListItemImage
 }
 
 export type RestaurantsPagination = {
@@ -127,6 +131,7 @@ export type TourItem = {
   durationHours: number
   priceFrom: number
   route: string
+  image?: FeaturedListItemImage
 }
 
 export type ToursPagination = {

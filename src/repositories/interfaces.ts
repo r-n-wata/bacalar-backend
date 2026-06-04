@@ -1,16 +1,24 @@
 import type {
   AppLanguage,
+  EventCategory,
   EventDetail,
   EventsContent,
   HomeContent,
+  RestaurantMoment,
   RestaurantDetail,
   RestaurantsContent,
+  TourCategory,
   TourDetail,
   ToursContent,
 } from '../types/content'
 import type { EventPaginationInput } from './eventsPagination'
 import type { RestaurantPaginationInput } from './restaurantsPagination'
 import type { TourPaginationInput } from './toursPagination'
+import type {
+  AdminPublishedContentItem,
+  AdminPublishedContentType,
+  UpdateAdminPublishedContentFeaturedInput,
+} from '../types/admin'
 
 export type HomeRepository = {
   getHomeContent(language: AppLanguage): Promise<HomeContent | null>
@@ -48,4 +56,15 @@ export type ContentRepositories = {
   events: EventsRepository
   restaurants: RestaurantsRepository
   tours: ToursRepository
+}
+
+export type PublishedContentRepository = {
+  listPublishedContent(
+    type: AdminPublishedContentType,
+    language: AppLanguage,
+  ): Promise<AdminPublishedContentItem[]>
+  updateFeaturedState(
+    input: UpdateAdminPublishedContentFeaturedInput,
+  ): Promise<AdminPublishedContentItem | null>
+  countFeaturedItems(type: AdminPublishedContentType): Promise<number>
 }

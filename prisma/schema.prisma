@@ -270,6 +270,8 @@ model Restaurant {
   priceBand     String
   moment        String
   sortOrder     Int                     @default(0)
+  isFeatured    Boolean                 @default(false)
+  featuredOrder Int?
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
   publishedAt   DateTime?

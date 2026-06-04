@@ -2,11 +2,16 @@ import type { Request, Response } from 'express'
 import type { AdminRequest } from '../middlewares/adminAuth'
 import type { AdminModerationService } from '../services/adminModerationService'
 import type {
+  AppLanguage,
+} from '../types/content'
+import type {
+  AdminPublishedContentType,
   AdminSubmissionEntityType,
   AdminSubmissionListType,
   AdminSubmissionStatusFilter,
 } from '../types/admin'
 import { HttpError } from '../utils/httpError'
+import { resolveLanguage } from '../utils/locale'
 
 const submissionTypes = [
   'all',
@@ -16,6 +21,7 @@ const submissionTypes = [
 ] satisfies AdminSubmissionListType[]
 
 const entityTypes = ['events', 'restaurants', 'tours'] satisfies AdminSubmissionEntityType[]
+const publishedContentTypes = ['events', 'restaurants', 'tours'] satisfies AdminPublishedContentType[]
 const submissionStatuses = [
   'all',
   'pending',
@@ -77,12 +83,32 @@ function resolveEntityType(value: string | string[] | undefined) {
   )
 }
 
+function resolvePublishedContentType(value: unknown) {
+  const type =
+    typeof value === 'string'
+      ? value
+      : Array.isArray(value) && typeof value[0] === 'string'
+        ? value[0]
+        : ''
+
+  if (publishedContentTypes.includes(type as AdminPublishedContentType)) {
+    return type as AdminPublishedContentType
+  }
+
+  throw new HttpError(
+    400,
+    'Unsupported admin content type.',
+    'VALIDATION_ERROR',
+  )
+}
+
 function resolveId(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? ''
 }
 
 export function createAdminModerationController(
   adminModerationService: AdminModerationService,
+  defaultLanguage: AppLanguage,
 ) {
   return {
     getSession: async (request: Request, response: Response) => {
@@ -101,11 +127,32 @@ export function createAdminModerationController(
 
       response.json(payload)
     },
+    listPublishedContent: async (request: Request, response: Response) => {
+      const payload = await adminModerationService.listPublishedContent(
+        resolvePublishedContentType(request.query.type),
+        resolveLanguage(request, defaultLanguage),
+      )
+
+      response.json(payload)
+    },
     getSubmissionDetail: async (request: Request, response: Response) => {
       const payload = await adminModerationService.getSubmissionDetail(
         resolveEntityType(request.params.type),
         resolveId(request.params.id),
       )
+
+      response.json(payload)
+    },
+    updatePublishedContentFeatured: async (
+      request: Request,
+      response: Response,
+    ) => {
+      const payload = await adminModerationService.updatePublishedContentFeatured({
+        type: resolvePublishedContentType(request.params.type),
+        id: resolveId(request.params.id),
+        isFeatured: request.method === 'POST',
+        language: resolveLanguage(request, defaultLanguage),
+      })
 
       response.json(payload)
     },

@@ -4,7 +4,10 @@ import { createPrismaClient } from './config/prisma'
 import { loadEnv } from './config/env'
 import { createPrismaAdminAccountRepository } from './repositories/adminAccountRepository'
 import { createPrismaAdminModerationRepository } from './repositories/adminModerationRepository'
-import { createPrismaRepositories } from './repositories/prismaRepositories'
+import {
+  createPrismaPublishedContentRepository,
+  createPrismaRepositories,
+} from './repositories/prismaRepositories'
 import { createPrismaEventSubmissionRepository } from './repositories/eventSubmissionRepository'
 import { createPrismaRestaurantSubmissionRepository } from './repositories/restaurantSubmissionRepository'
 import { createPrismaTourSubmissionRepository } from './repositories/tourSubmissionRepository'
@@ -37,6 +40,7 @@ async function main() {
   const tourSubmissionRepository = createPrismaTourSubmissionRepository(prisma)
   const adminAccountRepository = createPrismaAdminAccountRepository(prisma)
   const adminModerationRepository = createPrismaAdminModerationRepository(prisma)
+  const publishedContentRepository = createPrismaPublishedContentRepository(prisma)
   const cache = new InMemoryCache()
   const contentService = createContentService(repositories, cache)
   const eventMediaService = createSupabaseSubmissionMediaService(logger, {
@@ -76,6 +80,7 @@ async function main() {
   })
   const adminModerationService = createAdminModerationService({
     repository: adminModerationRepository,
+    publishedContentRepository,
   })
   const eventSubmissionService = createEventSubmissionService({
     repository: eventSubmissionRepository,

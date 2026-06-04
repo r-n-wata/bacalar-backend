@@ -1,6 +1,7 @@
 import type {
   AppLanguage,
   EventCategory,
+  HomeImage,
   RestaurantMoment,
   TourCategory,
 } from './content'
@@ -116,4 +117,52 @@ export type SubmissionModerationResult = {
   reviewedAt: string
   reviewedBy: string
   publishedRecordId?: string
+}
+
+export type AdminPublishedContentType = 'events' | 'restaurants' | 'tours'
+
+type AdminPublishedContentBase = {
+  id: string
+  type: AdminPublishedContentType
+  title: string
+  route: string
+  isFeatured: boolean
+  featuredOrder?: number
+  image?: HomeImage
+}
+
+export type AdminPublishedEventItem = AdminPublishedContentBase & {
+  type: 'events'
+  category: EventCategory
+  subtitle: string
+}
+
+export type AdminPublishedRestaurantItem = AdminPublishedContentBase & {
+  type: 'restaurants'
+  moment: RestaurantMoment
+  subtitle: string
+}
+
+export type AdminPublishedTourItem = AdminPublishedContentBase & {
+  type: 'tours'
+  category: TourCategory
+  subtitle: string
+}
+
+export type AdminPublishedContentItem =
+  | AdminPublishedEventItem
+  | AdminPublishedRestaurantItem
+  | AdminPublishedTourItem
+
+export type AdminPublishedContentListResponse = {
+  items: AdminPublishedContentItem[]
+  featuredCount: number
+  featuredCap: number
+}
+
+export type UpdateAdminPublishedContentFeaturedInput = {
+  type: AdminPublishedContentType
+  id: string
+  isFeatured: boolean
+  language: AppLanguage
 }

@@ -58,6 +58,7 @@ export function createApiRoutes(dependencies: {
     dependencies.adminAuthMiddleware,
     createAdminRoutes({
       adminModerationService: dependencies.adminModerationService,
+      defaultLanguage: dependencies.defaultLanguage,
     }),
   )
 

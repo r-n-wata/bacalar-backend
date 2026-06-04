@@ -4,14 +4,22 @@ import type { AdminModerationService } from '../services/adminModerationService'
 
 export function createAdminRoutes(dependencies: {
   adminModerationService: AdminModerationService
+  defaultLanguage: 'en' | 'es'
 }) {
   const router = Router()
   const controller = createAdminModerationController(
     dependencies.adminModerationService,
+    dependencies.defaultLanguage,
   )
 
   router.get('/session', controller.getSession)
   router.get('/submissions', controller.listSubmissions)
+  router.get('/content', controller.listPublishedContent)
+  router.post('/content/:type/:id/feature', controller.updatePublishedContentFeatured)
+  router.delete(
+    '/content/:type/:id/feature',
+    controller.updatePublishedContentFeatured,
+  )
   router.get('/submissions/:type/:id', controller.getSubmissionDetail)
   router.post('/submissions/events/:id/approve', controller.approveEventSubmission)
   router.post('/submissions/events/:id/reject', controller.rejectEventSubmission)
