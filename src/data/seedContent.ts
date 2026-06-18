@@ -56,9 +56,9 @@ const images = {
 export const toursContentByLanguage: Record<AppLanguage, ToursContent> = {
   en: {
     eyebrow: 'Bacalar tours',
-    title: 'Choose a lagoon experience that fits the day',
+    title: 'Discover the best lagoon tours in Bacalar',
     description:
-      'Compare a few focused options first, then move into a fuller browse once the right pace becomes clear.',
+      'Browse trusted lagoon experiences for every type of trip.',
     featuredItems: [
       {
         id: 'tour-sailing',
@@ -124,9 +124,9 @@ export const toursContentByLanguage: Record<AppLanguage, ToursContent> = {
   },
   es: {
     eyebrow: 'Tours en Bacalar',
-    title: 'Elige una experiencia en la laguna que encaje con el dia',
+    title: 'Descubre los mejores tours por la laguna en Bacalar',
     description:
-      'Compara primero unas pocas opciones claras y luego entra a una exploracion mas amplia cuando el ritmo del dia ya este definido.',
+      'Explora experiencias confiables en la laguna para todo tipo de viaje.',
     featuredItems: [
       {
         id: 'tour-sailing',
@@ -198,9 +198,9 @@ export const restaurantsContentByLanguage: Record<
 > = {
   en: {
     eyebrow: 'Restaurants',
-    title: 'Pick the right stop for the moment',
+    title: 'Where to eat in Bacalar',
     description:
-      'Keep dining simple: one strong breakfast, one easy lunch, and one dinner worth slowing down for.',
+      "From breakfast by the lagoon to relaxed dinners, we've selected places worth visiting.",
     featuredItems: [
       {
         id: 'rest-cielo',
@@ -266,9 +266,9 @@ export const restaurantsContentByLanguage: Record<
   },
   es: {
     eyebrow: 'Restaurantes',
-    title: 'Elige la parada correcta para cada momento',
+    title: 'Donde comer en Bacalar',
     description:
-      'Haz la comida facil: un gran desayuno, un almuerzo sin vueltas y una cena que valga bajar el ritmo.',
+      'Desde desayunos junto a la laguna hasta cenas relajadas, seleccionamos lugares que vale la pena visitar.',
     featuredItems: [
       {
         id: 'rest-cielo',
@@ -337,9 +337,9 @@ export const restaurantsContentByLanguage: Record<
 export const eventsContentByLanguage: Record<AppLanguage, EventsContent> = {
   en: {
     eyebrow: 'Events',
-    title: 'See what feels current in Bacalar this week',
+    title: 'Events happening this week',
     description:
-      'Use events as texture for the trip: a timely extra when the right night or morning opens up.',
+      'Music, food and wellness events worth adding to your itinerary.',
     featuredItems: [
       {
         id: 'event-sunset-jazz',
@@ -469,9 +469,9 @@ export const eventsContentByLanguage: Record<AppLanguage, EventsContent> = {
   },
   es: {
     eyebrow: 'Eventos',
-    title: 'Mira que se siente vigente en Bacalar esta semana',
+    title: 'Eventos de esta semana',
     description:
-      'Usa los eventos como textura del viaje: un extra oportuno cuando aparece la noche o la manana correcta.',
+      'Eventos de musica, comida y bienestar que vale la pena sumar a tu itinerario.',
     featuredItems: [
       {
         id: 'event-sunset-jazz',
@@ -1006,9 +1006,9 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
   en: {
     hero: {
       eyebrow: 'Bacalar, made simple',
-      title: 'Start with the water, then layer in food and what is happening this week.',
+      title: 'A calmer way to experience Bacalar',
       description:
-        'A calmer homepage for both first-time visitors and returning travelers: strong lagoon picks up front, easy food choices next, and timely events when they actually improve the plan.',
+        'Curated recommendations for visitors who want less noise and better choices.',
     },
     spotlight: {
       actions: [
@@ -1062,9 +1062,9 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
     featuredExperiences: {
       intro: {
         eyebrow: 'Top tours',
-        title: 'A short list of lagoon experiences worth opening first',
+        title: 'Our favourite lagoon tours',
         description:
-          'Compact, confidence-building options for people who want to move quickly.',
+          'Trusted experiences to help you make the most of your time on the lagoon.',
       },
       items: [
         {
@@ -1099,9 +1099,9 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
     diningMoments: {
       intro: {
         eyebrow: 'Where to eat',
-        title: 'Breakfast, lunch, and dinner that fit the pace of Bacalar',
+        title: 'Where to eat in Bacalar',
         description:
-          'Keep restaurant decisions short, visual, and easy to scan.',
+          'From breakfast by the lagoon to relaxed dinners, these are the places worth knowing.',
       },
       items: [
         {
@@ -1139,9 +1139,9 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
     weeklyHappenings: {
       intro: {
         eyebrow: 'This week',
-        title: 'Current events that add texture without crowding the page',
+        title: "This week's events",
         description:
-          'Fresh enough for repeat visitors, selective enough for everyone else.',
+          'Just the events worth knowing about.',
       },
       items: [
         {
@@ -1180,9 +1180,9 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
   es: {
     hero: {
       eyebrow: 'Bacalar, mas simple',
-      title: 'Empieza por el agua y despues suma comida y lo que esta pasando esta semana.',
+      title: 'Una forma mas tranquila de vivir Bacalar',
       description:
-        'Una portada mas calmada para quienes vienen por primera vez y para quienes regresan: grandes picks de laguna al frente, comida facil despues y eventos oportunos solo cuando realmente ayudan.',
+        'Recomendaciones curadas para visitantes que quieren menos ruido y mejores decisiones.',
     },
     spotlight: {
       actions: [
@@ -1245,9 +1245,9 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
     featuredExperiences: {
       intro: {
         eyebrow: 'Tours top',
-        title: 'Una lista corta de experiencias en la laguna que vale la pena abrir primero',
+        title: 'Nuestros tours favoritos por la laguna',
         description:
-          'Opciones compactas y claras para avanzar rapido con confianza.',
+          'Experiencias confiables para aprovechar mejor tu tiempo en la laguna.',
       },
       items: [
         {
@@ -1291,9 +1291,9 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
     diningMoments: {
       intro: {
         eyebrow: 'Donde comer',
-        title: 'Desayuno, almuerzo y cena con el ritmo correcto para Bacalar',
+        title: 'Donde comer en Bacalar',
         description:
-          'Haz que decidir restaurante sea corto, visual y facil de leer.',
+          'Desde desayunos junto a la laguna hasta cenas relajadas, estos son los lugares que vale la pena conocer.',
       },
       items: [
         {
@@ -1340,9 +1340,9 @@ export const homeContentByLanguage: Record<AppLanguage, HomeContent> = {
     weeklyHappenings: {
       intro: {
         eyebrow: 'Esta semana',
-        title: 'Eventos actuales que suman textura sin saturar la pagina',
+        title: 'Eventos de esta semana',
         description:
-          'Lo bastante fresco para quien vuelve, lo bastante selectivo para todos.',
+          'Solo los eventos que vale la pena conocer.',
       },
       items: [
         {

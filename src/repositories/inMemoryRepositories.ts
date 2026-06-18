@@ -28,10 +28,9 @@ export function createInMemoryRepositories(): ContentRepositories {
         return {
           hero: {
             eyebrow: 'Bacalar, made simple',
-            title:
-              'Start with the water, then layer in food and what is happening this week.',
+            title: 'A calmer way to experience Bacalar',
             description:
-              'A calmer homepage for both first-time visitors and returning travelers, with lagoon picks first and timely events only when they help.',
+              'Curated recommendations for visitors who want less noise and better choices.',
           },
           spotlight: {
             actions: [
