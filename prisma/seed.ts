@@ -15,10 +15,13 @@ import {
   restaurantsContentByLanguage,
   toursContentByLanguage,
 } from '../src/data/seedContent'
+import { loadRestaurantSeedWorkbook } from '../src/data/restaurantSeedWorkbook'
 
 const prisma = new PrismaClient()
 
 async function main() {
+  const restaurantSeeds = loadRestaurantSeedWorkbook()
+
   await prisma.homeSpotlightMetric.deleteMany()
   await prisma.homeSpotlightEntryTranslation.deleteMany()
   await prisma.homeSpotlightEntry.deleteMany()
@@ -154,35 +157,28 @@ async function main() {
     })
   }
 
-  for (const [index, item] of restaurantsContentByLanguage.en.items.entries()) {
+  for (const [index, item] of restaurantSeeds.entries()) {
     const restaurant = await prisma.restaurant.create({
       data: {
-        slug: item.id,
+        slug: item.slug,
         status: ContentStatus.PUBLISHED,
         priceBand: item.priceBand,
-        moment: item.moment,
+        moments: item.moments,
         sortOrder: index,
+        isFeatured: item.isFeatured,
+        featuredOrder: item.featuredOrder,
       },
     })
-
-    const enTranslation = restaurantsContentByLanguage.en.items[index]
-    const esTranslation = restaurantsContentByLanguage.es.items[index]
 
     await prisma.restaurantTranslation.createMany({
       data: [
         {
           restaurantId: restaurant.id,
           localeId: en.id,
-          name: enTranslation.name,
-          cuisine: enTranslation.cuisine,
-          vibe: enTranslation.vibe,
-        },
-        {
-          restaurantId: restaurant.id,
-          localeId: es.id,
-          name: esTranslation.name,
-          cuisine: esTranslation.cuisine,
-          vibe: esTranslation.vibe,
+          name: item.en.name,
+          cuisine: item.en.cuisine,
+          vibe: item.en.vibe,
+          description: item.en.description,
         },
       ],
     })

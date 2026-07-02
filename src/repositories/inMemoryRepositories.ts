@@ -10,8 +10,31 @@ import type { ContentRepositories } from './interfaces'
 import { paginateEvents, selectFeaturedEvents } from './eventsPagination'
 import { paginateRestaurants, selectFeaturedRestaurants } from './restaurantsPagination'
 import { paginateTours, selectFeaturedTours } from './toursPagination'
+import type { AppLanguage, RestaurantMoment } from '../types/content'
 
 const FEATURED_ITEMS_CAP = 5
+
+function formatRestaurantMoment(moment: RestaurantMoment, language: AppLanguage) {
+  if (language === 'es') {
+    switch (moment) {
+      case 'breakfast':
+        return 'Desayuno'
+      case 'lunch':
+        return 'Comida'
+      case 'dinner':
+        return 'Cena'
+    }
+  }
+
+  switch (moment) {
+    case 'breakfast':
+      return 'Breakfast'
+    case 'lunch':
+      return 'Lunch'
+    case 'dinner':
+      return 'Dinner'
+  }
+}
 
 export function createInMemoryRepositories(): ContentRepositories {
   return {
@@ -91,7 +114,9 @@ export function createInMemoryRepositories(): ContentRepositories {
               .slice(0, FEATURED_ITEMS_CAP)
               .map((item) => ({
                 id: item.id,
-                label: item.moment,
+                label: item.moments
+                  .map((moment) => formatRestaurantMoment(moment, language))
+                  .join(' / '),
                 title: item.name,
                 subtitle: item.cuisine,
                 description: item.vibe,
@@ -173,7 +198,9 @@ export function createInMemoryRepositories(): ContentRepositories {
         }))
         const filteredItems = allItems
           .filter((item) =>
-            pagination.category ? item.moment === pagination.category : true,
+            pagination.category
+              ? item.moments.includes(pagination.category)
+              : true,
           )
 
         const paginatedRestaurants = paginateRestaurants(filteredItems, pagination)

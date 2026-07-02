@@ -64,6 +64,16 @@ type SubmissionWithImages = {
   images: SubmissionImageRecord[]
 }
 
+type RestaurantTranslationWithLocale = {
+  locale: {
+    code: AppLanguage
+  }
+  name: string
+  cuisine: string
+  vibe: string
+  description?: string | null
+}
+
 function mapLeadImage(
   approvedSubmissions: SubmissionWithImages[] | undefined,
 ): FeaturedListItemImage | undefined {
@@ -109,8 +119,53 @@ function deriveCardSubtitle(route: string, label: string | null) {
   return label ?? 'Bacalar'
 }
 
+function formatRestaurantMoment(moment: RestaurantMoment, language: AppLanguage) {
+  if (language === 'es') {
+    switch (moment) {
+      case 'breakfast':
+        return 'Desayuno'
+      case 'lunch':
+        return 'Comida'
+      case 'dinner':
+        return 'Cena'
+    }
+  }
+
+  switch (moment) {
+    case 'breakfast':
+      return 'Breakfast'
+    case 'lunch':
+      return 'Lunch'
+    case 'dinner':
+      return 'Dinner'
+  }
+}
+
+function formatRestaurantMomentsLabel(
+  moments: RestaurantMoment[],
+  language: AppLanguage,
+) {
+  return moments.map((moment) => formatRestaurantMoment(moment, language)).join(' / ')
+}
+
+function selectRestaurantTranslation(
+  translations: RestaurantTranslationWithLocale[],
+  language: AppLanguage,
+) {
+  return (
+    translations.find((translation) => translation.locale.code === language) ??
+    translations.find((translation) => translation.locale.code === 'en') ??
+    null
+  )
+}
+
+function isPresent<T>(value: T | null): value is T {
+  return value !== null
+}
+
 function toHomeSuggestionCard(
   item: EventItem | RestaurantItem | TourItem,
+  language: AppLanguage,
 ): HomeSuggestionCard {
   if ('title' in item) {
     return {
@@ -128,7 +183,7 @@ function toHomeSuggestionCard(
   if ('cuisine' in item) {
     return {
       id: item.id,
-      label: item.moment,
+      label: formatRestaurantMomentsLabel(item.moments, language),
       title: item.name,
       subtitle: item.cuisine,
       description: item.vibe,
@@ -151,8 +206,9 @@ function toHomeSuggestionCard(
 
 function mapHomeSectionItems(
   items: Array<EventItem | RestaurantItem | TourItem>,
+  language: AppLanguage,
 ): HomeSuggestionCard[] {
-  return items.map(toHomeSuggestionCard)
+  return items.map((item) => toHomeSuggestionCard(item, language))
 }
 
 function mapEventItem(event: {
@@ -186,13 +242,13 @@ function mapEventItem(event: {
 function mapRestaurantItem(restaurant: {
   slug: string
   priceBand: string
-  moment: string
+  moments: RestaurantMoment[]
   sortOrder: number
   featuredOrder: number | null
-  translations: Array<{ name: string; cuisine: string; vibe: string }>
+  translation: { name: string; cuisine: string; vibe: string }
   approvedSubmissions?: SubmissionWithImages[]
 }): RestaurantItem & { sortOrder: number; featuredOrder?: number | null } {
-  const translation = restaurant.translations[0]
+  const translation = restaurant.translation
   const image = mapLeadImage(restaurant.approvedSubmissions)
 
   return {
@@ -201,7 +257,7 @@ function mapRestaurantItem(restaurant: {
     cuisine: translation.cuisine,
     vibe: translation.vibe,
     priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
-    moment: restaurant.moment as RestaurantMoment,
+    moments: restaurant.moments,
     route: `/restaurants/${restaurant.slug}`,
     image: withImageAlt(image, translation.name),
     sortOrder: restaurant.sortOrder,
@@ -253,6 +309,16 @@ function getApprovedSubmissionInclude() {
           },
           take: 1,
         },
+      },
+    },
+  }
+}
+
+function getRestaurantTranslationInclude(_language: AppLanguage) {
+  return {
+    translations: {
+      include: {
+        locale: true,
       },
     },
   }
@@ -318,7 +384,7 @@ function mapPublishedRestaurantItem(
     isFeatured: typeof item.featuredOrder === 'number',
     featuredOrder: item.featuredOrder ?? undefined,
     image: item.image,
-    moment: item.moment,
+    moments: item.moments,
     subtitle: `${item.cuisine} - ${item.priceBand}`,
   }
 }
@@ -437,7 +503,7 @@ export function createPrismaRepositories(
               where: { status: ContentStatus.PUBLISHED, isFeatured: true },
               orderBy: [{ featuredOrder: 'asc' }, { sortOrder: 'asc' }, { slug: 'asc' }],
               include: {
-                translations: { where: getLocaleWhere(language) },
+                ...getRestaurantTranslationInclude(language),
                 ...getApprovedSubmissionInclude(),
               },
             }),
@@ -486,6 +552,7 @@ export function createPrismaRepositories(
                   .map(mapTourItem),
                 FEATURED_ITEMS_CAP,
               ),
+              language,
             ),
           },
           diningMoments: {
@@ -497,10 +564,23 @@ export function createPrismaRepositories(
             items: mapHomeSectionItems(
               selectFeaturedRestaurants(
                 featuredRestaurants
-                  .filter((restaurant) => restaurant.translations.length > 0)
-                  .map(mapRestaurantItem),
+                  .map((restaurant) => {
+                    const translation = selectRestaurantTranslation(
+                      restaurant.translations,
+                      language,
+                    )
+
+                    return translation
+                      ? mapRestaurantItem({
+                          ...restaurant,
+                          translation,
+                        })
+                      : null
+                  })
+                  .filter(isPresent),
                 FEATURED_ITEMS_CAP,
               ),
+              language,
             ),
           },
           weeklyHappenings: {
@@ -516,6 +596,7 @@ export function createPrismaRepositories(
                   .map(mapEventItem),
                 FEATURED_ITEMS_CAP,
               ),
+              language,
             ),
           },
         }
@@ -657,12 +738,12 @@ export function createPrismaRepositories(
           prisma.restaurant.findMany({
             where: {
               status: ContentStatus.PUBLISHED,
-              ...(pagination.category ? { moment: pagination.category } : {}),
+              ...(pagination.category
+                ? { moments: { has: pagination.category } }
+                : {}),
             },
             include: {
-              translations: {
-                where: getLocaleWhere(language),
-              },
+              ...getRestaurantTranslationInclude(language),
               ...getApprovedSubmissionInclude(),
             },
           }),
@@ -672,20 +753,42 @@ export function createPrismaRepositories(
               isFeatured: true,
             },
             include: {
-              translations: {
-                where: getLocaleWhere(language),
-              },
+              ...getRestaurantTranslationInclude(language),
               ...getApprovedSubmissionInclude(),
             },
           }),
         ])
 
         const restaurantItems = listRestaurants
-          .filter((restaurant) => restaurant.translations.length > 0)
-          .map(mapRestaurantItem)
+          .map((restaurant) => {
+            const translation = selectRestaurantTranslation(
+              restaurant.translations,
+              language,
+            )
+
+            return translation
+              ? mapRestaurantItem({
+                  ...restaurant,
+                  translation,
+                })
+              : null
+          })
+          .filter(isPresent)
         const featuredRestaurantItems = featuredRestaurants
-          .filter((restaurant) => restaurant.translations.length > 0)
-          .map(mapRestaurantItem)
+          .map((restaurant) => {
+            const translation = selectRestaurantTranslation(
+              restaurant.translations,
+              language,
+            )
+
+            return translation
+              ? mapRestaurantItem({
+                  ...restaurant,
+                  translation,
+                })
+              : null
+          })
+          .filter(isPresent)
 
         const paginatedRestaurants = paginateRestaurants(
           restaurantItems,
@@ -714,18 +817,23 @@ export function createPrismaRepositories(
             status: ContentStatus.PUBLISHED,
           },
           include: {
-            translations: {
-              where: getLocaleWhere(language),
-            },
+            ...getRestaurantTranslationInclude(language),
             ...getApprovedSubmissionInclude(),
           },
         })
 
-        if (!restaurant || restaurant.translations.length === 0) {
+        if (!restaurant) {
           return null
         }
 
-        const translation = restaurant.translations[0]
+        const translation = selectRestaurantTranslation(
+          restaurant.translations,
+          language,
+        )
+
+        if (!translation) {
+          return null
+        }
 
         return {
           id: restaurant.slug,
@@ -733,7 +841,7 @@ export function createPrismaRepositories(
           cuisine: translation.cuisine,
           vibe: translation.vibe,
           priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
-          moment: restaurant.moment as RestaurantMoment,
+          moments: restaurant.moments as RestaurantMoment[],
           description:
             translation.description ??
             `${translation.name} offers a ${translation.vibe.toLowerCase()} experience.`,
@@ -882,14 +990,26 @@ export function createPrismaPublishedContentRepository(
             where: { status: ContentStatus.PUBLISHED },
             orderBy: [{ sortOrder: 'asc' }, { slug: 'asc' }],
             include: {
-              translations: { where: getLocaleWhere(language) },
+              ...getRestaurantTranslationInclude(language),
               ...getApprovedSubmissionInclude(),
             },
           })
 
           return items
-            .filter((item) => item.translations.length > 0)
-            .map(mapRestaurantItem)
+            .map((item) => {
+              const translation = selectRestaurantTranslation(
+                item.translations,
+                language,
+              )
+
+              return translation
+                ? mapRestaurantItem({
+                    ...item,
+                    translation,
+                  })
+                : null
+            })
+            .filter(isPresent)
             .map(mapPublishedRestaurantItem)
         }
         case 'tours': {
@@ -986,13 +1106,20 @@ export function createPrismaPublishedContentRepository(
                 : null,
             },
             include: {
-              translations: { where: getLocaleWhere(language) },
+              ...getRestaurantTranslationInclude(language),
               ...getApprovedSubmissionInclude(),
             },
           })
 
-          return item.translations.length > 0
-            ? mapPublishedRestaurantItem(mapRestaurantItem(item))
+          const translation = selectRestaurantTranslation(item.translations, language)
+
+          return translation
+            ? mapPublishedRestaurantItem(
+                mapRestaurantItem({
+                  ...item,
+                  translation,
+                }),
+              )
             : null
         }
         case 'tours': {

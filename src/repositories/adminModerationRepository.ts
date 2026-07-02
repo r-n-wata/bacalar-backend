@@ -601,7 +601,7 @@ export function createPrismaAdminModerationRepository(
                 slug: buildSubmissionSlug(submission.name, submission.id),
                 status: ContentStatus.PUBLISHED,
                 priceBand: submission.priceBand,
-                moment: submission.moment,
+                moments: [submission.moment as 'breakfast' | 'lunch' | 'dinner'],
                 sortOrder: await nextSortOrder(transaction, 'restaurant'),
                 publishedAt: reviewedAt,
                 createdBy: metadata.reviewedBy,

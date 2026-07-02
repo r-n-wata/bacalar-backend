@@ -139,7 +139,7 @@ export type AdminPublishedEventItem = AdminPublishedContentBase & {
 
 export type AdminPublishedRestaurantItem = AdminPublishedContentBase & {
   type: 'restaurants'
-  moment: RestaurantMoment
+  moments: RestaurantMoment[]
   subtitle: string
 }
 

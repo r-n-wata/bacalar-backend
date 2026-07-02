@@ -208,7 +208,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Vegetarian',
         vibe: 'Garden breakfast',
         priceBand: '$$',
-        moment: 'breakfast',
+        moments: ['breakfast'],
         route: '/restaurants/rest-cielo',
       },
       {
@@ -217,7 +217,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Regional Mexican',
         vibe: 'Casual local favorite',
         priceBand: '$$',
-        moment: 'lunch',
+        moments: ['lunch'],
         route: '/restaurants/rest-ixchel',
       },
       {
@@ -226,7 +226,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Seafood',
         vibe: 'Lagoon-facing dinner',
         priceBand: '$$$',
-        moment: 'dinner',
+        moments: ['dinner'],
         route: '/restaurants/rest-naao',
       },
     ],
@@ -237,7 +237,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Vegetarian',
         vibe: 'Garden breakfast',
         priceBand: '$$',
-        moment: 'breakfast',
+        moments: ['breakfast'],
         route: '/restaurants/rest-cielo',
       },
       {
@@ -246,7 +246,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Regional Mexican',
         vibe: 'Casual local favorite',
         priceBand: '$$',
-        moment: 'lunch',
+        moments: ['lunch'],
         route: '/restaurants/rest-ixchel',
       },
       {
@@ -255,7 +255,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Seafood',
         vibe: 'Lagoon-facing dinner',
         priceBand: '$$$',
-        moment: 'dinner',
+        moments: ['dinner'],
         route: '/restaurants/rest-naao',
       },
     ],
@@ -276,7 +276,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Vegetariano',
         vibe: 'Desayuno en jardin',
         priceBand: '$$',
-        moment: 'breakfast',
+        moments: ['breakfast'],
         route: '/restaurants/rest-cielo',
       },
       {
@@ -285,7 +285,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Mexicana regional',
         vibe: 'Favorito local casual',
         priceBand: '$$',
-        moment: 'lunch',
+        moments: ['lunch'],
         route: '/restaurants/rest-ixchel',
       },
       {
@@ -294,7 +294,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Mariscos',
         vibe: 'Cena frente a la laguna',
         priceBand: '$$$',
-        moment: 'dinner',
+        moments: ['dinner'],
         route: '/restaurants/rest-naao',
       },
     ],
@@ -305,7 +305,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Vegetariano',
         vibe: 'Desayuno en jardin',
         priceBand: '$$',
-        moment: 'breakfast',
+        moments: ['breakfast'],
         route: '/restaurants/rest-cielo',
       },
       {
@@ -314,7 +314,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Mexicana regional',
         vibe: 'Favorito local casual',
         priceBand: '$$',
-        moment: 'lunch',
+        moments: ['lunch'],
         route: '/restaurants/rest-ixchel',
       },
       {
@@ -323,7 +323,7 @@ export const restaurantsContentByLanguage: Record<
         cuisine: 'Mariscos',
         vibe: 'Cena frente a la laguna',
         priceBand: '$$$',
-        moment: 'dinner',
+        moments: ['dinner'],
         route: '/restaurants/rest-naao',
       },
     ],
@@ -703,7 +703,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Vegetarian',
       vibe: 'Garden breakfast',
       priceBand: '$$',
-      moment: 'breakfast',
+      moments: ['breakfast'],
       description:
         'A relaxed breakfast stop with garden energy, fresh plates, and enough calm to set up a lagoon morning without rushing anyone through it.',
       route: '/restaurants/rest-cielo',
@@ -715,7 +715,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Regional Mexican',
       vibe: 'Casual local favorite',
       priceBand: '$$',
-      moment: 'lunch',
+      moments: ['lunch'],
       description:
         'A dependable lunch option when the day needs something grounded, regional, and easy to say yes to after a morning on the water.',
       route: '/restaurants/rest-ixchel',
@@ -727,7 +727,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Seafood',
       vibe: 'Lagoon-facing dinner',
       priceBand: '$$$',
-      moment: 'dinner',
+      moments: ['dinner'],
       description:
         'An evening pick for when the stay calls for one elevated meal, strong seafood, and a setting that makes sunset feel part of dinner.',
       route: '/restaurants/rest-naao',
@@ -741,7 +741,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Vegetariano',
       vibe: 'Desayuno en jardin',
       priceBand: '$$',
-      moment: 'breakfast',
+      moments: ['breakfast'],
       description:
         'Un desayuno relajado con ambiente de jardin, platos frescos y la calma suficiente para arrancar una manana de laguna sin prisas.',
       route: '/restaurants/rest-cielo',
@@ -756,7 +756,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Mexicana regional',
       vibe: 'Favorito local casual',
       priceBand: '$$',
-      moment: 'lunch',
+      moments: ['lunch'],
       description:
         'Una opcion confiable para almorzar cuando el dia pide algo regional, cercano y facil de elegir despues de una manana en el agua.',
       route: '/restaurants/rest-ixchel',
@@ -771,7 +771,7 @@ export const restaurantDetailsByLanguage: Record<
       cuisine: 'Mariscos',
       vibe: 'Cena frente a la laguna',
       priceBand: '$$$',
-      moment: 'dinner',
+      moments: ['dinner'],
       description:
         'Una eleccion nocturna para cuando la estancia pide una comida mas especial, buenos mariscos y un entorno donde el atardecer acompana la cena.',
       route: '/restaurants/rest-naao',

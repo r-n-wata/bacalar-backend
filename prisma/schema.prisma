@@ -31,6 +31,12 @@ enum EventCategory {
   food
 }
 
+enum RestaurantMoment {
+  breakfast
+  lunch
+  dinner
+}
+
 enum TourCategory {
   premium
   group
@@ -268,7 +274,7 @@ model Restaurant {
   slug          String                  @unique
   status        ContentStatus           @default(PUBLISHED)
   priceBand     String
-  moment        String
+  moments       RestaurantMoment[]
   sortOrder     Int                     @default(0)
   isFeatured    Boolean                 @default(false)
   featuredOrder Int?

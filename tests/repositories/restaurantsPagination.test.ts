@@ -6,6 +6,7 @@ import {
   paginateRestaurants,
   selectFeaturedRestaurants,
 } from '../../src/repositories/restaurantsPagination'
+import type { RestaurantMoment } from '../../src/types/content'
 
 const restaurants = [
   {
@@ -14,7 +15,7 @@ const restaurants = [
     cuisine: 'Regional Mexican',
     vibe: 'Lunch stop',
     priceBand: '$$' as const,
-    moment: 'lunch' as const,
+    moments: ['lunch'] as RestaurantMoment[],
     route: '/restaurants/rest-b',
     sortOrder: 2,
     featuredOrder: 1,
@@ -25,7 +26,7 @@ const restaurants = [
     cuisine: 'Vegetarian',
     vibe: 'Breakfast stop',
     priceBand: '$$' as const,
-    moment: 'breakfast' as const,
+    moments: ['breakfast'] as RestaurantMoment[],
     route: '/restaurants/rest-a',
     sortOrder: 0,
     featuredOrder: 0,
@@ -36,7 +37,7 @@ const restaurants = [
     cuisine: 'Seafood',
     vibe: 'Dinner stop',
     priceBand: '$$$' as const,
-    moment: 'dinner' as const,
+    moments: ['breakfast', 'dinner'] as RestaurantMoment[],
     route: '/restaurants/rest-c',
     sortOrder: 4,
     featuredOrder: 2,
@@ -85,7 +86,7 @@ describe('restaurantsPagination', () => {
 
   it('supports category-filtered pagination inputs without changing ordering rules', () => {
     const filteredRestaurants = restaurants.filter(
-      (restaurant) => restaurant.moment === 'dinner',
+      (restaurant) => restaurant.moments.includes('dinner'),
     )
     const firstPage = paginateRestaurants(filteredRestaurants, {
       limit: 1,

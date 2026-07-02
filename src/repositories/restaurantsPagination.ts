@@ -97,7 +97,7 @@ function stripSortMetadata(item: RestaurantListItem): RestaurantItem {
     cuisine: item.cuisine,
     vibe: item.vibe,
     priceBand: item.priceBand,
-    moment: item.moment,
+    moments: item.moments,
     route: item.route,
   }
 }
