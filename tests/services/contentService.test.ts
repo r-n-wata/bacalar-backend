@@ -20,7 +20,7 @@ describe('contentService', () => {
           tours: { title: 'a', description: 'b', route: '/tours', cta: 'c', metrics: [] },
         },
       },
-      featuredExperiences: { intro: { eyebrow: 'a', title: 'b', description: 'c' }, items: [] },
+      featuredTours: { intro: { eyebrow: 'a', title: 'b', description: 'c' }, items: [] },
       diningMoments: { intro: { eyebrow: 'a', title: 'b', description: 'c' }, items: [] },
       weeklyHappenings: { intro: { eyebrow: 'a', title: 'b', description: 'c' }, items: [] },
     }
@@ -54,11 +54,16 @@ describe('contentService', () => {
     const detailPayload = {
       id: 'tour-sailing',
       name: 'Private Sailing at Sunrise',
-      category: 'premium' as const,
-      categoryLabel: 'Premium',
-      durationHours: 4,
-      priceFrom: 2100,
+      category: 'Sailing',
+      duration: '4 hours',
+      priceFrom: 'From MXN 2,800',
+      privateOrShared: 'Private',
+      bestFor: 'Sunrise',
+      difficulty: 'Easy',
+      suitableForKids: 'Yes',
       description: 'A quiet sunrise departure.',
+      imageUrls: [],
+      operatorName: 'Laguna Vela',
       route: '/tours/tour-sailing',
     }
     const getTourDetail = vi.fn(async () => detailPayload)
@@ -93,6 +98,7 @@ describe('contentService', () => {
       eyebrow: 'Tours',
       title: 'Lagoon plans',
       description: 'Desc',
+      categories: ['Sailing', 'Kayaking'],
       featuredItems: [],
       items: [],
       pagination: {
@@ -120,28 +126,28 @@ describe('contentService', () => {
 
     const service = createContentService(repositories, new InMemoryCache())
 
-    await service.getTours('en', { limit: 2, category: 'premium' })
-    await service.getTours('en', { limit: 2, category: 'premium' })
+    await service.getTours('en', { limit: 2, category: 'Sailing' })
+    await service.getTours('en', { limit: 2, category: 'Sailing' })
     await service.getTours('en', {
       limit: 2,
       cursor: 'next-page',
-      category: 'premium',
+      category: 'Sailing',
     })
-    await service.getTours('en', { limit: 2, category: 'group' })
+    await service.getTours('en', { limit: 2, category: 'Kayak Tour' })
 
     expect(getToursContent).toHaveBeenCalledTimes(3)
     expect(getToursContent).toHaveBeenNthCalledWith(1, 'en', {
       limit: 2,
-      category: 'premium',
+      category: 'Sailing',
     })
     expect(getToursContent).toHaveBeenNthCalledWith(2, 'en', {
       limit: 2,
       cursor: 'next-page',
-      category: 'premium',
+      category: 'Sailing',
     })
     expect(getToursContent).toHaveBeenNthCalledWith(3, 'en', {
       limit: 2,
-      category: 'group',
+      category: 'Kayak Tour',
     })
   })
 

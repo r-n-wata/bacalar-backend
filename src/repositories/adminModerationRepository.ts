@@ -6,7 +6,6 @@ import {
   type Prisma,
   type PrismaClient,
   type RestaurantSubmissionStatus,
-  type TourCategory,
   type TourSubmissionStatus,
 } from '@prisma/client'
 import type {
@@ -87,26 +86,12 @@ function formatEventDateLabel(startsAt: Date, locale: LocaleCode) {
   }).format(startsAt)
 }
 
-function formatTourCategoryLabel(category: TourCategory, locale: LocaleCode) {
-  if (locale === 'es') {
-    switch (category) {
-      case 'premium':
-        return 'Premium'
-      case 'group':
-        return 'Grupo'
-      case 'adventure':
-        return 'Aventura'
-    }
-  }
+function formatTourPriceLabel(priceFrom: number) {
+  return `From ${priceFrom} MXN`
+}
 
-  switch (category) {
-    case 'premium':
-      return 'Premium'
-    case 'group':
-      return 'Group'
-    case 'adventure':
-      return 'Adventure'
-  }
+function formatTourDurationLabel(durationHours: number) {
+  return `${durationHours} hours`
 }
 
 function formatRestaurantVibe(moment: string, locale: LocaleCode) {
@@ -275,7 +260,7 @@ function mapRestaurantListItem(record: {
 function mapTourListItem(record: {
   id: string
   name: string
-  category: TourCategory
+  category: string
   durationHours: number
   priceFrom: number
   submittedLocale: LocaleCode
@@ -358,7 +343,7 @@ function mapRestaurantDetail(record: {
 function mapTourDetail(record: {
   id: string
   name: string
-  category: TourCategory
+  category: string
   durationHours: number
   priceFrom: number
   description: string
@@ -645,6 +630,13 @@ export function createPrismaAdminModerationRepository(
             const submission = assertPendingStatus(
               await transaction.tourSubmission.findUnique({
                 where: { id: submissionId },
+                include: {
+                  images: {
+                    orderBy: {
+                      sortOrder: 'asc',
+                    },
+                  },
+                },
               }),
               'TOUR_SUBMISSION_NOT_FOUND',
             )
@@ -657,8 +649,17 @@ export function createPrismaAdminModerationRepository(
                 slug: buildSubmissionSlug(submission.name, submission.id),
                 status: ContentStatus.PUBLISHED,
                 category: submission.category,
-                durationHours: submission.durationHours,
-                priceFrom: submission.priceFrom,
+                duration: formatTourDurationLabel(submission.durationHours),
+                priceFrom: formatTourPriceLabel(submission.priceFrom),
+                privateOrShared: 'Shared',
+                bestFor: 'Flexible',
+                difficulty: 'Easy',
+                suitableForKids: 'Yes',
+                operatorName: submission.contactName,
+                operatorPrimaryContactMethod: submission.contactMethod,
+                operatorInstagram: submission.instagram,
+                operatorWhatsapp: submission.whatsapp,
+                imageUrls: submission.images.map((image) => image.url),
                 sortOrder: await nextSortOrder(transaction, 'tour'),
                 isFeatured: false,
                 publishedAt: reviewedAt,
@@ -668,10 +669,6 @@ export function createPrismaAdminModerationRepository(
                   create: {
                     localeId,
                     name: submission.name,
-                    category: formatTourCategoryLabel(
-                      submission.category,
-                      submission.submittedLocale,
-                    ),
                     description: submission.description,
                   },
                 },

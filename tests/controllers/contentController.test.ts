@@ -43,7 +43,7 @@ describe('contentController', () => {
           tours: { title: 'a', description: 'b', route: '/tours', cta: 'c', metrics: [] },
         },
       },
-      featuredExperiences: {
+      featuredTours: {
         intro: { eyebrow: 'x', title: 'y', description: 'z' },
         items: [],
       },
@@ -301,11 +301,16 @@ describe('contentController', () => {
     const payload = {
       id: 'tour-sailing',
       name: 'Private Sailing at Sunrise',
-      category: 'premium',
-      categoryLabel: 'Premium',
-      durationHours: 4,
-      priceFrom: 2100,
+      category: 'Sailing',
+      duration: '4 hours',
+      priceFrom: 'From MXN 2,800',
+      privateOrShared: 'Private',
+      bestFor: 'Sunrise',
+      difficulty: 'Easy',
+      suitableForKids: 'Yes',
       description: 'A quiet sunrise departure.',
+      imageUrls: [],
+      operatorName: 'Laguna Vela',
       route: '/tours/tour-sailing',
     }
     const contentService = {
@@ -372,7 +377,7 @@ describe('contentController', () => {
           lang: 'es',
           limit: '3',
           cursor: 'cursor-token',
-          category: 'premium',
+          category: 'Sailing',
         },
         headers: {},
       } as never,
@@ -382,19 +387,19 @@ describe('contentController', () => {
     expect(contentService.getTours).toHaveBeenCalledWith('es', {
       limit: 3,
       cursor: 'cursor-token',
-      category: 'premium',
+      category: 'Sailing',
     })
     expect(response.json).toHaveBeenCalledWith(payload)
   })
 
-  it('rejects unsupported tour category query parameters', async () => {
+  it('passes through dynamic tour category query parameters', async () => {
     const contentService = {
       getHome: vi.fn(),
       getEvents: vi.fn(),
       getEventDetail: vi.fn(),
       getRestaurants: vi.fn(),
       getRestaurantDetail: vi.fn(),
-      getTours: vi.fn(),
+      getTours: vi.fn().mockResolvedValue({ ok: true }),
       getTourDetail: vi.fn(),
     }
     const controller = createContentController({
@@ -403,18 +408,20 @@ describe('contentController', () => {
     })
     const response = createResponse()
 
-    await expect(
-      controller.getTours(
-        {
-          query: {
-            category: 'sailing',
-          },
-          headers: {},
-        } as never,
-        response as never,
-      ),
-    ).rejects.toMatchObject({
-      statusCode: 400,
+    await controller.getTours(
+      {
+        query: {
+          category: 'Sailing',
+        },
+        headers: {},
+      } as never,
+      response as never,
+    )
+
+    expect(contentService.getTours).toHaveBeenCalledWith('en', {
+      limit: 12,
+      cursor: undefined,
+      category: 'Sailing',
     })
   })
 })

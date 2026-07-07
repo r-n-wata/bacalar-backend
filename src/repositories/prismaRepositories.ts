@@ -74,6 +74,17 @@ type RestaurantTranslationWithLocale = {
   description?: string | null
 }
 
+type TourTranslationWithLocale = {
+  locale: {
+    code: AppLanguage
+  }
+  name: string
+  description?: string | null
+  included?: string | null
+  whatToBring?: string | null
+  operatorDescription?: string | null
+}
+
 function mapLeadImage(
   approvedSubmissions: SubmissionWithImages[] | undefined,
 ): FeaturedListItemImage | undefined {
@@ -101,6 +112,19 @@ function withImageAlt(
     ...image,
     alt,
   }
+}
+
+function mapConfiguredImage(imageUrls: string[] | undefined) {
+  const primaryImage = imageUrls?.[0]
+
+  if (!primaryImage) {
+    return undefined
+  }
+
+  return {
+    src: primaryImage,
+    alt: '',
+  } satisfies FeaturedListItemImage
 }
 
 function deriveCardSubtitle(route: string, label: string | null) {
@@ -159,6 +183,17 @@ function selectRestaurantTranslation(
   )
 }
 
+function selectTourTranslation(
+  translations: TourTranslationWithLocale[],
+  language: AppLanguage,
+) {
+  return (
+    translations.find((translation) => translation.locale.code === language) ??
+    translations.find((translation) => translation.locale.code === 'en') ??
+    null
+  )
+}
+
 function isPresent<T>(value: T | null): value is T {
   return value !== null
 }
@@ -196,9 +231,9 @@ function toHomeSuggestionCard(
   return {
     id: item.id,
     title: item.name,
-    subtitle: item.categoryLabel,
-    description: `${item.durationHours} hours`,
-    meta: `From ${item.priceFrom} MXN`,
+    subtitle: item.category,
+    description: item.bestFor,
+    meta: `${item.duration} - ${item.priceFrom}`,
     route: item.route,
     image: withImageAlt(item.image, item.name),
   }
@@ -268,23 +303,28 @@ function mapRestaurantItem(restaurant: {
 function mapTourItem(tour: {
   slug: string
   category: TourCategory
-  durationHours: number
-  priceFrom: number
+  duration: string
+  priceFrom: string
+  bestFor: string
+  operatorName: string
+  imageUrls: string[]
   sortOrder: number
   featuredOrder: number | null
-  translations: Array<{ name: string; category: string }>
+  translation: { name: string }
   approvedSubmissions?: SubmissionWithImages[]
 }): TourItem & { sortOrder: number; featuredOrder?: number | null } {
-  const translation = tour.translations[0]
-  const image = mapLeadImage(tour.approvedSubmissions)
+  const translation = tour.translation
+  const image =
+    mapConfiguredImage(tour.imageUrls) ?? mapLeadImage(tour.approvedSubmissions)
 
   return {
     id: tour.slug,
     name: translation.name,
     category: tour.category as TourCategory,
-    categoryLabel: translation.category,
-    durationHours: tour.durationHours,
+    duration: tour.duration,
     priceFrom: tour.priceFrom,
+    bestFor: tour.bestFor,
+    operatorName: tour.operatorName,
     route: `/tours/${tour.slug}`,
     image: withImageAlt(image, translation.name),
     sortOrder: tour.sortOrder,
@@ -401,7 +441,7 @@ function mapPublishedTourItem(
     featuredOrder: item.featuredOrder ?? undefined,
     image: item.image,
     category: item.category,
-    subtitle: `${item.categoryLabel} - ${item.durationHours}h`,
+    subtitle: `${item.duration} - ${item.priceFrom}`,
   }
 }
 
@@ -480,7 +520,7 @@ export function createPrismaRepositories(
         ) as HomeContent['spotlight']['entries']
 
         const featuredSection = homePage.sections.find(
-          (section) => section.kind === HomeSectionKind.FEATURED_EXPERIENCES,
+          (section) => section.kind === HomeSectionKind.FEATURED_TOURS,
         )
         const diningSection = homePage.sections.find(
           (section) => section.kind === HomeSectionKind.DINING_MOMENTS,
@@ -495,7 +535,7 @@ export function createPrismaRepositories(
               where: { status: ContentStatus.PUBLISHED, isFeatured: true },
               orderBy: [{ featuredOrder: 'asc' }, { sortOrder: 'asc' }, { slug: 'asc' }],
               include: {
-                translations: { where: getLocaleWhere(language) },
+                translations: { include: { locale: true } },
                 ...getApprovedSubmissionInclude(),
               },
             }),
@@ -539,7 +579,7 @@ export function createPrismaRepositories(
             actions: spotlightActions,
             entries: spotlightEntries,
           },
-          featuredExperiences: {
+          featuredTours: {
             intro: {
               eyebrow: featuredSection.translations[0].eyebrow,
               title: featuredSection.translations[0].title,
@@ -548,8 +588,29 @@ export function createPrismaRepositories(
             items: mapHomeSectionItems(
               selectFeaturedTours(
                 featuredTours
-                  .filter((tour) => tour.translations.length > 0)
-                  .map(mapTourItem),
+                  .map((tour) => {
+                    const translation = selectTourTranslation(
+                      tour.translations,
+                      language,
+                    )
+
+                    return translation
+                      ? mapTourItem({
+                          slug: tour.slug,
+                          category: tour.category as TourCategory,
+                          duration: tour.duration,
+                          priceFrom: tour.priceFrom,
+                          bestFor: tour.bestFor,
+                          operatorName: tour.operatorName,
+                          imageUrls: tour.imageUrls,
+                          sortOrder: tour.sortOrder,
+                          featuredOrder: tour.featuredOrder,
+                          translation,
+                          approvedSubmissions: tour.approvedSubmissions,
+                        })
+                      : null
+                  })
+                  .filter(isPresent),
                 FEATURED_ITEMS_CAP,
               ),
               language,
@@ -844,7 +905,7 @@ export function createPrismaRepositories(
           moments: restaurant.moments as RestaurantMoment[],
           description:
             translation.description ??
-            `${translation.name} offers a ${translation.vibe.toLowerCase()} experience.`,
+            `${translation.name} offers a ${translation.vibe.toLowerCase()} tour.`,
           route: `/restaurants/${restaurant.slug}`,
           image: withImageAlt(
             mapLeadImage(restaurant.approvedSubmissions),
@@ -880,9 +941,7 @@ export function createPrismaRepositories(
             },
             orderBy: [{ sortOrder: 'asc' }, { slug: 'asc' }],
             include: {
-              translations: {
-                where: getLocaleWhere(language),
-              },
+              translations: { include: { locale: true } },
               ...getApprovedSubmissionInclude(),
             },
           }),
@@ -893,31 +952,73 @@ export function createPrismaRepositories(
             },
             orderBy: [{ featuredOrder: 'asc' }, { sortOrder: 'asc' }, { slug: 'asc' }],
             include: {
-              translations: {
-                where: getLocaleWhere(language),
-              },
+              translations: { include: { locale: true } },
               ...getApprovedSubmissionInclude(),
             },
           }),
         ])
 
         const tourItems = tours
-          .filter((tour) => tour.translations.length > 0)
-          .map(mapTourItem)
+          .map((tour) => {
+            const translation = selectTourTranslation(tour.translations, language)
+
+            if (!translation) {
+              return null
+            }
+
+            return mapTourItem({
+              slug: tour.slug,
+              category: tour.category as TourCategory,
+              duration: tour.duration,
+              priceFrom: tour.priceFrom,
+              bestFor: tour.bestFor,
+              operatorName: tour.operatorName,
+              imageUrls: tour.imageUrls,
+              sortOrder: tour.sortOrder,
+              featuredOrder: tour.featuredOrder,
+              translation,
+              approvedSubmissions: tour.approvedSubmissions,
+            })
+          })
+          .filter(isPresent)
 
         const featuredTourItems = featuredTours
-          .filter((tour) => tour.translations.length > 0)
-          .map(mapTourItem)
+          .map((tour) => {
+            const translation = selectTourTranslation(tour.translations, language)
+
+            if (!translation) {
+              return null
+            }
+
+            return mapTourItem({
+              slug: tour.slug,
+              category: tour.category as TourCategory,
+              duration: tour.duration,
+              priceFrom: tour.priceFrom,
+              bestFor: tour.bestFor,
+              operatorName: tour.operatorName,
+              imageUrls: tour.imageUrls,
+              sortOrder: tour.sortOrder,
+              featuredOrder: tour.featuredOrder,
+              translation,
+              approvedSubmissions: tour.approvedSubmissions,
+            })
+          })
+          .filter(isPresent)
 
         const filteredTourItems = tourItems.filter((tour) =>
           pagination.category ? tour.category === pagination.category : true,
         )
         const paginatedTours = paginateTours(filteredTourItems, pagination)
+        const categories = [...new Set(tourItems.map((item) => item.category))].sort(
+          (left, right) => left.localeCompare(right),
+        )
 
         return {
           eyebrow: intro.eyebrow,
           title: intro.title,
           description: intro.description,
+          categories,
           featuredItems: selectFeaturedTours(featuredTourItems, FEATURED_ITEMS_CAP),
           items: paginatedTours.items,
           pagination: paginatedTours.pagination,
@@ -930,32 +1031,49 @@ export function createPrismaRepositories(
             status: ContentStatus.PUBLISHED,
           },
           include: {
-            translations: {
-              where: getLocaleWhere(language),
-            },
+            translations: { include: { locale: true } },
             ...getApprovedSubmissionInclude(),
           },
         })
 
-        if (!tour || tour.translations.length === 0) {
+        if (!tour) {
           return null
         }
 
-        const translation = tour.translations[0]
+        const translation = selectTourTranslation(tour.translations, language)
+
+        if (!translation) {
+          return null
+        }
 
         return {
           id: tour.slug,
           name: translation.name,
           category: tour.category as TourCategory,
-          categoryLabel: translation.category,
-          durationHours: tour.durationHours,
+          duration: tour.duration,
           priceFrom: tour.priceFrom,
+          privateOrShared: tour.privateOrShared,
+          bestFor: tour.bestFor,
+          difficulty: tour.difficulty,
+          suitableForKids: tour.suitableForKids,
           description:
             translation.description ??
-            `${translation.name} is a ${tour.durationHours}-hour lagoon experience.`,
+            `${translation.name} is one of Bacalar's curated tours.`,
+          included: translation.included ?? undefined,
+          whatToBring: translation.whatToBring ?? undefined,
+          meetingPoint: tour.meetingPoint ?? undefined,
+          imageUrls: tour.imageUrls,
+          operatorName: tour.operatorName,
+          operatorDescription: translation.operatorDescription ?? undefined,
+          operatorWhatsapp: tour.operatorWhatsapp ?? undefined,
+          operatorInstagram: tour.operatorInstagram ?? undefined,
+          operatorWebsite: tour.operatorWebsite ?? undefined,
+          operatorPrimaryContactMethod:
+            tour.operatorPrimaryContactMethod ?? undefined,
           route: `/tours/${tour.slug}`,
           image: withImageAlt(
-            mapLeadImage(tour.approvedSubmissions),
+            mapConfiguredImage(tour.imageUrls) ??
+              mapLeadImage(tour.approvedSubmissions),
             translation.name,
           ),
         }
@@ -1017,14 +1135,32 @@ export function createPrismaPublishedContentRepository(
             where: { status: ContentStatus.PUBLISHED },
             orderBy: [{ sortOrder: 'asc' }, { slug: 'asc' }],
             include: {
-              translations: { where: getLocaleWhere(language) },
+              translations: { include: { locale: true } },
               ...getApprovedSubmissionInclude(),
             },
           })
 
           return items
-            .filter((item) => item.translations.length > 0)
-            .map(mapTourItem)
+            .map((item) => {
+              const translation = selectTourTranslation(item.translations, language)
+
+              return translation
+                ? mapTourItem({
+                    slug: item.slug,
+                    category: item.category as TourCategory,
+                    duration: item.duration,
+                    priceFrom: item.priceFrom,
+                    bestFor: item.bestFor,
+                    operatorName: item.operatorName,
+                    imageUrls: item.imageUrls,
+                    sortOrder: item.sortOrder,
+                    featuredOrder: item.featuredOrder,
+                    translation,
+                    approvedSubmissions: item.approvedSubmissions,
+                  })
+                : null
+            })
+            .filter(isPresent)
             .map(mapPublishedTourItem)
         }
       }
@@ -1154,13 +1290,29 @@ export function createPrismaPublishedContentRepository(
                 : null,
             },
             include: {
-              translations: { where: getLocaleWhere(language) },
+              translations: { include: { locale: true } },
               ...getApprovedSubmissionInclude(),
             },
           })
 
-          return item.translations.length > 0
-            ? mapPublishedTourItem(mapTourItem(item))
+          const translation = selectTourTranslation(item.translations, language)
+
+          return translation
+            ? mapPublishedTourItem(
+                mapTourItem({
+                  slug: item.slug,
+                  category: item.category as TourCategory,
+                  duration: item.duration,
+                  priceFrom: item.priceFrom,
+                  bestFor: item.bestFor,
+                  operatorName: item.operatorName,
+                  imageUrls: item.imageUrls,
+                  sortOrder: item.sortOrder,
+                  featuredOrder: item.featuredOrder,
+                  translation,
+                  approvedSubmissions: item.approvedSubmissions,
+                }),
+              )
             : null
         }
       }

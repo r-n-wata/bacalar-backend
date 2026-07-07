@@ -17,7 +17,7 @@ CREATE TYPE "EventCategory" AS ENUM ('music', 'wellness', 'food');
 CREATE TYPE "SpotlightKey" AS ENUM ('EVENTS', 'RESTAURANTS', 'TOURS');
 
 -- CreateEnum
-CREATE TYPE "HomeSectionKind" AS ENUM ('FEATURED_EXPERIENCES', 'DINING_MOMENTS', 'WEEKLY_HAPPENINGS');
+CREATE TYPE "HomeSectionKind" AS ENUM ('FEATURED_TOURS', 'DINING_MOMENTS', 'WEEKLY_HAPPENINGS');
 
 -- CreateTable
 CREATE TABLE "Locale" (

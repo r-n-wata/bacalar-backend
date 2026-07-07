@@ -8,10 +8,11 @@ const tours = [
   {
     id: 'tour-sailing',
     name: 'Private Sailing at Sunrise',
-    category: 'premium' as const,
-    categoryLabel: 'Premium',
-    durationHours: 4,
-    priceFrom: 2100,
+    category: 'Sailing',
+    duration: '4 hours',
+    priceFrom: 'From MXN 2,800',
+    bestFor: 'Sunrise',
+    operatorName: 'Laguna Vela',
     route: '/tours/tour-sailing',
     sortOrder: 2,
     featuredOrder: 1,
@@ -19,10 +20,11 @@ const tours = [
   {
     id: 'tour-pontoon',
     name: 'Family Pontoon Loop',
-    category: 'group' as const,
-    categoryLabel: 'Group',
-    durationHours: 3,
-    priceFrom: 1450,
+    category: 'Boat Tour',
+    duration: '3 hours',
+    priceFrom: 'From MXN 1,600',
+    bestFor: 'Families',
+    operatorName: 'Casa Ponton',
     route: '/tours/tour-pontoon',
     sortOrder: 1,
     featuredOrder: 0,
@@ -30,10 +32,11 @@ const tours = [
   {
     id: 'tour-kayak',
     name: 'Guided Mangrove Kayak',
-    category: 'adventure' as const,
-    categoryLabel: 'Adventure',
-    durationHours: 2,
-    priceFrom: 680,
+    category: 'Kayak Tour',
+    duration: '2 hours',
+    priceFrom: 'From MXN 900',
+    bestFor: 'Nature',
+    operatorName: 'Manglar Guides',
     route: '/tours/tour-kayak',
     sortOrder: 3,
     featuredOrder: 2,
@@ -67,11 +70,13 @@ describe('toursPagination', () => {
   })
 
   it('paginates a filtered tour subset', () => {
-    const filteredTours = tours.filter((tour) => tour.category === 'group')
+    const filteredTours = tours.filter(
+      (tour) => tour.category === 'Boat Tour',
+    )
 
     const firstPage = paginateTours(filteredTours, {
       limit: 1,
-      category: 'group',
+      category: 'Boat Tour',
     })
 
     expect(firstPage.items.map((item) => item.id)).toEqual(['tour-pontoon'])

@@ -37,12 +37,6 @@ enum RestaurantMoment {
   dinner
 }
 
-enum TourCategory {
-  premium
-  group
-  adventure
-}
-
 enum EventSubmissionStatus {
   PENDING
   APPROVED
@@ -73,7 +67,7 @@ enum SpotlightKey {
 }
 
 enum HomeSectionKind {
-  FEATURED_EXPERIENCES
+  FEATURED_TOURS
   DINING_MOMENTS
   WEEKLY_HAPPENINGS
 }
@@ -91,7 +85,7 @@ model Locale {
   homeSectionTranslations     HomeSectionTranslation[]
   homeSpotlightTranslations   HomeSpotlightEntryTranslation[]
   restaurantTranslations      RestaurantTranslation[]
-  tourTranslations            TourTranslation[]
+  tourTranslations      TourTranslation[]
 }
 
 model FeaturePage {
@@ -222,7 +216,7 @@ model TourSubmission {
   id              String               @id @default(cuid())
   status          TourSubmissionStatus @default(PENDING)
   name            String
-  category        TourCategory
+  category        String
   durationHours   Int
   priceFrom       Int
   description     String
@@ -307,9 +301,20 @@ model Tour {
   id            String            @id @default(cuid())
   slug          String            @unique
   status        ContentStatus     @default(PUBLISHED)
-  category      TourCategory
-  durationHours Int
-  priceFrom     Int
+  category      String
+  duration      String
+  priceFrom     String
+  privateOrShared String
+  bestFor       String
+  difficulty    String
+  suitableForKids   String
+  operatorName  String
+  operatorWhatsapp String?
+  operatorInstagram String?
+  operatorWebsite String?
+  operatorPrimaryContactMethod String?
+  meetingPoint String?
+  imageUrls     String[]          @default([])
   sortOrder     Int               @default(0)
   isFeatured    Boolean           @default(false)
   featuredOrder Int?
@@ -336,8 +341,10 @@ model TourTranslation {
   tourId       String
   localeId     Int
   name         String
-  category     String
   description  String?
+  included     String?
+  whatToBring  String?
+  operatorDescription String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   tour         Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)

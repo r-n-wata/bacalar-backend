@@ -103,7 +103,7 @@ export const tourSubmissionMediaSchema = z.discriminatedUnion('kind', [
 export const createTourSubmissionSchema = z
   .object({
     name: z.string().trim().min(2).max(140),
-    category: z.enum(['premium', 'group', 'adventure']),
+    category: z.string().trim().min(2).max(80),
     durationHours: z.number().int().positive().max(24),
     priceFrom: z.number().int().positive().max(100_000),
     description: z.string().trim().min(20).max(4000),

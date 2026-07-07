@@ -21,7 +21,7 @@ describe('mvp contract and runtime foundations', () => {
     expect(home?.spotlight.actions).toHaveLength(3)
     expect(home?.spotlight.entries).not.toHaveProperty('booking')
     expect(home).not.toHaveProperty('planningCallout')
-    expect(home?.featuredExperiences.items[0]?.route).toBe('/tours/tour-sailing')
+    expect(home?.featuredTours.items[0]?.route).toBe('/tours/tour-sailing')
   })
 
   it('allows configured Netlify preview origins through CORS', () => {

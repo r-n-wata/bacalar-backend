@@ -2,8 +2,8 @@ export type AppLanguage = 'en' | 'es'
 
 export type EventCategory = 'music' | 'wellness' | 'food'
 export type RestaurantMoment = 'breakfast' | 'lunch' | 'dinner'
-export type TourCategory = 'premium' | 'group' | 'adventure'
-export type ExperienceKey = 'events' | 'restaurants' | 'tours'
+export type TourCategory = string
+export type TourKey = 'events' | 'restaurants' | 'tours'
 
 export type HomeSpotlightMetric = {
   label: string
@@ -25,7 +25,7 @@ export type HomeSpotlightEntry = {
 }
 
 export type HomeSpotlightAction = {
-  key: ExperienceKey
+  key: TourKey
   label: string
 }
 
@@ -56,9 +56,9 @@ export type HomeContent = {
   }
   spotlight: {
     actions: HomeSpotlightAction[]
-    entries: Record<ExperienceKey, HomeSpotlightEntry>
+    entries: Record<TourKey, HomeSpotlightEntry>
   }
-  featuredExperiences: {
+  featuredTours: {
     intro: HomeSectionIntro
     items: HomeSuggestionCard[]
   }
@@ -127,9 +127,10 @@ export type TourItem = {
   id: string
   name: string
   category: TourCategory
-  categoryLabel: string
-  durationHours: number
-  priceFrom: number
+  duration: string
+  priceFrom: string
+  bestFor: string
+  operatorName: string
   route: string
   image?: FeaturedListItemImage
 }
@@ -143,6 +144,7 @@ export type ToursContent = {
   eyebrow: string
   title: string
   description: string
+  categories: TourCategory[]
   featuredItems: TourItem[]
   items: TourItem[]
   pagination: ToursPagination
@@ -177,10 +179,23 @@ export type TourDetail = {
   id: string
   name: string
   category: TourCategory
-  categoryLabel: string
-  durationHours: number
-  priceFrom: number
+  duration: string
+  priceFrom: string
+  privateOrShared: string
+  bestFor: string
+  difficulty: string
+  suitableForKids: string
   description: string
+  included?: string
+  whatToBring?: string
+  meetingPoint?: string
+  imageUrls: string[]
+  operatorName: string
+  operatorDescription?: string
+  operatorWhatsapp?: string
+  operatorInstagram?: string
+  operatorWebsite?: string
+  operatorPrimaryContactMethod?: string
   route: string
   image?: HomeImage
 }

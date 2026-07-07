@@ -93,10 +93,12 @@ function stripSortMetadata(item: TourListItem): TourItem {
     id: item.id,
     name: item.name,
     category: item.category,
-    categoryLabel: item.categoryLabel,
-    durationHours: item.durationHours,
+    duration: item.duration,
     priceFrom: item.priceFrom,
+    bestFor: item.bestFor,
+    operatorName: item.operatorName,
     route: item.route,
+    image: item.image,
   }
 }
 

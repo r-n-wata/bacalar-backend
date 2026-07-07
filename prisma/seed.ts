@@ -15,12 +15,14 @@ import {
   restaurantsContentByLanguage,
   toursContentByLanguage,
 } from '../src/data/seedContent'
+import { loadTourSeedWorkbook } from '../src/data/tourSeedWorkbook'
 import { loadRestaurantSeedWorkbook } from '../src/data/restaurantSeedWorkbook'
 
 const prisma = new PrismaClient()
 
 async function main() {
   const restaurantSeeds = loadRestaurantSeedWorkbook()
+  const tourSeeds = loadTourSeedWorkbook()
 
   await prisma.homeSpotlightMetric.deleteMany()
   await prisma.homeSpotlightEntryTranslation.deleteMany()
@@ -184,36 +186,50 @@ async function main() {
     })
   }
 
-  for (const [index, item] of toursContentByLanguage.en.items.entries()) {
+  for (const [index, item] of tourSeeds.entries()) {
     const tour = await prisma.tour.create({
       data: {
-        slug: item.id,
+        slug: item.slug,
         status: ContentStatus.PUBLISHED,
         category: item.category,
-        durationHours: item.durationHours,
+        duration: item.duration,
         priceFrom: item.priceFrom,
+        privateOrShared: item.privateOrShared,
+        bestFor: item.bestFor,
+        difficulty: item.difficulty,
+        suitableForKids: item.suitableForKids,
+        operatorName: item.operatorName,
+        operatorWhatsapp: item.operatorWhatsapp,
+        operatorInstagram: item.operatorInstagram,
+        operatorWebsite: item.operatorWebsite,
+        operatorPrimaryContactMethod: item.operatorPrimaryContactMethod,
+        meetingPoint: item.meetingPoint,
+        imageUrls: item.imageUrls,
         sortOrder: index,
-        isFeatured: index < 3,
-        featuredOrder: index < 3 ? index : null,
+        isFeatured: item.isFeatured,
+        featuredOrder: item.featuredOrder,
       },
     })
-
-    const enTranslation = toursContentByLanguage.en.items[index]
-    const esTranslation = toursContentByLanguage.es.items[index]
 
     await prisma.tourTranslation.createMany({
       data: [
         {
           tourId: tour.id,
           localeId: en.id,
-          name: enTranslation.name,
-          category: enTranslation.categoryLabel,
+          name: item.en.name,
+          description: item.en.description,
+          included: item.en.included,
+          whatToBring: item.en.whatToBring,
+          operatorDescription: item.en.operatorDescription,
         },
         {
           tourId: tour.id,
           localeId: es.id,
-          name: esTranslation.name,
-          category: esTranslation.categoryLabel,
+          name: item.es.name,
+          description: item.es.description,
+          included: item.es.included,
+          whatToBring: item.es.whatToBring,
+          operatorDescription: item.es.operatorDescription,
         },
       ],
     })
@@ -307,7 +323,7 @@ async function main() {
   }
 
   const homeSections = [
-    ['featuredExperiences', HomeSectionKind.FEATURED_EXPERIENCES],
+    ['featuredTours', HomeSectionKind.FEATURED_TOURS],
     ['diningMoments', HomeSectionKind.DINING_MOMENTS],
     ['weeklyHappenings', HomeSectionKind.WEEKLY_HAPPENINGS],
   ] as const

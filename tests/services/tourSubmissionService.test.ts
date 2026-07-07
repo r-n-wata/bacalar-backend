@@ -12,7 +12,7 @@ function createSubmissionRecord(
     durationHours: 4,
     priceFrom: 2100,
     description:
-      'A private sunrise sailing experience with a calm route and a polished crew handoff.',
+      'A private sunrise sailing tour with a calm route and a polished crew handoff.',
     contactName: 'Maya Cruz',
     contactMethod: 'maya@example.com',
     submittedLocale: 'en',
@@ -82,7 +82,7 @@ describe('tourSubmissionService', () => {
       durationHours: 4,
       priceFrom: 2100,
       description:
-        'A private sunrise sailing experience with a calm route and a polished crew handoff.',
+        'A private sunrise sailing tour with a calm route and a polished crew handoff.',
       contactName: 'Maya Cruz',
       contactMethod: 'maya@example.com',
       submittedLocale: 'en',
@@ -137,7 +137,7 @@ describe('tourSubmissionService', () => {
       durationHours: 4,
       priceFrom: 2100,
       description:
-        'A private sunrise sailing experience with a calm route and a polished crew handoff.',
+        'A private sunrise sailing tour with a calm route and a polished crew handoff.',
       contactName: 'Maya Cruz',
       contactMethod: 'maya@example.com',
       submittedLocale: 'en',
@@ -187,7 +187,7 @@ describe('tourSubmissionService', () => {
         durationHours: 4,
         priceFrom: 2100,
         description:
-          'A private sunrise sailing experience with a calm route and a polished crew handoff.',
+          'A private sunrise sailing tour with a calm route and a polished crew handoff.',
         contactName: 'Maya Cruz',
         contactMethod: 'maya@example.com',
         submittedLocale: 'en',

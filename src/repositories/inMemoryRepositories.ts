@@ -51,7 +51,7 @@ export function createInMemoryRepositories(): ContentRepositories {
         return {
           hero: {
             eyebrow: 'Bacalar, made simple',
-            title: 'A calmer way to experience Bacalar',
+            title: 'A calmer way to tour Bacalar',
             description:
               'Curated recommendations for visitors who want less noise and better choices.',
           },
@@ -63,7 +63,7 @@ export function createInMemoryRepositories(): ContentRepositories {
             ],
             entries: {
               tours: {
-                title: 'Choose a lagoon experience with less second-guessing',
+                title: 'Choose a lagoon tour with less second-guessing',
                 description:
                   'Compare a few high-confidence tour options first, then keep browsing if you want more range.',
                 route: '/tours',
@@ -88,7 +88,7 @@ export function createInMemoryRepositories(): ContentRepositories {
               },
             },
           },
-          featuredExperiences: {
+          featuredTours: {
             intro: {
               eyebrow: tours.eyebrow,
               title: tours.title,
@@ -97,9 +97,9 @@ export function createInMemoryRepositories(): ContentRepositories {
             items: tours.featuredItems.slice(0, FEATURED_ITEMS_CAP).map((item) => ({
               id: item.id,
               title: item.name,
-              subtitle: item.categoryLabel,
-              description: `${item.durationHours} hours`,
-              meta: `From ${item.priceFrom} MXN`,
+              subtitle: item.category,
+              description: item.bestFor,
+              meta: `${item.duration} - ${item.priceFrom}`,
               route: item.route,
               image: item.image,
             })),

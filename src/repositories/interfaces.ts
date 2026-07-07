@@ -4,10 +4,8 @@ import type {
   EventDetail,
   EventsContent,
   HomeContent,
-  RestaurantMoment,
   RestaurantDetail,
   RestaurantsContent,
-  TourCategory,
   TourDetail,
   ToursContent,
 } from '../types/content'
