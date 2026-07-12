@@ -11,6 +11,7 @@
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "prisma:seed": "tsx prisma/seed.ts",
+    "events:delete-demo": "tsx scripts/deleteDemoEvents.ts",
     "ci": "npm run prisma:generate && DATABASE_URL=postgresql://postgres:postgres@localhost:5432/bacalar?schema=public npm run prisma:validate && npm run typecheck && npm run test && npm run build",
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
