@@ -36,6 +36,9 @@ type AdminSubmissionListBase = {
 type AdminSubmissionDetailBase = AdminSubmissionListBase & {
   contactName: string
   contactMethod: string
+  address?: string
+  mapUrl?: string
+  mapEmbedUrl?: string
   instagram?: string
   whatsapp?: string
   images: SubmissionImageRecord[]

@@ -633,6 +633,10 @@ export const tourDetailsByLanguage: Record<
       included: 'Captain, safety gear, fruit, and chilled water.',
       whatToBring: 'Swimwear, a light layer, reef-safe sunscreen, and cash for extras.',
       meetingPoint: 'Main marina dock near the lagoon boulevard.',
+      address: 'Boulevard Costero 17, Bacalar, Quintana Roo',
+      mapUrl: 'https://maps.google.com/?q=Boulevard+Costero+17+Bacalar',
+      mapEmbedUrl:
+        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14926.451857871018!2d-88.392!3d18.681!2m3!1f0!2f0!3f0',
       imageUrls: [images.tourSailing.src],
       operatorName: 'Laguna Vela',
       operatorDescription:
@@ -698,6 +702,10 @@ export const tourDetailsByLanguage: Record<
       included: 'Capitan, equipo de seguridad, fruta y agua fria.',
       whatToBring: 'Traje de bano, capa ligera, bloqueador y efectivo.',
       meetingPoint: 'Muelle principal cerca del boulevard de la laguna.',
+      address: 'Boulevard Costero 17, Bacalar, Quintana Roo',
+      mapUrl: 'https://maps.google.com/?q=Boulevard+Costero+17+Bacalar',
+      mapEmbedUrl:
+        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14926.451857871018!2d-88.392!3d18.681!2m3!1f0!2f0!3f0',
       imageUrls: [images.tourSailing.src],
       operatorName: 'Laguna Vela',
       operatorDescription:
@@ -772,6 +780,10 @@ export const restaurantDetailsByLanguage: Record<
       moments: ['breakfast'],
       description:
         'A relaxed breakfast stop with garden energy, fresh plates, and enough calm to set up a lagoon morning without rushing anyone through it.',
+      address: 'Avenida 3 210, Bacalar, Quintana Roo',
+      mapUrl: 'https://maps.google.com/?q=Avenida+3+210+Bacalar',
+      mapEmbedUrl:
+        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14926.451857871018!2d-88.395!3d18.679!2m3!1f0!2f0!3f0',
       route: '/restaurants/rest-cielo',
       image: images.restaurantCielo,
     },
@@ -810,6 +822,10 @@ export const restaurantDetailsByLanguage: Record<
       moments: ['breakfast'],
       description:
         'Un desayuno relajado con ambiente de jardin, platos frescos y la calma suficiente para arrancar una manana de laguna sin prisas.',
+      address: 'Avenida 3 210, Bacalar, Quintana Roo',
+      mapUrl: 'https://maps.google.com/?q=Avenida+3+210+Bacalar',
+      mapEmbedUrl:
+        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14926.451857871018!2d-88.395!3d18.679!2m3!1f0!2f0!3f0',
       route: '/restaurants/rest-cielo',
       image: {
         ...images.restaurantCielo,
@@ -870,6 +886,10 @@ export const eventDetailsByLanguage: Record<
       category: 'music',
       dateLabel: 'Friday, 7:00 PM',
       venue: 'Casa Laguna Deck',
+      address: 'Costera 12, Bacalar, Quintana Roo',
+      mapUrl: 'https://maps.google.com/?q=Costera+12+Bacalar',
+      mapEmbedUrl:
+        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14926.451857871018!2d-88.390!3d18.680!2m3!1f0!2f0!3f0',
       description:
         'An easy, high-reward evening add-on with live music, open air, and a sunset window that works especially well after a lighter afternoon.',
       startsAt: '2026-05-29T19:00:00-05:00',
@@ -961,6 +981,10 @@ export const eventDetailsByLanguage: Record<
       category: 'music',
       dateLabel: 'Viernes, 7:00 PM',
       venue: 'Terraza Casa Laguna',
+      address: 'Costera 12, Bacalar, Quintana Roo',
+      mapUrl: 'https://maps.google.com/?q=Costera+12+Bacalar',
+      mapEmbedUrl:
+        'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14926.451857871018!2d-88.390!3d18.680!2m3!1f0!2f0!3f0',
       description:
         'Un extra nocturno facil y muy rendidor con musica en vivo, aire libre y una ventana de atardecer que funciona especialmente bien despues de una tarde ligera.',
       startsAt: '2026-05-29T19:00:00-05:00',

@@ -1,5 +1,10 @@
 import { z } from 'zod'
 import type { AppLanguage, RestaurantMoment } from './content'
+import {
+  optionalAddressSchema,
+  optionalMapEmbedUrlSchema,
+  optionalMapUrlSchema,
+} from './mapFields'
 
 export const SUBMISSION_IMAGE_MIME_TYPES = [
   'image/jpeg',
@@ -37,6 +42,9 @@ export type CreateRestaurantSubmissionInput = {
   cuisine: string
   moment: RestaurantMoment
   priceBand: '$' | '$$' | '$$$'
+  address?: string
+  mapUrl?: string
+  mapEmbedUrl?: string
   description: string
   contactName: string
   contactMethod: string
@@ -68,6 +76,9 @@ export type RestaurantSubmissionRecord = {
   cuisine: string
   moment: RestaurantMoment
   priceBand: '$' | '$$' | '$$$'
+  address?: string
+  mapUrl?: string
+  mapEmbedUrl?: string
   description: string
   contactName: string
   contactMethod: string
@@ -119,6 +130,9 @@ export const createRestaurantSubmissionSchema = z
     cuisine: z.string().trim().min(2).max(120),
     moment: z.enum(['breakfast', 'lunch', 'dinner']),
     priceBand: z.enum(['$', '$$', '$$$']),
+    address: optionalAddressSchema,
+    mapUrl: optionalMapUrlSchema,
+    mapEmbedUrl: optionalMapEmbedUrlSchema,
     description: z.string().trim().min(20).max(4000),
     contactName: z.string().trim().min(2).max(120),
     contactMethod: z.string().trim().min(3).max(220),
@@ -129,6 +143,9 @@ export const createRestaurantSubmissionSchema = z
   })
   .transform((value) => ({
     ...value,
+    address: value.address || undefined,
+    mapUrl: value.mapUrl || undefined,
+    mapEmbedUrl: value.mapEmbedUrl || undefined,
     instagram: value.instagram || undefined,
     whatsapp: value.whatsapp || undefined,
   })) satisfies z.ZodType<CreateRestaurantSubmissionInput>

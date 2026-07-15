@@ -1,6 +1,11 @@
 import { z } from 'zod'
 import type { AppLanguage, TourCategory } from './content'
 import {
+  optionalAddressSchema,
+  optionalMapEmbedUrlSchema,
+  optionalMapUrlSchema,
+} from './mapFields'
+import {
   MAX_SUBMISSION_IMAGES,
   MAX_SUBMISSION_IMAGE_SIZE_BYTES,
   SUBMISSION_IMAGE_MIME_TYPES,
@@ -34,6 +39,9 @@ export type CreateTourSubmissionInput = {
   category: TourCategory
   durationHours: number
   priceFrom: number
+  address?: string
+  mapUrl?: string
+  mapEmbedUrl?: string
   description: string
   contactName: string
   contactMethod: string
@@ -55,6 +63,9 @@ export type TourSubmissionRecord = {
   category: TourCategory
   durationHours: number
   priceFrom: number
+  address?: string
+  mapUrl?: string
+  mapEmbedUrl?: string
   description: string
   contactName: string
   contactMethod: string
@@ -106,6 +117,9 @@ export const createTourSubmissionSchema = z
     category: z.string().trim().min(2).max(80),
     durationHours: z.number().int().positive().max(24),
     priceFrom: z.number().int().positive().max(100_000),
+    address: optionalAddressSchema,
+    mapUrl: optionalMapUrlSchema,
+    mapEmbedUrl: optionalMapEmbedUrlSchema,
     description: z.string().trim().min(20).max(4000),
     contactName: z.string().trim().min(2).max(120),
     contactMethod: z.string().trim().min(3).max(220),
@@ -116,6 +130,9 @@ export const createTourSubmissionSchema = z
   })
   .transform((value) => ({
     ...value,
+    address: value.address || undefined,
+    mapUrl: value.mapUrl || undefined,
+    mapEmbedUrl: value.mapEmbedUrl || undefined,
     instagram: value.instagram || undefined,
     whatsapp: value.whatsapp || undefined,
   })) satisfies z.ZodType<CreateTourSubmissionInput>

@@ -1,5 +1,10 @@
 import { z } from 'zod'
 import type { EventCategory, AppLanguage } from './content'
+import {
+  optionalAddressSchema,
+  optionalMapEmbedUrlSchema,
+  optionalMapUrlSchema,
+} from './mapFields'
 
 export const SUBMISSION_IMAGE_MIME_TYPES = [
   'image/jpeg',
@@ -36,6 +41,9 @@ export type CreateEventSubmissionInput = {
   title: string
   startsAt: string
   location: string
+  address?: string
+  mapUrl?: string
+  mapEmbedUrl?: string
   category: EventCategory
   description: string
   contactName: string
@@ -67,6 +75,9 @@ export type EventSubmissionRecord = {
   title: string
   startsAt: string
   location: string
+  address?: string
+  mapUrl?: string
+  mapEmbedUrl?: string
   category: EventCategory
   description: string
   contactName: string
@@ -118,6 +129,9 @@ export const createEventSubmissionSchema = z
     title: z.string().trim().min(3).max(140),
     startsAt: z.iso.datetime({ offset: true }),
     location: z.string().trim().min(2).max(160),
+    address: optionalAddressSchema,
+    mapUrl: optionalMapUrlSchema,
+    mapEmbedUrl: optionalMapEmbedUrlSchema,
     category: z.enum(['music', 'wellness', 'food']),
     description: z.string().trim().min(20).max(4000),
     contactName: z.string().trim().min(2).max(120),
@@ -129,6 +143,9 @@ export const createEventSubmissionSchema = z
   })
   .transform((value) => ({
     ...value,
+    address: value.address || undefined,
+    mapUrl: value.mapUrl || undefined,
+    mapEmbedUrl: value.mapEmbedUrl || undefined,
     instagram: value.instagram || undefined,
     whatsapp: value.whatsapp || undefined,
   })) satisfies z.ZodType<CreateEventSubmissionInput>

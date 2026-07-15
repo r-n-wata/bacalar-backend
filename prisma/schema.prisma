@@ -122,6 +122,9 @@ model Event {
   slug                String             @unique
   status              ContentStatus      @default(PUBLISHED)
   category            EventCategory
+  address             String?
+  mapUrl              String?
+  mapEmbedUrl         String?
   sortOrder           Int                @default(0)
   isFeatured          Boolean            @default(false)
   featuredOrder       Int?
@@ -158,6 +161,9 @@ model EventSubmission {
   title           String
   startsAt        DateTime
   location        String
+  address         String?
+  mapUrl          String?
+  mapEmbedUrl     String?
   category        EventCategory
   description     String
   contactName     String
@@ -196,6 +202,9 @@ model RestaurantSubmission {
   cuisine         String
   moment          String
   priceBand       String
+  address         String?
+  mapUrl          String?
+  mapEmbedUrl     String?
   description     String
   contactName     String
   contactMethod   String
@@ -219,6 +228,9 @@ model TourSubmission {
   category        String
   durationHours   Int
   priceFrom       Int
+  address         String?
+  mapUrl          String?
+  mapEmbedUrl     String?
   description     String
   contactName     String
   contactMethod   String
@@ -269,6 +281,9 @@ model Restaurant {
   status        ContentStatus           @default(PUBLISHED)
   priceBand     String
   moments       RestaurantMoment[]
+  address       String?
+  mapUrl        String?
+  mapEmbedUrl   String?
   sortOrder     Int                     @default(0)
   isFeatured    Boolean                 @default(false)
   featuredOrder Int?
@@ -308,6 +323,9 @@ model Tour {
   bestFor       String
   difficulty    String
   suitableForKids   String
+  address       String?
+  mapUrl        String?
+  mapEmbedUrl   String?
   operatorName  String
   operatorWhatsapp String?
   operatorInstagram String?

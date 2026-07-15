@@ -13,6 +13,9 @@ function mapSubmission(record: {
   title: string
   startsAt: Date
   location: string
+  address: string | null
+  mapUrl: string | null
+  mapEmbedUrl: string | null
   category: string
   description: string
   contactName: string
@@ -42,6 +45,9 @@ function mapSubmission(record: {
     title: record.title,
     startsAt: record.startsAt.toISOString(),
     location: record.location,
+    address: record.address ?? undefined,
+    mapUrl: record.mapUrl ?? undefined,
+    mapEmbedUrl: record.mapEmbedUrl ?? undefined,
     category: record.category as EventSubmissionRecord['category'],
     description: record.description,
     contactName: record.contactName,
@@ -78,6 +84,9 @@ export function createPrismaEventSubmissionRepository(
           title: input.title,
           startsAt: new Date(input.startsAt),
           location: input.location,
+          address: input.address,
+          mapUrl: input.mapUrl,
+          mapEmbedUrl: input.mapEmbedUrl,
           category: input.category,
           description: input.description,
           contactName: input.contactName,

@@ -16,6 +16,9 @@ function mapSubmission(record: {
   cuisine: string
   moment: string
   priceBand: string
+  address: string | null
+  mapUrl: string | null
+  mapEmbedUrl: string | null
   description: string
   contactName: string
   contactMethod: string
@@ -45,6 +48,9 @@ function mapSubmission(record: {
     cuisine: record.cuisine,
     moment: record.moment as RestaurantSubmissionRecord['moment'],
     priceBand: record.priceBand as RestaurantSubmissionRecord['priceBand'],
+    address: record.address ?? undefined,
+    mapUrl: record.mapUrl ?? undefined,
+    mapEmbedUrl: record.mapEmbedUrl ?? undefined,
     description: record.description,
     contactName: record.contactName,
     contactMethod: record.contactMethod,
@@ -82,6 +88,9 @@ export function createPrismaRestaurantSubmissionRepository(
           cuisine: input.cuisine,
           moment: input.moment,
           priceBand: input.priceBand,
+          address: input.address,
+          mapUrl: input.mapUrl,
+          mapEmbedUrl: input.mapEmbedUrl,
           description: input.description,
           contactName: input.contactName,
           contactMethod: input.contactMethod,

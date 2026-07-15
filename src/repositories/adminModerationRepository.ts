@@ -289,6 +289,9 @@ function mapEventDetail(record: {
   title: string
   startsAt: Date
   location: string
+  address: string | null
+  mapUrl: string | null
+  mapEmbedUrl: string | null
   category: EventCategory
   description: string
   contactName: string
@@ -306,6 +309,9 @@ function mapEventDetail(record: {
     description: record.description,
     contactName: record.contactName,
     contactMethod: record.contactMethod,
+    address: record.address ?? undefined,
+    mapUrl: record.mapUrl ?? undefined,
+    mapEmbedUrl: record.mapEmbedUrl ?? undefined,
     instagram: record.instagram ?? undefined,
     whatsapp: record.whatsapp ?? undefined,
     images: mapImages(record.images),
@@ -318,6 +324,9 @@ function mapRestaurantDetail(record: {
   cuisine: string
   moment: string
   priceBand: string
+  address: string | null
+  mapUrl: string | null
+  mapEmbedUrl: string | null
   description: string
   contactName: string
   contactMethod: string
@@ -334,6 +343,9 @@ function mapRestaurantDetail(record: {
     description: record.description,
     contactName: record.contactName,
     contactMethod: record.contactMethod,
+    address: record.address ?? undefined,
+    mapUrl: record.mapUrl ?? undefined,
+    mapEmbedUrl: record.mapEmbedUrl ?? undefined,
     instagram: record.instagram ?? undefined,
     whatsapp: record.whatsapp ?? undefined,
     images: mapImages(record.images),
@@ -346,6 +358,9 @@ function mapTourDetail(record: {
   category: string
   durationHours: number
   priceFrom: number
+  address: string | null
+  mapUrl: string | null
+  mapEmbedUrl: string | null
   description: string
   contactName: string
   contactMethod: string
@@ -362,6 +377,9 @@ function mapTourDetail(record: {
     description: record.description,
     contactName: record.contactName,
     contactMethod: record.contactMethod,
+    address: record.address ?? undefined,
+    mapUrl: record.mapUrl ?? undefined,
+    mapEmbedUrl: record.mapEmbedUrl ?? undefined,
     instagram: record.instagram ?? undefined,
     whatsapp: record.whatsapp ?? undefined,
     images: mapImages(record.images),
@@ -547,6 +565,9 @@ export function createPrismaAdminModerationRepository(
                     description: submission.description,
                   },
                 },
+                address: submission.address,
+                mapUrl: submission.mapUrl,
+                mapEmbedUrl: submission.mapEmbedUrl,
               },
             })
 
@@ -587,6 +608,9 @@ export function createPrismaAdminModerationRepository(
                 status: ContentStatus.PUBLISHED,
                 priceBand: submission.priceBand,
                 moments: [submission.moment as 'breakfast' | 'lunch' | 'dinner'],
+                address: submission.address,
+                mapUrl: submission.mapUrl,
+                mapEmbedUrl: submission.mapEmbedUrl,
                 sortOrder: await nextSortOrder(transaction, 'restaurant'),
                 publishedAt: reviewedAt,
                 createdBy: metadata.reviewedBy,
@@ -655,6 +679,9 @@ export function createPrismaAdminModerationRepository(
                 bestFor: 'Flexible',
                 difficulty: 'Easy',
                 suitableForKids: 'Yes',
+                address: submission.address,
+                mapUrl: submission.mapUrl,
+                mapEmbedUrl: submission.mapEmbedUrl,
                 operatorName: submission.contactName,
                 operatorPrimaryContactMethod: submission.contactMethod,
                 operatorInstagram: submission.instagram,

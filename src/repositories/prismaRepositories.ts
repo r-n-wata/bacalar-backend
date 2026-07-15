@@ -759,6 +759,9 @@ export function createPrismaRepositories(
           category: event.category,
           dateLabel: translation.dateLabel,
           venue: translation.venue,
+          address: event.address ?? undefined,
+          mapUrl: event.mapUrl ?? undefined,
+          mapEmbedUrl: event.mapEmbedUrl ?? undefined,
           description:
             translation.description ??
             `${translation.title} in ${translation.venue} during ${translation.dateLabel}.`,
@@ -903,6 +906,9 @@ export function createPrismaRepositories(
           vibe: translation.vibe,
           priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
           moments: restaurant.moments as RestaurantMoment[],
+          address: restaurant.address ?? undefined,
+          mapUrl: restaurant.mapUrl ?? undefined,
+          mapEmbedUrl: restaurant.mapEmbedUrl ?? undefined,
           description:
             translation.description ??
             `${translation.name} offers a ${translation.vibe.toLowerCase()} tour.`,
@@ -1062,6 +1068,9 @@ export function createPrismaRepositories(
           included: translation.included ?? undefined,
           whatToBring: translation.whatToBring ?? undefined,
           meetingPoint: tour.meetingPoint ?? undefined,
+          address: tour.address ?? undefined,
+          mapUrl: tour.mapUrl ?? undefined,
+          mapEmbedUrl: tour.mapEmbedUrl ?? undefined,
           imageUrls: tour.imageUrls,
           operatorName: tour.operatorName,
           operatorDescription: translation.operatorDescription ?? undefined,

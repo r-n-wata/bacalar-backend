@@ -156,6 +156,9 @@ export type EventDetail = {
   category: EventCategory
   dateLabel: string
   venue: string
+  address?: string
+  mapUrl?: string
+  mapEmbedUrl?: string
   description: string
   startsAt?: string
   endsAt?: string
@@ -170,6 +173,9 @@ export type RestaurantDetail = {
   vibe: string
   priceBand: '$' | '$$' | '$$$'
   moments: RestaurantMoment[]
+  address?: string
+  mapUrl?: string
+  mapEmbedUrl?: string
   description: string
   route: string
   image?: HomeImage
@@ -189,6 +195,9 @@ export type TourDetail = {
   included?: string
   whatToBring?: string
   meetingPoint?: string
+  address?: string
+  mapUrl?: string
+  mapEmbedUrl?: string
   imageUrls: string[]
   operatorName: string
   operatorDescription?: string

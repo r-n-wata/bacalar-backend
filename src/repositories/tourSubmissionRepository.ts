@@ -16,6 +16,9 @@ function mapSubmission(record: {
   category: string
   durationHours: number
   priceFrom: number
+  address: string | null
+  mapUrl: string | null
+  mapEmbedUrl: string | null
   description: string
   contactName: string
   contactMethod: string
@@ -45,6 +48,9 @@ function mapSubmission(record: {
     category: record.category as TourSubmissionRecord['category'],
     durationHours: record.durationHours,
     priceFrom: record.priceFrom,
+    address: record.address ?? undefined,
+    mapUrl: record.mapUrl ?? undefined,
+    mapEmbedUrl: record.mapEmbedUrl ?? undefined,
     description: record.description,
     contactName: record.contactName,
     contactMethod: record.contactMethod,
@@ -82,6 +88,9 @@ export function createPrismaTourSubmissionRepository(
           category: input.category,
           durationHours: input.durationHours,
           priceFrom: input.priceFrom,
+          address: input.address,
+          mapUrl: input.mapUrl,
+          mapEmbedUrl: input.mapEmbedUrl,
           description: input.description,
           contactName: input.contactName,
           contactMethod: input.contactMethod,
