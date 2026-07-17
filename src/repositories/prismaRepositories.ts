@@ -1095,6 +1095,7 @@ export function createPrismaRepositories(
           prisma.event.findMany({
             where: {
               status: ContentStatus.PUBLISHED,
+              isFeatured: false,
               ...(pagination.category ? { category: pagination.category } : {}),
             },
             include: {
@@ -1210,6 +1211,7 @@ export function createPrismaRepositories(
           prisma.restaurant.findMany({
             where: {
               status: ContentStatus.PUBLISHED,
+              isFeatured: false,
               ...(pagination.category
                 ? { moments: { has: pagination.category } }
                 : {}),
@@ -1352,6 +1354,7 @@ export function createPrismaRepositories(
           prisma.tour.findMany({
             where: {
               status: ContentStatus.PUBLISHED,
+              isFeatured: false,
             },
             orderBy: [{ sortOrder: 'asc' }, { slug: 'asc' }],
             include: {

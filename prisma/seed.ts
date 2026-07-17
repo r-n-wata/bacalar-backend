@@ -1,6 +1,5 @@
 import {
   ContentStatus,
-  EventCategory,
   FeatureType,
   HomeSectionKind,
   LocaleCode,
@@ -8,10 +7,8 @@ import {
   SpotlightKey,
 } from '@prisma/client'
 import {
-  eventDetailsByLanguage,
-  eventsContentByLanguage,
-  featuredEventOrderById,
   homeContentByLanguage,
+  eventsContentByLanguage,
   restaurantsContentByLanguage,
   toursContentByLanguage,
 } from '../src/data/seedContent'
@@ -110,50 +107,6 @@ async function main() {
           eyebrow: contentByLanguage.es.eyebrow,
           title: contentByLanguage.es.title,
           description: contentByLanguage.es.description,
-        },
-      ],
-    })
-  }
-
-  for (const [index, item] of eventsContentByLanguage.en.items.entries()) {
-    const event = await prisma.event.create({
-      data: {
-        slug: item.id,
-        status: ContentStatus.PUBLISHED,
-        category: item.category as EventCategory,
-        sortOrder: index,
-        isFeatured: item.id in featuredEventOrderById,
-        featuredOrder:
-          item.id in featuredEventOrderById
-            ? featuredEventOrderById[item.id as keyof typeof featuredEventOrderById]
-            : null,
-        startsAt: item.startsAt ? new Date(item.startsAt) : null,
-        endsAt: item.endsAt ? new Date(item.endsAt) : null,
-      },
-    })
-
-    const enTranslation = eventsContentByLanguage.en.items[index]
-    const esTranslation = eventsContentByLanguage.es.items[index]
-    const enDetail = eventDetailsByLanguage.en[item.id]
-    const esDetail = eventDetailsByLanguage.es[item.id]
-
-    await prisma.eventTranslation.createMany({
-      data: [
-        {
-          eventId: event.id,
-          localeId: en.id,
-          title: enTranslation.title,
-          dateLabel: enTranslation.dateLabel,
-          venue: enTranslation.venue,
-          description: enDetail?.description,
-        },
-        {
-          eventId: event.id,
-          localeId: es.id,
-          title: esTranslation.title,
-          dateLabel: esTranslation.dateLabel,
-          venue: esTranslation.venue,
-          description: esDetail?.description,
         },
       ],
     })

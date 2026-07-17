@@ -159,6 +159,7 @@ export function createInMemoryRepositories(): ContentRepositories {
               ...item,
               sortOrder: index,
             }))
+            .filter((item) => !content.featuredItems.some((featured) => featured.id === item.id))
             .filter((item) =>
               pagination.category ? item.category === pagination.category : true,
             ),
@@ -196,7 +197,9 @@ export function createInMemoryRepositories(): ContentRepositories {
           sortOrder: index,
           featuredOrder: index,
         }))
+        const featuredIds = new Set(content.featuredItems.map((item) => item.id))
         const filteredItems = allItems
+          .filter((item) => !featuredIds.has(item.id))
           .filter((item) =>
             pagination.category
               ? item.moments.includes(pagination.category)
@@ -229,9 +232,12 @@ export function createInMemoryRepositories(): ContentRepositories {
           sortOrder: index,
           featuredOrder: index,
         }))
-        const filteredItems = allItems.filter((item) =>
-          pagination.category ? item.category === pagination.category : true,
-        )
+        const featuredIds = new Set(content.featuredItems.map((item) => item.id))
+        const filteredItems = allItems
+          .filter((item) => !featuredIds.has(item.id))
+          .filter((item) =>
+            pagination.category ? item.category === pagination.category : true,
+          )
         const paginatedTours = paginateTours(filteredItems, pagination)
 
         return {

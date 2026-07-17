@@ -32,9 +32,9 @@ function resolveQueryStringValue(
 
 const DEFAULT_EVENTS_LIMIT = 10
 const MAX_EVENTS_LIMIT = 24
-const DEFAULT_RESTAURANTS_LIMIT = 2
+const DEFAULT_RESTAURANTS_LIMIT = 10
 const MAX_RESTAURANTS_LIMIT = 24
-const DEFAULT_TOURS_LIMIT = 12
+const DEFAULT_TOURS_LIMIT = 10
 const MAX_TOURS_LIMIT = 24
 const eventCategories = ['music', 'wellness', 'food'] satisfies EventCategory[]
 const restaurantMoments = [

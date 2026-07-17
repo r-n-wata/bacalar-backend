@@ -211,7 +211,7 @@ describe('contentController', () => {
     )
 
     expect(contentService.getRestaurants).toHaveBeenCalledWith('en', {
-      limit: 2,
+      limit: 10,
       cursor: undefined,
       category: undefined,
     })
@@ -419,7 +419,7 @@ describe('contentController', () => {
     )
 
     expect(contentService.getTours).toHaveBeenCalledWith('en', {
-      limit: 12,
+      limit: 10,
       cursor: undefined,
       category: 'Sailing',
     })
