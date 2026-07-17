@@ -21,8 +21,11 @@ import type {
   ToursContent,
 } from '../types/content'
 import type {
+  AdminPublishedContentDetail,
+  ArchiveAdminPublishedContentResult,
   AdminPublishedContentItem,
   AdminPublishedContentType,
+  UpdateAdminPublishedContentInput,
   UpdateAdminPublishedContentFeaturedInput,
 } from '../types/admin'
 import type {
@@ -83,6 +86,100 @@ type TourTranslationWithLocale = {
   included?: string | null
   whatToBring?: string | null
   operatorDescription?: string | null
+}
+
+type AdminSubmissionImageRecord = {
+  id: string
+  source: 'UPLOADED' | 'EXTERNAL_URL'
+  url: string
+  objectKey?: string
+  mimeType?: string
+  originalFilename?: string
+  sortOrder: number
+}
+
+type TranslationByLocale<TTranslation> = {
+  en: TTranslation
+  es: TTranslation
+}
+
+function mapSubmissionImages(
+  images:
+    | Array<{
+        id: string
+        source: 'UPLOADED' | 'EXTERNAL_URL'
+        url: string
+        objectKey: string | null
+        mimeType: string | null
+        originalFilename: string | null
+        sortOrder: number
+      }>
+    | undefined,
+): AdminSubmissionImageRecord[] {
+  return (images ?? []).map((image) => ({
+    id: image.id,
+    source: image.source,
+    url: image.url,
+    objectKey: image.objectKey ?? undefined,
+    mimeType: image.mimeType ?? undefined,
+    originalFilename: image.originalFilename ?? undefined,
+    sortOrder: image.sortOrder,
+  }))
+}
+
+function emptyEventTranslation() {
+  return {
+    title: '',
+    dateLabel: '',
+    venue: '',
+    description: '',
+  }
+}
+
+function emptyRestaurantTranslation() {
+  return {
+    name: '',
+    cuisine: '',
+    vibe: '',
+    description: '',
+  }
+}
+
+function emptyTourTranslation() {
+  return {
+    name: '',
+    description: '',
+    included: '',
+    whatToBring: '',
+    operatorDescription: '',
+  }
+}
+
+function mapTranslationsByLocale<TTranslation extends { locale: { code: AppLanguage } }, TOutput>(
+  translations: TTranslation[],
+  mapValue: (translation: TTranslation) => TOutput,
+  createEmpty: () => TOutput,
+): TranslationByLocale<TOutput> {
+  const mapped: TranslationByLocale<TOutput> = {
+    en: createEmpty(),
+    es: createEmpty(),
+  }
+
+  for (const translation of translations) {
+    mapped[translation.locale.code] = mapValue(translation)
+  }
+
+  return mapped
+}
+
+function parseTourDurationHours(value: string) {
+  const match = value.match(/\d+/)
+  return match ? Number(match[0]) : 1
+}
+
+function parseTourPriceFrom(value: string) {
+  const match = value.replace(/,/g, '').match(/\d+/)
+  return match ? Number(match[0]) : 1
 }
 
 function mapLeadImage(
@@ -443,6 +540,317 @@ function mapPublishedTourItem(
     category: item.category,
     subtitle: `${item.duration} - ${item.priceFrom}`,
   }
+}
+
+function mapEventDetailItem(event: {
+  slug: string
+  status: ContentStatus
+  category: 'music' | 'wellness' | 'food'
+  isFeatured: boolean
+  featuredOrder: number | null
+  startsAt: Date | null
+  address: string | null
+  mapUrl: string | null
+  mapEmbedUrl: string | null
+  translations: Array<{
+    locale: { code: AppLanguage }
+    title: string
+    dateLabel: string
+    venue: string
+    description: string | null
+  }>
+  approvedSubmissions: Array<{
+    images: Array<{
+      id: string
+      source: 'UPLOADED' | 'EXTERNAL_URL'
+      url: string
+      objectKey: string | null
+      mimeType: string | null
+      originalFilename: string | null
+      sortOrder: number
+    }>
+  }>
+}): AdminPublishedContentDetail {
+  return {
+    id: event.slug,
+    type: 'events',
+    route: `/events/${event.slug}`,
+    isFeatured: event.isFeatured,
+    featuredOrder: event.featuredOrder ?? undefined,
+    status: event.status,
+    category: event.category,
+    startsAt: event.startsAt?.toISOString() ?? new Date().toISOString(),
+    address: event.address ?? undefined,
+    mapUrl: event.mapUrl ?? undefined,
+    mapEmbedUrl: event.mapEmbedUrl ?? undefined,
+    media: mapSubmissionImages(event.approvedSubmissions[0]?.images),
+    translations: mapTranslationsByLocale(
+      event.translations,
+      (translation) => ({
+        title: translation.title,
+        dateLabel: translation.dateLabel,
+        venue: translation.venue,
+        description: translation.description ?? '',
+      }),
+      emptyEventTranslation,
+    ),
+  }
+}
+
+async function getPublishedEventDetail(
+  prisma: PrismaClient,
+  id: string,
+): Promise<AdminPublishedContentDetail | null> {
+  const item = await prisma.event.findFirst({
+    where: { slug: id, status: ContentStatus.PUBLISHED },
+    include: {
+      translations: { include: { locale: true } },
+      approvedSubmissions: {
+        where: { status: 'APPROVED' },
+        orderBy: { createdAt: 'asc' },
+        take: 1,
+        include: {
+          images: {
+            orderBy: { sortOrder: 'asc' },
+          },
+        },
+      },
+    },
+  })
+
+  return item ? mapEventDetailItem(item) : null
+}
+
+async function getPublishedRestaurantDetail(
+  prisma: PrismaClient,
+  id: string,
+): Promise<AdminPublishedContentDetail | null> {
+  const item = await prisma.restaurant.findFirst({
+    where: { slug: id, status: ContentStatus.PUBLISHED },
+    include: {
+      translations: { include: { locale: true } },
+      approvedSubmissions: {
+        where: { status: 'APPROVED' },
+        orderBy: { createdAt: 'asc' },
+        take: 1,
+        include: {
+          images: {
+            orderBy: { sortOrder: 'asc' },
+          },
+        },
+      },
+    },
+  })
+
+  return item ? mapRestaurantDetailItem(item) : null
+}
+
+async function getPublishedTourDetail(
+  prisma: PrismaClient,
+  id: string,
+): Promise<AdminPublishedContentDetail | null> {
+  const item = await prisma.tour.findFirst({
+    where: { slug: id, status: ContentStatus.PUBLISHED },
+    include: {
+      translations: { include: { locale: true } },
+    },
+  })
+
+  return item ? mapTourDetailItem(item) : null
+}
+
+function mapRestaurantDetailItem(restaurant: {
+  slug: string
+  status: ContentStatus
+  isFeatured: boolean
+  featuredOrder: number | null
+  priceBand: string
+  moments: RestaurantMoment[]
+  address: string | null
+  mapUrl: string | null
+  mapEmbedUrl: string | null
+  translations: RestaurantTranslationWithLocale[]
+  approvedSubmissions: Array<{
+    images: Array<{
+      id: string
+      source: 'UPLOADED' | 'EXTERNAL_URL'
+      url: string
+      objectKey: string | null
+      mimeType: string | null
+      originalFilename: string | null
+      sortOrder: number
+    }>
+  }>
+}): AdminPublishedContentDetail {
+  return {
+    id: restaurant.slug,
+    type: 'restaurants',
+    route: `/restaurants/${restaurant.slug}`,
+    isFeatured: restaurant.isFeatured,
+    featuredOrder: restaurant.featuredOrder ?? undefined,
+    status: restaurant.status,
+    priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
+    moments: restaurant.moments,
+    address: restaurant.address ?? undefined,
+    mapUrl: restaurant.mapUrl ?? undefined,
+    mapEmbedUrl: restaurant.mapEmbedUrl ?? undefined,
+    media: mapSubmissionImages(restaurant.approvedSubmissions[0]?.images),
+    translations: mapTranslationsByLocale(
+      restaurant.translations,
+      (translation) => ({
+        name: translation.name,
+        cuisine: translation.cuisine,
+        vibe: translation.vibe,
+        description: translation.description ?? '',
+      }),
+      emptyRestaurantTranslation,
+    ),
+  }
+}
+
+function mapTourDetailItem(tour: {
+  slug: string
+  status: ContentStatus
+  isFeatured: boolean
+  featuredOrder: number | null
+  category: TourCategory
+  duration: string
+  priceFrom: string
+  privateOrShared: string
+  bestFor: string
+  difficulty: string
+  suitableForKids: string
+  meetingPoint: string | null
+  address: string | null
+  mapUrl: string | null
+  mapEmbedUrl: string | null
+  operatorName: string
+  operatorWhatsapp: string | null
+  operatorInstagram: string | null
+  operatorWebsite: string | null
+  operatorPrimaryContactMethod: string | null
+  imageUrls: string[]
+  translations: TourTranslationWithLocale[]
+}): AdminPublishedContentDetail {
+  return {
+    id: tour.slug,
+    type: 'tours',
+    route: `/tours/${tour.slug}`,
+    isFeatured: tour.isFeatured,
+    featuredOrder: tour.featuredOrder ?? undefined,
+    status: tour.status,
+    category: tour.category,
+    durationHours: parseTourDurationHours(tour.duration),
+    priceFrom: parseTourPriceFrom(tour.priceFrom),
+    privateOrShared: tour.privateOrShared,
+    bestFor: tour.bestFor,
+    difficulty: tour.difficulty,
+    suitableForKids: tour.suitableForKids,
+    meetingPoint: tour.meetingPoint ?? undefined,
+    address: tour.address ?? undefined,
+    mapUrl: tour.mapUrl ?? undefined,
+    mapEmbedUrl: tour.mapEmbedUrl ?? undefined,
+    operatorName: tour.operatorName,
+    operatorWhatsapp: tour.operatorWhatsapp ?? undefined,
+    operatorInstagram: tour.operatorInstagram ?? undefined,
+    operatorWebsite: tour.operatorWebsite ?? undefined,
+    operatorPrimaryContactMethod: tour.operatorPrimaryContactMethod ?? undefined,
+    media: tour.imageUrls.map((url, index) => ({
+      id: `tour-image-${index}`,
+      source: 'EXTERNAL_URL',
+      url,
+      sortOrder: index,
+    })),
+    translations: mapTranslationsByLocale(
+      tour.translations,
+      (translation) => ({
+        name: translation.name,
+        description: translation.description ?? '',
+        included: translation.included ?? '',
+        whatToBring: translation.whatToBring ?? '',
+        operatorDescription: translation.operatorDescription ?? '',
+      }),
+      emptyTourTranslation,
+    ),
+  }
+}
+
+async function replaceEventSubmissionImages(
+  prisma: PrismaClient,
+  submissionId: string,
+  media: UpdateAdminPublishedContentInput['media'],
+) {
+  await prisma.eventSubmissionImage.deleteMany({
+    where: { submissionId },
+  })
+
+  if (media.length === 0) {
+    return
+  }
+
+  await prisma.eventSubmissionImage.createMany({
+    data: media.map((item, index) => ({
+      submissionId,
+      source: item.kind === 'uploaded' ? 'UPLOADED' : 'EXTERNAL_URL',
+      url: item.url,
+      objectKey: item.kind === 'uploaded' ? item.objectKey : null,
+      mimeType: item.kind === 'uploaded' ? item.mimeType : null,
+      originalFilename: item.kind === 'uploaded' ? item.filename : null,
+      sortOrder: index,
+    })),
+  })
+}
+
+async function replaceRestaurantSubmissionImages(
+  prisma: PrismaClient,
+  submissionId: string,
+  media: UpdateAdminPublishedContentInput['media'],
+) {
+  await prisma.restaurantSubmissionImage.deleteMany({
+    where: { submissionId },
+  })
+
+  if (media.length === 0) {
+    return
+  }
+
+  await prisma.restaurantSubmissionImage.createMany({
+    data: media.map((item, index) => ({
+      submissionId,
+      source: item.kind === 'uploaded' ? 'UPLOADED' : 'EXTERNAL_URL',
+      url: item.url,
+      objectKey: item.kind === 'uploaded' ? item.objectKey : null,
+      mimeType: item.kind === 'uploaded' ? item.mimeType : null,
+      originalFilename: item.kind === 'uploaded' ? item.filename : null,
+      sortOrder: index,
+    })),
+  })
+}
+
+async function replaceTourSubmissionImages(
+  prisma: PrismaClient,
+  submissionId: string,
+  media: UpdateAdminPublishedContentInput['media'],
+) {
+  await prisma.tourSubmissionImage.deleteMany({
+    where: { submissionId },
+  })
+
+  if (media.length === 0) {
+    return
+  }
+
+  await prisma.tourSubmissionImage.createMany({
+    data: media.map((item, index) => ({
+      submissionId,
+      source: item.kind === 'uploaded' ? 'UPLOADED' : 'EXTERNAL_URL',
+      url: item.url,
+      objectKey: item.kind === 'uploaded' ? item.objectKey : null,
+      mimeType: item.kind === 'uploaded' ? item.mimeType : null,
+      originalFilename: item.kind === 'uploaded' ? item.filename : null,
+      sortOrder: index,
+    })),
+  })
 }
 
 export function createPrismaRepositories(
@@ -1171,6 +1579,345 @@ export function createPrismaPublishedContentRepository(
             })
             .filter(isPresent)
             .map(mapPublishedTourItem)
+        }
+      }
+    },
+    async getPublishedContentDetail(type, id) {
+      switch (type) {
+        case 'events': {
+          return getPublishedEventDetail(prisma, id)
+        }
+        case 'restaurants': {
+          return getPublishedRestaurantDetail(prisma, id)
+        }
+        case 'tours': {
+          return getPublishedTourDetail(prisma, id)
+        }
+      }
+    },
+    async updatePublishedContent(input) {
+      switch (input.type) {
+        case 'events': {
+          const current = await prisma.event.findFirst({
+            where: { slug: input.id, status: ContentStatus.PUBLISHED },
+            include: {
+              approvedSubmissions: {
+                where: { status: 'APPROVED' },
+                orderBy: { createdAt: 'asc' },
+                take: 1,
+                include: {
+                  images: {
+                    orderBy: { sortOrder: 'asc' },
+                  },
+                },
+              },
+            },
+          })
+
+          if (!current) {
+            return null
+          }
+
+          await prisma.$transaction(async (transaction) => {
+            await transaction.event.update({
+              where: { id: current.id },
+              data: {
+                category: input.category,
+                startsAt: new Date(input.startsAt),
+                address: input.address,
+                mapUrl: input.mapUrl,
+                mapEmbedUrl: input.mapEmbedUrl,
+                updatedBy: input.updatedBy,
+                translations: {
+                  upsert: [
+                    {
+                      where: {
+                        eventId_localeId: {
+                          eventId: current.id,
+                          localeId: 1,
+                        },
+                      },
+                      update: {
+                        title: input.translations.en.title,
+                        dateLabel: input.translations.en.dateLabel,
+                        venue: input.translations.en.venue,
+                        description: input.translations.en.description,
+                      },
+                      create: {
+                        localeId: 1,
+                        title: input.translations.en.title,
+                        dateLabel: input.translations.en.dateLabel,
+                        venue: input.translations.en.venue,
+                        description: input.translations.en.description,
+                      },
+                    },
+                    {
+                      where: {
+                        eventId_localeId: {
+                          eventId: current.id,
+                          localeId: 2,
+                        },
+                      },
+                      update: {
+                        title: input.translations.es.title,
+                        dateLabel: input.translations.es.dateLabel,
+                        venue: input.translations.es.venue,
+                        description: input.translations.es.description,
+                      },
+                      create: {
+                        localeId: 2,
+                        title: input.translations.es.title,
+                        dateLabel: input.translations.es.dateLabel,
+                        venue: input.translations.es.venue,
+                        description: input.translations.es.description,
+                      },
+                    },
+                  ],
+                },
+              },
+            })
+
+            const submissionId = current.approvedSubmissions[0]?.id
+
+            if (submissionId) {
+              await replaceEventSubmissionImages(transaction as PrismaClient, submissionId, input.media)
+            }
+          })
+
+          return getPublishedEventDetail(prisma, input.id)
+        }
+        case 'restaurants': {
+          const current = await prisma.restaurant.findFirst({
+            where: { slug: input.id, status: ContentStatus.PUBLISHED },
+            include: {
+              approvedSubmissions: {
+                where: { status: 'APPROVED' },
+                orderBy: { createdAt: 'asc' },
+                take: 1,
+                include: {
+                  images: {
+                    orderBy: { sortOrder: 'asc' },
+                  },
+                },
+              },
+            },
+          })
+
+          if (!current) {
+            return null
+          }
+
+          await prisma.$transaction(async (transaction) => {
+            await transaction.restaurant.update({
+              where: { id: current.id },
+              data: {
+                priceBand: input.priceBand,
+                moments: input.moments,
+                address: input.address,
+                mapUrl: input.mapUrl,
+                mapEmbedUrl: input.mapEmbedUrl,
+                updatedBy: input.updatedBy,
+                translations: {
+                  upsert: [
+                    {
+                      where: {
+                        restaurantId_localeId: {
+                          restaurantId: current.id,
+                          localeId: 1,
+                        },
+                      },
+                      update: {
+                        name: input.translations.en.name,
+                        cuisine: input.translations.en.cuisine,
+                        vibe: input.translations.en.vibe,
+                        description: input.translations.en.description,
+                      },
+                      create: {
+                        localeId: 1,
+                        name: input.translations.en.name,
+                        cuisine: input.translations.en.cuisine,
+                        vibe: input.translations.en.vibe,
+                        description: input.translations.en.description,
+                      },
+                    },
+                    {
+                      where: {
+                        restaurantId_localeId: {
+                          restaurantId: current.id,
+                          localeId: 2,
+                        },
+                      },
+                      update: {
+                        name: input.translations.es.name,
+                        cuisine: input.translations.es.cuisine,
+                        vibe: input.translations.es.vibe,
+                        description: input.translations.es.description,
+                      },
+                      create: {
+                        localeId: 2,
+                        name: input.translations.es.name,
+                        cuisine: input.translations.es.cuisine,
+                        vibe: input.translations.es.vibe,
+                        description: input.translations.es.description,
+                      },
+                    },
+                  ],
+                },
+              },
+            })
+
+            const submissionId = current.approvedSubmissions[0]?.id
+
+            if (submissionId) {
+              await replaceRestaurantSubmissionImages(
+                transaction as PrismaClient,
+                submissionId,
+                input.media,
+              )
+            }
+          })
+
+          return getPublishedRestaurantDetail(prisma, input.id)
+        }
+        case 'tours': {
+          const current = await prisma.tour.findFirst({
+            where: { slug: input.id, status: ContentStatus.PUBLISHED },
+            include: {
+              approvedSubmissions: {
+                where: { status: 'APPROVED' },
+                orderBy: { createdAt: 'asc' },
+                take: 1,
+              },
+            },
+          })
+
+          if (!current) {
+            return null
+          }
+
+          await prisma.$transaction(async (transaction) => {
+            await transaction.tour.update({
+              where: { id: current.id },
+              data: {
+                category: input.category,
+                duration: `${input.durationHours} hours`,
+                priceFrom: `From ${input.priceFrom} MXN`,
+                privateOrShared: input.privateOrShared,
+                bestFor: input.bestFor,
+                difficulty: input.difficulty,
+                suitableForKids: input.suitableForKids,
+                meetingPoint: input.meetingPoint,
+                address: input.address,
+                mapUrl: input.mapUrl,
+                mapEmbedUrl: input.mapEmbedUrl,
+                operatorName: input.operatorName,
+                operatorWhatsapp: input.operatorWhatsapp,
+                operatorInstagram: input.operatorInstagram,
+                operatorWebsite: input.operatorWebsite,
+                operatorPrimaryContactMethod: input.operatorPrimaryContactMethod,
+                imageUrls: input.media.map((item) => item.url),
+                updatedBy: input.updatedBy,
+                translations: {
+                  upsert: [
+                    {
+                      where: {
+                        tourId_localeId: {
+                          tourId: current.id,
+                          localeId: 1,
+                        },
+                      },
+                      update: {
+                        name: input.translations.en.name,
+                        description: input.translations.en.description,
+                        included: input.translations.en.included,
+                        whatToBring: input.translations.en.whatToBring,
+                        operatorDescription: input.translations.en.operatorDescription,
+                      },
+                      create: {
+                        localeId: 1,
+                        name: input.translations.en.name,
+                        description: input.translations.en.description,
+                        included: input.translations.en.included,
+                        whatToBring: input.translations.en.whatToBring,
+                        operatorDescription: input.translations.en.operatorDescription,
+                      },
+                    },
+                    {
+                      where: {
+                        tourId_localeId: {
+                          tourId: current.id,
+                          localeId: 2,
+                        },
+                      },
+                      update: {
+                        name: input.translations.es.name,
+                        description: input.translations.es.description,
+                        included: input.translations.es.included,
+                        whatToBring: input.translations.es.whatToBring,
+                        operatorDescription: input.translations.es.operatorDescription,
+                      },
+                      create: {
+                        localeId: 2,
+                        name: input.translations.es.name,
+                        description: input.translations.es.description,
+                        included: input.translations.es.included,
+                        whatToBring: input.translations.es.whatToBring,
+                        operatorDescription: input.translations.es.operatorDescription,
+                      },
+                    },
+                  ],
+                },
+              },
+            })
+
+            const submissionId = current.approvedSubmissions[0]?.id
+
+            if (submissionId) {
+              await replaceTourSubmissionImages(transaction as PrismaClient, submissionId, input.media)
+            }
+          })
+
+          return getPublishedTourDetail(prisma, input.id)
+        }
+      }
+    },
+    async archivePublishedContent(input) {
+      switch (input.type) {
+        case 'events': {
+          const item = await prisma.event.updateMany({
+            where: { slug: input.id, status: ContentStatus.PUBLISHED },
+            data: {
+              status: ContentStatus.ARCHIVED,
+              isFeatured: false,
+              featuredOrder: null,
+            },
+          })
+
+          return item.count > 0 ? { id: input.id, type: input.type, status: 'ARCHIVED' } : null
+        }
+        case 'restaurants': {
+          const item = await prisma.restaurant.updateMany({
+            where: { slug: input.id, status: ContentStatus.PUBLISHED },
+            data: {
+              status: ContentStatus.ARCHIVED,
+              isFeatured: false,
+              featuredOrder: null,
+            },
+          })
+
+          return item.count > 0 ? { id: input.id, type: input.type, status: 'ARCHIVED' } : null
+        }
+        case 'tours': {
+          const item = await prisma.tour.updateMany({
+            where: { slug: input.id, status: ContentStatus.PUBLISHED },
+            data: {
+              status: ContentStatus.ARCHIVED,
+              isFeatured: false,
+              featuredOrder: null,
+            },
+          })
+
+          return item.count > 0 ? { id: input.id, type: input.type, status: 'ARCHIVED' } : null
         }
       }
     },

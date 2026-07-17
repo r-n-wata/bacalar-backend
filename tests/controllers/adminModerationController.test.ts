@@ -14,6 +14,9 @@ function createService(overrides: Record<string, unknown> = {}) {
   return {
     listSubmissions: vi.fn(),
     listPublishedContent: vi.fn(),
+    getPublishedContentDetail: vi.fn(),
+    updatePublishedContent: vi.fn(),
+    archivePublishedContent: vi.fn(),
     getSubmissionDetail: vi.fn(),
     updatePublishedContentFeatured: vi.fn(),
     approveSubmission: vi.fn(),
@@ -118,6 +121,68 @@ describe('adminModerationController', () => {
         type: 'events',
         status: 'PENDING',
       },
+    })
+  })
+
+  it('loads a single published content detail payload', async () => {
+    const service = createService({
+      getPublishedContentDetail: vi.fn().mockResolvedValue({
+        item: {
+          id: 'event-sunset-jazz',
+          type: 'events',
+          status: 'PUBLISHED',
+        },
+      }),
+    })
+    const controller = createAdminModerationController(service, defaultLanguage)
+    const response = createResponse()
+
+    await controller.getPublishedContentDetail(
+      {
+        params: { type: 'events', id: 'event-sunset-jazz' },
+      } as never,
+      response as never,
+    )
+
+    expect(service.getPublishedContentDetail).toHaveBeenCalledWith(
+      'events',
+      'event-sunset-jazz',
+    )
+    expect(response.json).toHaveBeenCalledWith({
+      item: {
+        id: 'event-sunset-jazz',
+        type: 'events',
+        status: 'PUBLISHED',
+      },
+    })
+  })
+
+  it('archives published content by type and id', async () => {
+    const service = createService({
+      archivePublishedContent: vi.fn().mockResolvedValue({
+        id: 'event-sunset-jazz',
+        type: 'events',
+        status: 'ARCHIVED',
+      }),
+    })
+    const controller = createAdminModerationController(service, defaultLanguage)
+    const response = createResponse()
+
+    await controller.archivePublishedContent(
+      {
+        params: { type: 'events', id: 'event-sunset-jazz' },
+      } as never,
+      response as never,
+    )
+
+    expect(service.archivePublishedContent).toHaveBeenCalledWith({
+      type: 'events',
+      id: 'event-sunset-jazz',
+    })
+    expect(response.json).toHaveBeenCalledWith({
+      id: 'event-sunset-jazz',
+      type: 'events',
+      status: 'ARCHIVED',
     })
   })
 

@@ -74,7 +74,7 @@ describe('mvp contract and runtime foundations', () => {
     )
     expect(response.header).toHaveBeenCalledWith(
       'Access-Control-Allow-Methods',
-      'GET,POST,OPTIONS',
+      'GET,POST,PATCH,DELETE,OPTIONS',
     )
     expect(response.status).toHaveBeenCalledWith(204)
     expect(next).not.toHaveBeenCalled()

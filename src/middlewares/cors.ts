@@ -20,7 +20,7 @@ const ALLOWED_HEADERS = [
   'Authorization',
 ].join(', ')
 
-const ALLOWED_METHODS = ['GET', 'POST', 'OPTIONS'].join(',')
+const ALLOWED_METHODS = ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'].join(',')
 
 function createNetlifyPreviewPattern(siteName: string) {
   return new RegExp(

@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express'
+import { ZodError } from 'zod'
 import type { AdminRequest } from '../middlewares/adminAuth'
 import type { AdminModerationService } from '../services/adminModerationService'
 import type {
@@ -9,6 +10,11 @@ import type {
   AdminSubmissionEntityType,
   AdminSubmissionListType,
   AdminSubmissionStatusFilter,
+} from '../types/admin'
+import {
+  updateAdminPublishedEventSchema,
+  updateAdminPublishedRestaurantSchema,
+  updateAdminPublishedTourSchema,
 } from '../types/admin'
 import { HttpError } from '../utils/httpError'
 import { resolveLanguage } from '../utils/locale'
@@ -102,6 +108,20 @@ function resolvePublishedContentType(value: unknown) {
   )
 }
 
+function parseAdminPublishedContentInput(
+  type: AdminPublishedContentType,
+  payload: unknown,
+) {
+  switch (type) {
+    case 'events':
+      return updateAdminPublishedEventSchema.parse(payload)
+    case 'restaurants':
+      return updateAdminPublishedRestaurantSchema.parse(payload)
+    case 'tours':
+      return updateAdminPublishedTourSchema.parse(payload)
+  }
+}
+
 function resolveId(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] ?? '' : value ?? ''
 }
@@ -132,6 +152,49 @@ export function createAdminModerationController(
         resolvePublishedContentType(request.query.type),
         resolveLanguage(request, defaultLanguage),
       )
+
+      response.json(payload)
+    },
+    getPublishedContentDetail: async (request: Request, response: Response) => {
+      const payload = await adminModerationService.getPublishedContentDetail(
+        resolvePublishedContentType(request.params.type),
+        resolveId(request.params.id),
+      )
+
+      response.json(payload)
+    },
+    updatePublishedContent: async (request: Request, response: Response) => {
+      const type = resolvePublishedContentType(request.params.type)
+
+      try {
+        const payload = await adminModerationService.updatePublishedContent({
+          ...parseAdminPublishedContentInput(type, request.body),
+          id: resolveId(request.params.id),
+          updatedBy: (request as AdminRequest).adminUser.email,
+        })
+
+        response.json(payload)
+      } catch (error) {
+        if (error instanceof ZodError) {
+          throw new HttpError(
+            400,
+            'Invalid published content payload.',
+            'VALIDATION_ERROR',
+            error.issues.map((issue) => ({
+              field: issue.path.join('.'),
+              message: issue.message,
+            })),
+          )
+        }
+
+        throw error
+      }
+    },
+    archivePublishedContent: async (request: Request, response: Response) => {
+      const payload = await adminModerationService.archivePublishedContent({
+        type: resolvePublishedContentType(request.params.type),
+        id: resolveId(request.params.id),
+      })
 
       response.json(payload)
     },

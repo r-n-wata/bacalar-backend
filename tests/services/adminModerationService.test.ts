@@ -5,6 +5,9 @@ describe('adminModerationService', () => {
   function createPublishedContentRepository() {
     return {
       listPublishedContent: vi.fn(),
+      getPublishedContentDetail: vi.fn(),
+      updatePublishedContent: vi.fn(),
+      archivePublishedContent: vi.fn(),
       updateFeaturedState: vi.fn(),
       countFeaturedItems: vi.fn(),
     }
@@ -64,6 +67,73 @@ describe('adminModerationService', () => {
         type: 'events',
         status: 'APPROVED',
       },
+    })
+  })
+
+  it('returns a single published content detail payload from the repository', async () => {
+    const repository = {
+      listSubmissions: vi.fn(),
+      getSubmissionDetail: vi.fn(),
+      approveSubmission: vi.fn(),
+      rejectSubmission: vi.fn(),
+    }
+    const publishedContentRepository = createPublishedContentRepository()
+    publishedContentRepository.getPublishedContentDetail.mockResolvedValue({
+      id: 'event-sunset-jazz',
+      type: 'events',
+      status: 'PUBLISHED',
+    })
+    const service = createAdminModerationService({
+      repository,
+      publishedContentRepository,
+    })
+
+    const result = await service.getPublishedContentDetail('events', 'event-sunset-jazz')
+
+    expect(publishedContentRepository.getPublishedContentDetail).toHaveBeenCalledWith(
+      'events',
+      'event-sunset-jazz',
+    )
+    expect(result).toEqual({
+      item: {
+        id: 'event-sunset-jazz',
+        type: 'events',
+        status: 'PUBLISHED',
+      },
+    })
+  })
+
+  it('archives published content through the repository', async () => {
+    const repository = {
+      listSubmissions: vi.fn(),
+      getSubmissionDetail: vi.fn(),
+      approveSubmission: vi.fn(),
+      rejectSubmission: vi.fn(),
+    }
+    const publishedContentRepository = createPublishedContentRepository()
+    publishedContentRepository.archivePublishedContent.mockResolvedValue({
+      id: 'event-sunset-jazz',
+      type: 'events',
+      status: 'ARCHIVED',
+    })
+    const service = createAdminModerationService({
+      repository,
+      publishedContentRepository,
+    })
+
+    const result = await service.archivePublishedContent({
+      type: 'events',
+      id: 'event-sunset-jazz',
+    })
+
+    expect(publishedContentRepository.archivePublishedContent).toHaveBeenCalledWith({
+      type: 'events',
+      id: 'event-sunset-jazz',
+    })
+    expect(result).toEqual({
+      id: 'event-sunset-jazz',
+      type: 'events',
+      status: 'ARCHIVED',
     })
   })
 

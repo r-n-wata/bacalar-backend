@@ -13,8 +13,11 @@ import type { EventPaginationInput } from './eventsPagination'
 import type { RestaurantPaginationInput } from './restaurantsPagination'
 import type { TourPaginationInput } from './toursPagination'
 import type {
+  AdminPublishedContentDetail,
   AdminPublishedContentItem,
   AdminPublishedContentType,
+  ArchiveAdminPublishedContentResult,
+  UpdateAdminPublishedContentInput,
   UpdateAdminPublishedContentFeaturedInput,
 } from '../types/admin'
 
@@ -61,6 +64,17 @@ export type PublishedContentRepository = {
     type: AdminPublishedContentType,
     language: AppLanguage,
   ): Promise<AdminPublishedContentItem[]>
+  getPublishedContentDetail(
+    type: AdminPublishedContentType,
+    id: string,
+  ): Promise<AdminPublishedContentDetail | null>
+  updatePublishedContent(
+    input: UpdateAdminPublishedContentInput & { updatedBy: string },
+  ): Promise<AdminPublishedContentDetail | null>
+  archivePublishedContent(input: {
+    type: AdminPublishedContentType
+    id: string
+  }): Promise<ArchiveAdminPublishedContentResult | null>
   updateFeaturedState(
     input: UpdateAdminPublishedContentFeaturedInput,
   ): Promise<AdminPublishedContentItem | null>

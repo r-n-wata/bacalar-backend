@@ -1,14 +1,18 @@
 import type { AdminModerationRepository } from '../repositories/adminModerationRepository'
 import type { PublishedContentRepository } from '../repositories/interfaces'
 import type {
+  AdminPublishedContentDetailResponse,
   AdminPublishedContentListResponse,
   AdminPublishedContentType,
+  ArchiveAdminPublishedContentResult,
   AdminSubmissionDetailResponse,
   AdminSubmissionEntityType,
   AdminSubmissionListResponse,
   AdminSubmissionListType,
   AdminSubmissionStatusFilter,
   SubmissionModerationResult,
+  UpdateAdminPublishedContentInput,
+  UpdateAdminPublishedContentResult,
 } from '../types/admin'
 import { HttpError } from '../utils/httpError'
 import type { AuthenticatedAdminUser } from './adminAuthService'
@@ -22,6 +26,17 @@ export type AdminModerationService = {
     type: AdminPublishedContentType,
     language: 'en' | 'es',
   ): Promise<AdminPublishedContentListResponse>
+  getPublishedContentDetail(
+    type: AdminPublishedContentType,
+    id: string,
+  ): Promise<AdminPublishedContentDetailResponse>
+  updatePublishedContent(
+    input: UpdateAdminPublishedContentInput & { updatedBy: string },
+  ): Promise<UpdateAdminPublishedContentResult>
+  archivePublishedContent(input: {
+    type: AdminPublishedContentType
+    id: string
+  }): Promise<ArchiveAdminPublishedContentResult>
   getSubmissionDetail(
     type: AdminSubmissionEntityType,
     submissionId: string,
@@ -66,6 +81,8 @@ function toHttpError(error: unknown) {
           'Only pending submissions can be reviewed.',
           'SUBMISSION_NOT_PENDING',
         )
+      case 'PUBLISHED_CONTENT_NOT_FOUND':
+        return new HttpError(404, 'Published content not found.', 'CONTENT_NOT_FOUND')
       default:
         return error
     }
@@ -94,6 +111,41 @@ export function createAdminModerationService({
         items,
         featuredCount,
         featuredCap: 5,
+      }
+    },
+    async getPublishedContentDetail(type, id) {
+      const item = await publishedContentRepository.getPublishedContentDetail(type, id)
+
+      if (!item) {
+        throw new HttpError(404, 'Published content not found.', 'CONTENT_NOT_FOUND')
+      }
+
+      return { item }
+    },
+    async updatePublishedContent(input) {
+      try {
+        const item = await publishedContentRepository.updatePublishedContent(input)
+
+        if (!item) {
+          throw new Error('PUBLISHED_CONTENT_NOT_FOUND')
+        }
+
+        return { item }
+      } catch (error) {
+        throw toHttpError(error)
+      }
+    },
+    async archivePublishedContent(input) {
+      try {
+        const result = await publishedContentRepository.archivePublishedContent(input)
+
+        if (!result) {
+          throw new Error('PUBLISHED_CONTENT_NOT_FOUND')
+        }
+
+        return result
+      } catch (error) {
+        throw toHttpError(error)
       }
     },
     async getSubmissionDetail(type, submissionId) {

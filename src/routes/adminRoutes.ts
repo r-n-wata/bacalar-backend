@@ -15,6 +15,9 @@ export function createAdminRoutes(dependencies: {
   router.get('/session', controller.getSession)
   router.get('/submissions', controller.listSubmissions)
   router.get('/content', controller.listPublishedContent)
+  router.get('/content/:type/:id', controller.getPublishedContentDetail)
+  router.patch('/content/:type/:id', controller.updatePublishedContent)
+  router.delete('/content/:type/:id', controller.archivePublishedContent)
   router.post('/content/:type/:id/feature', controller.updatePublishedContentFeatured)
   router.delete(
     '/content/:type/:id/feature',
