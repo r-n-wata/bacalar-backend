@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { ContentStatus, PrismaClient } from '@prisma/client'
+import { ContentStatus, Prisma, PrismaClient } from '@prisma/client'
 import { demoEventSlugs } from '../src/data/demoEventIds'
 
 type DeleteDemoEventsOptions = {
@@ -103,7 +103,7 @@ export async function listPublishedDemoEvents(prisma: PrismaClient) {
     where: {
       status: ContentStatus.PUBLISHED,
       slug: {
-        in: demoEventSlugs,
+        in: [...demoEventSlugs],
       },
     },
     select: {
@@ -127,7 +127,18 @@ export async function listPublishedDemoEvents(prisma: PrismaClient) {
     },
   })
 
-  return events.map((event) => ({
+  return events.map((event: Prisma.EventGetPayload<{
+    select: {
+      id: true
+      slug: true
+      status: true
+      translations: {
+        select: {
+          title: true
+        }
+      }
+    }
+  }>) => ({
     id: event.id,
     slug: event.slug,
     title: event.translations[0]?.title ?? null,

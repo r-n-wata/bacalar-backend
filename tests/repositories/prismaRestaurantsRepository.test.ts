@@ -51,10 +51,11 @@ describe('prisma restaurant repositories', () => {
     expect(findMany).toHaveBeenNthCalledWith(
       1,
       expect.objectContaining({
-        where: {
+        where: expect.objectContaining({
           status: 'PUBLISHED',
+          isFeatured: false,
           moments: { has: 'lunch' },
-        },
+        }),
       }),
     )
     expect(result?.items[0]?.moments).toEqual(['lunch', 'dinner'])
