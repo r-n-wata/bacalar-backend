@@ -2,10 +2,12 @@ import {
   ContentStatus,
   FeatureType,
   HomeSectionKind,
+  LocaleCode,
   type PrismaClient,
 } from '@prisma/client'
 import type {
   AppLanguage,
+  ContactInfo,
   EventDetail,
   EventItem,
   FeaturedListItemImage,
@@ -208,6 +210,54 @@ function withImageAlt(
   return {
     ...image,
     alt,
+  }
+}
+
+function toOptionalValue(value: string | null | undefined) {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : undefined
+}
+
+async function getRequiredLocaleIds(
+  client: Pick<PrismaClient, 'locale'>,
+): Promise<{ en: number; es: number }> {
+  const locales = await client.locale.findMany({
+    where: {
+      code: {
+        in: [LocaleCode.en, LocaleCode.es],
+      },
+    },
+    select: {
+      id: true,
+      code: true,
+    },
+  })
+
+  const localeIdByCode = locales.reduce<Partial<Record<LocaleCode, number>>>((accumulator, locale) => {
+    accumulator[locale.code] = locale.id
+    return accumulator
+  }, {})
+
+  if (!localeIdByCode.en || !localeIdByCode.es) {
+    throw new Error('Missing required locales for published content updates.')
+  }
+
+  return {
+    en: localeIdByCode.en,
+    es: localeIdByCode.es,
+  }
+}
+
+function createContactInfo(input: ContactInfo): ContactInfo {
+  return {
+    providerName: input.providerName,
+    whatsapp: toOptionalValue(input.whatsapp),
+    phone: toOptionalValue(input.phone),
+    website: toOptionalValue(input.website),
+    instagram: toOptionalValue(input.instagram),
+    facebook: toOptionalValue(input.facebook),
+    email: toOptionalValue(input.email),
+    mapsUrl: toOptionalValue(input.mapsUrl),
   }
 }
 
@@ -549,6 +599,13 @@ function mapEventDetailItem(event: {
   isFeatured: boolean
   featuredOrder: number | null
   startsAt: Date | null
+  organizerName: string | null
+  whatsapp: string | null
+  phone: string | null
+  website: string | null
+  instagram: string | null
+  facebook: string | null
+  email: string | null
   address: string | null
   mapUrl: string | null
   mapEmbedUrl: string | null
@@ -580,6 +637,13 @@ function mapEventDetailItem(event: {
     status: event.status,
     category: event.category,
     startsAt: event.startsAt?.toISOString() ?? new Date().toISOString(),
+    organizerName: event.organizerName ?? undefined,
+    whatsapp: event.whatsapp ?? undefined,
+    phone: event.phone ?? undefined,
+    website: event.website ?? undefined,
+    instagram: event.instagram ?? undefined,
+    facebook: event.facebook ?? undefined,
+    email: event.email ?? undefined,
     address: event.address ?? undefined,
     mapUrl: event.mapUrl ?? undefined,
     mapEmbedUrl: event.mapEmbedUrl ?? undefined,
@@ -666,6 +730,12 @@ function mapRestaurantDetailItem(restaurant: {
   featuredOrder: number | null
   priceBand: string
   moments: RestaurantMoment[]
+  whatsapp: string | null
+  phone: string | null
+  website: string | null
+  instagram: string | null
+  facebook: string | null
+  email: string | null
   address: string | null
   mapUrl: string | null
   mapEmbedUrl: string | null
@@ -691,6 +761,12 @@ function mapRestaurantDetailItem(restaurant: {
     status: restaurant.status,
     priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
     moments: restaurant.moments,
+    whatsapp: restaurant.whatsapp ?? undefined,
+    phone: restaurant.phone ?? undefined,
+    website: restaurant.website ?? undefined,
+    instagram: restaurant.instagram ?? undefined,
+    facebook: restaurant.facebook ?? undefined,
+    email: restaurant.email ?? undefined,
     address: restaurant.address ?? undefined,
     mapUrl: restaurant.mapUrl ?? undefined,
     mapEmbedUrl: restaurant.mapEmbedUrl ?? undefined,
@@ -721,6 +797,13 @@ function mapTourDetailItem(tour: {
   difficulty: string
   suitableForKids: string
   meetingPoint: string | null
+  providerName: string | null
+  whatsapp: string | null
+  phone: string | null
+  website: string | null
+  instagram: string | null
+  facebook: string | null
+  email: string | null
   address: string | null
   mapUrl: string | null
   mapEmbedUrl: string | null
@@ -747,6 +830,13 @@ function mapTourDetailItem(tour: {
     difficulty: tour.difficulty,
     suitableForKids: tour.suitableForKids,
     meetingPoint: tour.meetingPoint ?? undefined,
+    providerName: tour.providerName ?? undefined,
+    whatsapp: tour.whatsapp ?? undefined,
+    phone: tour.phone ?? undefined,
+    website: tour.website ?? undefined,
+    instagram: tour.instagram ?? undefined,
+    facebook: tour.facebook ?? undefined,
+    email: tour.email ?? undefined,
     address: tour.address ?? undefined,
     mapUrl: tour.mapUrl ?? undefined,
     mapEmbedUrl: tour.mapEmbedUrl ?? undefined,
@@ -1176,6 +1266,17 @@ export function createPrismaRepositories(
             `${translation.title} in ${translation.venue} during ${translation.dateLabel}.`,
           startsAt: event.startsAt?.toISOString(),
           endsAt: event.endsAt?.toISOString(),
+          contact: createContactInfo({
+            providerName:
+              toOptionalValue(event.organizerName) ?? translation.venue,
+            whatsapp: event.whatsapp ?? undefined,
+            phone: event.phone ?? undefined,
+            website: event.website ?? undefined,
+            instagram: event.instagram ?? undefined,
+            facebook: event.facebook ?? undefined,
+            email: event.email ?? undefined,
+            mapsUrl: event.mapUrl ?? undefined,
+          }),
           route: `/events/${event.slug}`,
           image: withImageAlt(
             mapLeadImage(event.approvedSubmissions),
@@ -1322,6 +1423,16 @@ export function createPrismaRepositories(
           description:
             translation.description ??
             `${translation.name} offers a ${translation.vibe.toLowerCase()} tour.`,
+          contact: createContactInfo({
+            providerName: translation.name,
+            whatsapp: restaurant.whatsapp ?? undefined,
+            phone: restaurant.phone ?? undefined,
+            website: restaurant.website ?? undefined,
+            instagram: restaurant.instagram ?? undefined,
+            facebook: restaurant.facebook ?? undefined,
+            email: restaurant.email ?? undefined,
+            mapsUrl: restaurant.mapUrl ?? undefined,
+          }),
           route: `/restaurants/${restaurant.slug}`,
           image: withImageAlt(
             mapLeadImage(restaurant.approvedSubmissions),
@@ -1490,6 +1601,17 @@ export function createPrismaRepositories(
           operatorWebsite: tour.operatorWebsite ?? undefined,
           operatorPrimaryContactMethod:
             tour.operatorPrimaryContactMethod ?? undefined,
+          contact: createContactInfo({
+            providerName:
+              toOptionalValue(tour.providerName) ?? tour.operatorName,
+            whatsapp: tour.whatsapp ?? tour.operatorWhatsapp ?? undefined,
+            phone: tour.phone ?? undefined,
+            website: tour.website ?? tour.operatorWebsite ?? undefined,
+            instagram: tour.instagram ?? tour.operatorInstagram ?? undefined,
+            facebook: tour.facebook ?? undefined,
+            email: tour.email ?? undefined,
+            mapsUrl: tour.mapUrl ?? undefined,
+          }),
           route: `/tours/${tour.slug}`,
           image: withImageAlt(
             mapConfiguredImage(tour.imageUrls) ??
@@ -1622,11 +1744,20 @@ export function createPrismaPublishedContentRepository(
           }
 
           await prisma.$transaction(async (transaction) => {
+            const localeIds = await getRequiredLocaleIds(transaction as PrismaClient)
+
             await transaction.event.update({
               where: { id: current.id },
               data: {
                 category: input.category,
                 startsAt: new Date(input.startsAt),
+                organizerName: input.organizerName,
+                whatsapp: input.whatsapp,
+                phone: input.phone,
+                website: input.website,
+                instagram: input.instagram,
+                facebook: input.facebook,
+                email: input.email,
                 address: input.address,
                 mapUrl: input.mapUrl,
                 mapEmbedUrl: input.mapEmbedUrl,
@@ -1637,7 +1768,7 @@ export function createPrismaPublishedContentRepository(
                       where: {
                         eventId_localeId: {
                           eventId: current.id,
-                          localeId: 1,
+                          localeId: localeIds.en,
                         },
                       },
                       update: {
@@ -1647,7 +1778,7 @@ export function createPrismaPublishedContentRepository(
                         description: input.translations.en.description,
                       },
                       create: {
-                        localeId: 1,
+                        localeId: localeIds.en,
                         title: input.translations.en.title,
                         dateLabel: input.translations.en.dateLabel,
                         venue: input.translations.en.venue,
@@ -1658,7 +1789,7 @@ export function createPrismaPublishedContentRepository(
                       where: {
                         eventId_localeId: {
                           eventId: current.id,
-                          localeId: 2,
+                          localeId: localeIds.es,
                         },
                       },
                       update: {
@@ -1668,7 +1799,7 @@ export function createPrismaPublishedContentRepository(
                         description: input.translations.es.description,
                       },
                       create: {
-                        localeId: 2,
+                        localeId: localeIds.es,
                         title: input.translations.es.title,
                         dateLabel: input.translations.es.dateLabel,
                         venue: input.translations.es.venue,
@@ -1711,11 +1842,19 @@ export function createPrismaPublishedContentRepository(
           }
 
           await prisma.$transaction(async (transaction) => {
+            const localeIds = await getRequiredLocaleIds(transaction as PrismaClient)
+
             await transaction.restaurant.update({
               where: { id: current.id },
               data: {
                 priceBand: input.priceBand,
                 moments: input.moments,
+                whatsapp: input.whatsapp,
+                phone: input.phone,
+                website: input.website,
+                instagram: input.instagram,
+                facebook: input.facebook,
+                email: input.email,
                 address: input.address,
                 mapUrl: input.mapUrl,
                 mapEmbedUrl: input.mapEmbedUrl,
@@ -1726,7 +1865,7 @@ export function createPrismaPublishedContentRepository(
                       where: {
                         restaurantId_localeId: {
                           restaurantId: current.id,
-                          localeId: 1,
+                          localeId: localeIds.en,
                         },
                       },
                       update: {
@@ -1736,7 +1875,7 @@ export function createPrismaPublishedContentRepository(
                         description: input.translations.en.description,
                       },
                       create: {
-                        localeId: 1,
+                        localeId: localeIds.en,
                         name: input.translations.en.name,
                         cuisine: input.translations.en.cuisine,
                         vibe: input.translations.en.vibe,
@@ -1747,7 +1886,7 @@ export function createPrismaPublishedContentRepository(
                       where: {
                         restaurantId_localeId: {
                           restaurantId: current.id,
-                          localeId: 2,
+                          localeId: localeIds.es,
                         },
                       },
                       update: {
@@ -1757,7 +1896,7 @@ export function createPrismaPublishedContentRepository(
                         description: input.translations.es.description,
                       },
                       create: {
-                        localeId: 2,
+                        localeId: localeIds.es,
                         name: input.translations.es.name,
                         cuisine: input.translations.es.cuisine,
                         vibe: input.translations.es.vibe,
@@ -1799,6 +1938,8 @@ export function createPrismaPublishedContentRepository(
           }
 
           await prisma.$transaction(async (transaction) => {
+            const localeIds = await getRequiredLocaleIds(transaction as PrismaClient)
+
             await transaction.tour.update({
               where: { id: current.id },
               data: {
@@ -1810,6 +1951,13 @@ export function createPrismaPublishedContentRepository(
                 difficulty: input.difficulty,
                 suitableForKids: input.suitableForKids,
                 meetingPoint: input.meetingPoint,
+                providerName: input.providerName,
+                whatsapp: input.whatsapp,
+                phone: input.phone,
+                website: input.website,
+                instagram: input.instagram,
+                facebook: input.facebook,
+                email: input.email,
                 address: input.address,
                 mapUrl: input.mapUrl,
                 mapEmbedUrl: input.mapEmbedUrl,
@@ -1826,7 +1974,7 @@ export function createPrismaPublishedContentRepository(
                       where: {
                         tourId_localeId: {
                           tourId: current.id,
-                          localeId: 1,
+                          localeId: localeIds.en,
                         },
                       },
                       update: {
@@ -1837,7 +1985,7 @@ export function createPrismaPublishedContentRepository(
                         operatorDescription: input.translations.en.operatorDescription,
                       },
                       create: {
-                        localeId: 1,
+                        localeId: localeIds.en,
                         name: input.translations.en.name,
                         description: input.translations.en.description,
                         included: input.translations.en.included,
@@ -1849,7 +1997,7 @@ export function createPrismaPublishedContentRepository(
                       where: {
                         tourId_localeId: {
                           tourId: current.id,
-                          localeId: 2,
+                          localeId: localeIds.es,
                         },
                       },
                       update: {
@@ -1860,7 +2008,7 @@ export function createPrismaPublishedContentRepository(
                         operatorDescription: input.translations.es.operatorDescription,
                       },
                       create: {
-                        localeId: 2,
+                        localeId: localeIds.es,
                         name: input.translations.es.name,
                         description: input.translations.es.description,
                         included: input.translations.es.included,

@@ -225,6 +225,13 @@ export type AdminPublishedEventDetail = AdminPublishedContentDetailBase & {
   type: 'events'
   category: EventCategory
   startsAt: string
+  organizerName?: string
+  whatsapp?: string
+  phone?: string
+  website?: string
+  instagram?: string
+  facebook?: string
+  email?: string
   address?: string
   mapUrl?: string
   mapEmbedUrl?: string
@@ -236,6 +243,12 @@ export type AdminPublishedRestaurantDetail = AdminPublishedContentDetailBase & {
   type: 'restaurants'
   priceBand: '$' | '$$' | '$$$'
   moments: RestaurantMoment[]
+  whatsapp?: string
+  phone?: string
+  website?: string
+  instagram?: string
+  facebook?: string
+  email?: string
   address?: string
   mapUrl?: string
   mapEmbedUrl?: string
@@ -253,6 +266,13 @@ export type AdminPublishedTourDetail = AdminPublishedContentDetailBase & {
   difficulty: string
   suitableForKids: string
   meetingPoint?: string
+  providerName?: string
+  whatsapp?: string
+  phone?: string
+  website?: string
+  instagram?: string
+  facebook?: string
+  email?: string
   address?: string
   mapUrl?: string
   mapEmbedUrl?: string
@@ -279,6 +299,13 @@ export type UpdateAdminPublishedEventInput = {
   id: string
   category: EventCategory
   startsAt: string
+  organizerName?: string
+  whatsapp?: string
+  phone?: string
+  website?: string
+  instagram?: string
+  facebook?: string
+  email?: string
   address?: string
   mapUrl?: string
   mapEmbedUrl?: string
@@ -291,6 +318,12 @@ export type UpdateAdminPublishedRestaurantInput = {
   id: string
   priceBand: '$' | '$$' | '$$$'
   moments: RestaurantMoment[]
+  whatsapp?: string
+  phone?: string
+  website?: string
+  instagram?: string
+  facebook?: string
+  email?: string
   address?: string
   mapUrl?: string
   mapEmbedUrl?: string
@@ -309,6 +342,13 @@ export type UpdateAdminPublishedTourInput = {
   difficulty: string
   suitableForKids: string
   meetingPoint?: string
+  providerName?: string
+  whatsapp?: string
+  phone?: string
+  website?: string
+  instagram?: string
+  facebook?: string
+  email?: string
   address?: string
   mapUrl?: string
   mapEmbedUrl?: string
@@ -342,43 +382,119 @@ const requiredTrimmedString = (min: number, max: number) =>
 const optionalTrimmedString = (max: number) =>
   z.string().trim().max(max).optional().transform((value) => value?.trim() || undefined)
 
+const editableTrimmedString = (max: number) => z.string().trim().max(max)
+
 const eventTranslationSchema = z.object({
-  title: requiredTrimmedString(3, 140),
-  dateLabel: requiredTrimmedString(2, 160),
-  venue: requiredTrimmedString(2, 160),
-  description: requiredTrimmedString(20, 4000),
+  title: editableTrimmedString(140),
+  dateLabel: editableTrimmedString(160),
+  venue: editableTrimmedString(160),
+  description: editableTrimmedString(4000),
 })
 
 const restaurantTranslationSchema = z.object({
-  name: requiredTrimmedString(2, 140),
-  cuisine: requiredTrimmedString(2, 120),
-  vibe: requiredTrimmedString(2, 160),
-  description: requiredTrimmedString(20, 4000),
+  name: editableTrimmedString(140),
+  cuisine: editableTrimmedString(120),
+  vibe: editableTrimmedString(160),
+  description: editableTrimmedString(4000),
 })
 
 const tourTranslationSchema = z.object({
-  name: requiredTrimmedString(2, 140),
-  description: requiredTrimmedString(20, 4000),
+  name: editableTrimmedString(140),
+  description: editableTrimmedString(4000),
   included: optionalTrimmedString(2000),
   whatToBring: optionalTrimmedString(2000),
   operatorDescription: optionalTrimmedString(4000),
 })
 
-const localizedSchema = <TSchema extends z.ZodTypeAny>(schema: TSchema) =>
-  z.object({
-    en: schema,
-    es: schema,
+function localizedSchemaWithFallback<TSchema extends z.ZodRawShape>(
+  schemaShape: TSchema,
+  requiredLengths: Partial<Record<Extract<keyof TSchema, string>, number>>,
+) {
+  const localizedSchema = z.object({
+    en: z.object(schemaShape),
+    es: z.object(schemaShape),
   })
+
+  return localizedSchema.superRefine((value, context) => {
+    const requiredEntries = Object.entries(requiredLengths) as Array<[string, number]>
+
+    const isLocaleComplete = (localeValue: Record<string, unknown>) =>
+      requiredEntries.every(([field, min]) => {
+        const fieldValue = localeValue[field]
+        return typeof fieldValue === 'string' && fieldValue.trim().length >= min
+      })
+
+    if (isLocaleComplete(value.en as Record<string, unknown>) || isLocaleComplete(value.es as Record<string, unknown>)) {
+      return
+    }
+
+    let hasLengthIssues = false
+
+    for (const [field, min] of requiredEntries) {
+      const enValue = value.en[field as keyof typeof value.en]
+      const esValue = value.es[field as keyof typeof value.es]
+
+      if (typeof enValue === 'string' && enValue.trim().length > 0) {
+        if (enValue.trim().length < min) {
+          hasLengthIssues = true
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['en', field],
+            message: `Must be at least ${min} characters.`,
+          })
+        }
+      }
+
+      if (typeof esValue === 'string' && esValue.trim().length > 0) {
+        if (esValue.trim().length < min) {
+          hasLengthIssues = true
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['es', field],
+            message: `Must be at least ${min} characters.`,
+          })
+        }
+      }
+    }
+
+    if (hasLengthIssues) {
+      return
+    }
+
+    for (const [field] of requiredEntries) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['en', field],
+        message: 'Required',
+      })
+    }
+  })
+}
 
 export const updateAdminPublishedEventSchema = z
   .object({
     category: z.enum(['music', 'wellness', 'food']),
     startsAt: z.iso.datetime({ offset: true }),
+    organizerName: optionalTrimmedString(160),
+    whatsapp: optionalTrimmedString(120),
+    phone: optionalTrimmedString(120),
+    website: optionalTrimmedString(500),
+    instagram: optionalTrimmedString(120),
+    facebook: optionalTrimmedString(120),
+    email: optionalTrimmedString(220),
     address: optionalAddressSchema,
     mapUrl: optionalMapUrlSchema,
     mapEmbedUrl: optionalMapEmbedUrlSchema,
     media: z.array(eventSubmissionMediaSchema).max(MAX_SUBMISSION_IMAGES),
-    translations: localizedSchema(eventTranslationSchema),
+    translations: localizedSchemaWithFallback(
+      eventTranslationSchema.shape,
+      {
+        title: 3,
+        dateLabel: 2,
+        venue: 2,
+        description: 20,
+      },
+    ),
   })
   .transform((value) => ({
     ...value,
@@ -389,11 +505,25 @@ export const updateAdminPublishedRestaurantSchema = z
   .object({
     priceBand: z.enum(['$', '$$', '$$$']),
     moments: z.array(z.enum(['breakfast', 'lunch', 'dinner'])).min(1).max(3),
+    whatsapp: optionalTrimmedString(120),
+    phone: optionalTrimmedString(120),
+    website: optionalTrimmedString(500),
+    instagram: optionalTrimmedString(120),
+    facebook: optionalTrimmedString(120),
+    email: optionalTrimmedString(220),
     address: optionalAddressSchema,
     mapUrl: optionalMapUrlSchema,
     mapEmbedUrl: optionalMapEmbedUrlSchema,
     media: z.array(restaurantSubmissionMediaSchema).max(MAX_SUBMISSION_IMAGES),
-    translations: localizedSchema(restaurantTranslationSchema),
+    translations: localizedSchemaWithFallback(
+      restaurantTranslationSchema.shape,
+      {
+        name: 2,
+        cuisine: 2,
+        vibe: 2,
+        description: 20,
+      },
+    ),
   })
   .transform((value) => ({
     ...value,
@@ -411,6 +541,13 @@ export const updateAdminPublishedTourSchema = z
     difficulty: requiredTrimmedString(2, 80),
     suitableForKids: requiredTrimmedString(2, 80),
     meetingPoint: optionalTrimmedString(240),
+    providerName: optionalTrimmedString(160),
+    whatsapp: optionalTrimmedString(120),
+    phone: optionalTrimmedString(120),
+    website: optionalTrimmedString(500),
+    instagram: optionalTrimmedString(120),
+    facebook: optionalTrimmedString(120),
+    email: optionalTrimmedString(220),
     address: optionalAddressSchema,
     mapUrl: optionalMapUrlSchema,
     mapEmbedUrl: optionalMapEmbedUrlSchema,
@@ -420,7 +557,13 @@ export const updateAdminPublishedTourSchema = z
     operatorWebsite: optionalTrimmedString(500),
     operatorPrimaryContactMethod: optionalTrimmedString(220),
     media: z.array(tourSubmissionMediaSchema).max(MAX_SUBMISSION_IMAGES),
-    translations: localizedSchema(tourTranslationSchema),
+    translations: localizedSchemaWithFallback(
+      tourTranslationSchema.shape,
+      {
+        name: 2,
+        description: 20,
+      },
+    ),
   })
   .transform((value) => ({
     ...value,

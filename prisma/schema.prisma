@@ -122,6 +122,13 @@ model Event {
   slug                String             @unique
   status              ContentStatus      @default(PUBLISHED)
   category            EventCategory
+  organizerName       String?
+  whatsapp            String?
+  phone               String?
+  website             String?
+  instagram           String?
+  facebook            String?
+  email               String?
   address             String?
   mapUrl              String?
   mapEmbedUrl         String?
@@ -281,6 +288,12 @@ model Restaurant {
   status        ContentStatus           @default(PUBLISHED)
   priceBand     String
   moments       RestaurantMoment[]
+  whatsapp      String?
+  phone         String?
+  website       String?
+  instagram     String?
+  facebook      String?
+  email         String?
   address       String?
   mapUrl        String?
   mapEmbedUrl   String?
@@ -323,6 +336,13 @@ model Tour {
   bestFor       String
   difficulty    String
   suitableForKids   String
+  providerName  String?
+  whatsapp      String?
+  phone         String?
+  website       String?
+  instagram     String?
+  facebook      String?
+  email         String?
   address       String?
   mapUrl        String?
   mapEmbedUrl   String?

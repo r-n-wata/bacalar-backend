@@ -48,6 +48,17 @@ export type HomeSuggestionCard = {
 
 export type FeaturedListItemImage = HomeImage
 
+export type ContactInfo = {
+  providerName: string
+  whatsapp?: string
+  phone?: string
+  website?: string
+  instagram?: string
+  facebook?: string
+  email?: string
+  mapsUrl?: string
+}
+
 export type HomeContent = {
   hero: {
     eyebrow: string
@@ -164,6 +175,7 @@ export type EventDetail = {
   endsAt?: string
   route: string
   image?: HomeImage
+  contact?: ContactInfo
 }
 
 export type RestaurantDetail = {
@@ -179,6 +191,7 @@ export type RestaurantDetail = {
   description: string
   route: string
   image?: HomeImage
+  contact?: ContactInfo
 }
 
 export type TourDetail = {
@@ -207,4 +220,5 @@ export type TourDetail = {
   operatorPrimaryContactMethod?: string
   route: string
   image?: HomeImage
+  contact?: ContactInfo
 }

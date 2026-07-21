@@ -173,6 +173,16 @@ function assertFound<T>(record: T | null, missingMessage: string) {
   return record
 }
 
+function parseEmail(value: string) {
+  const trimmed = value.trim()
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) ? trimmed : undefined
+}
+
+function parsePhone(value: string) {
+  const trimmed = value.trim()
+  return /\d{6,}/.test(trimmed.replace(/\D/g, '')) ? trimmed : undefined
+}
+
 function mapImages(images: SubmissionImageRow[]) {
   return images.map((image) => ({
     id: image.id,
@@ -548,6 +558,11 @@ export function createPrismaAdminModerationRepository(
                 slug: buildSubmissionSlug(submission.title, submission.id),
                 status: ContentStatus.PUBLISHED,
                 category: submission.category,
+                organizerName: submission.contactName,
+                whatsapp: submission.whatsapp,
+                instagram: submission.instagram,
+                phone: parsePhone(submission.contactMethod),
+                email: parseEmail(submission.contactMethod),
                 sortOrder: await nextSortOrder(transaction, 'event'),
                 startsAt: submission.startsAt,
                 publishedAt: reviewedAt,
@@ -608,6 +623,10 @@ export function createPrismaAdminModerationRepository(
                 status: ContentStatus.PUBLISHED,
                 priceBand: submission.priceBand,
                 moments: [submission.moment as 'breakfast' | 'lunch' | 'dinner'],
+                whatsapp: submission.whatsapp,
+                instagram: submission.instagram,
+                phone: parsePhone(submission.contactMethod),
+                email: parseEmail(submission.contactMethod),
                 address: submission.address,
                 mapUrl: submission.mapUrl,
                 mapEmbedUrl: submission.mapEmbedUrl,
@@ -679,6 +698,11 @@ export function createPrismaAdminModerationRepository(
                 bestFor: 'Flexible',
                 difficulty: 'Easy',
                 suitableForKids: 'Yes',
+                providerName: submission.contactName,
+                whatsapp: submission.whatsapp,
+                instagram: submission.instagram,
+                phone: parsePhone(submission.contactMethod),
+                email: parseEmail(submission.contactMethod),
                 address: submission.address,
                 mapUrl: submission.mapUrl,
                 mapEmbedUrl: submission.mapEmbedUrl,
