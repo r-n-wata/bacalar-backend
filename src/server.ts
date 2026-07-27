@@ -81,6 +81,7 @@ async function main() {
   const adminModerationService = createAdminModerationService({
     repository: adminModerationRepository,
     publishedContentRepository,
+    contentCache: cache,
   })
   const eventSubmissionService = createEventSubmissionService({
     repository: eventSubmissionRepository,

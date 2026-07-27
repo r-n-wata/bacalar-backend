@@ -14,6 +14,7 @@ import type {
   UpdateAdminPublishedContentInput,
   UpdateAdminPublishedContentResult,
 } from '../types/admin'
+import type { CacheProvider } from '../utils/cache'
 import { HttpError } from '../utils/httpError'
 import type { AuthenticatedAdminUser } from './adminAuthService'
 
@@ -62,6 +63,7 @@ export type AdminModerationService = {
 type AdminModerationServiceDependencies = {
   repository: AdminModerationRepository
   publishedContentRepository: PublishedContentRepository
+  contentCache: Pick<CacheProvider, 'clear'>
 }
 
 function toHttpError(error: unknown) {
@@ -94,6 +96,7 @@ function toHttpError(error: unknown) {
 export function createAdminModerationService({
   repository,
   publishedContentRepository,
+  contentCache,
 }: AdminModerationServiceDependencies): AdminModerationService {
   return {
     async listSubmissions(filters) {
@@ -130,6 +133,7 @@ export function createAdminModerationService({
           throw new Error('PUBLISHED_CONTENT_NOT_FOUND')
         }
 
+        contentCache.clear()
         return { item }
       } catch (error) {
         throw toHttpError(error)
@@ -143,6 +147,7 @@ export function createAdminModerationService({
           throw new Error('PUBLISHED_CONTENT_NOT_FOUND')
         }
 
+        contentCache.clear()
         return result
       } catch (error) {
         throw toHttpError(error)
@@ -168,6 +173,7 @@ export function createAdminModerationService({
         )
       }
 
+      contentCache.clear()
       const [items, featuredCount] = await Promise.all([
         publishedContentRepository.listPublishedContent(input.type, input.language),
         publishedContentRepository.countFeaturedItems(input.type),
@@ -181,9 +187,11 @@ export function createAdminModerationService({
     },
     async approveSubmission(type, submissionId, adminUser) {
       try {
-        return await repository.approveSubmission(type, submissionId, {
+        const result = await repository.approveSubmission(type, submissionId, {
           reviewedBy: adminUser.email,
         })
+        contentCache.clear()
+        return result
       } catch (error) {
         throw toHttpError(error)
       }

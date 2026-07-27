@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { createAdminModerationService } from '../../src/services/adminModerationService'
 
 describe('adminModerationService', () => {
+  function createContentCache() {
+    return {
+      clear: vi.fn(),
+    }
+  }
+
   function createPublishedContentRepository() {
     return {
       listPublishedContent: vi.fn(),
@@ -25,6 +31,7 @@ describe('adminModerationService', () => {
     const service = createAdminModerationService({
       repository,
       publishedContentRepository: createPublishedContentRepository(),
+      contentCache: createContentCache(),
     })
 
     const result = await service.listSubmissions({
@@ -53,6 +60,7 @@ describe('adminModerationService', () => {
     const service = createAdminModerationService({
       repository,
       publishedContentRepository: createPublishedContentRepository(),
+      contentCache: createContentCache(),
     })
 
     const result = await service.getSubmissionDetail('events', 'submission-1')
@@ -86,6 +94,7 @@ describe('adminModerationService', () => {
     const service = createAdminModerationService({
       repository,
       publishedContentRepository,
+      contentCache: createContentCache(),
     })
 
     const result = await service.getPublishedContentDetail('events', 'event-sunset-jazz')
@@ -119,6 +128,7 @@ describe('adminModerationService', () => {
     const service = createAdminModerationService({
       repository,
       publishedContentRepository,
+      contentCache: createContentCache(),
     })
 
     const result = await service.archivePublishedContent({
@@ -150,9 +160,11 @@ describe('adminModerationService', () => {
       }),
       rejectSubmission: vi.fn(),
     }
+    const contentCache = createContentCache()
     const service = createAdminModerationService({
       repository,
       publishedContentRepository: createPublishedContentRepository(),
+      contentCache,
     })
 
     await service.approveSubmission('events', 'submission-1', {
@@ -167,6 +179,7 @@ describe('adminModerationService', () => {
         reviewedBy: 'admin@bacalar.test',
       },
     )
+    expect(contentCache.clear).toHaveBeenCalledTimes(1)
   })
 
   it('maps missing detail records into a 404 HttpError', async () => {
@@ -181,6 +194,7 @@ describe('adminModerationService', () => {
     const service = createAdminModerationService({
       repository,
       publishedContentRepository: createPublishedContentRepository(),
+      contentCache: createContentCache(),
     })
 
     await expect(
@@ -203,6 +217,7 @@ describe('adminModerationService', () => {
     const service = createAdminModerationService({
       repository,
       publishedContentRepository: createPublishedContentRepository(),
+      contentCache: createContentCache(),
     })
 
     await expect(
@@ -214,5 +229,55 @@ describe('adminModerationService', () => {
       statusCode: 409,
       code: 'SUBMISSION_NOT_PENDING',
     })
+  })
+
+  it('clears content cache after a published content update', async () => {
+    const repository = {
+      listSubmissions: vi.fn(),
+      getSubmissionDetail: vi.fn(),
+      approveSubmission: vi.fn(),
+      rejectSubmission: vi.fn(),
+    }
+    const publishedContentRepository = createPublishedContentRepository()
+    const contentCache = createContentCache()
+    publishedContentRepository.updatePublishedContent.mockResolvedValue({
+      id: 'tour-sailing',
+      type: 'tours',
+      status: 'PUBLISHED',
+    })
+    const service = createAdminModerationService({
+      repository,
+      publishedContentRepository,
+      contentCache,
+    })
+
+    await service.updatePublishedContent({
+      id: 'tour-sailing',
+      type: 'tours',
+      category: 'Boat Tour',
+      durationHours: 4,
+      priceFrom: 2800,
+      privateOrShared: 'Private',
+      bestFor: 'Couples',
+      difficulty: 'Easy',
+      suitableForKids: 'Yes',
+      operatorName: 'Laguna Vela',
+      media: [],
+      translations: {
+        en: {
+          name: 'Private Sailing at Sunrise',
+          description: 'A quiet sail.',
+          includedItems: ['Captain'],
+        },
+        es: {
+          name: 'Navegacion privada al amanecer',
+          description: 'Una navegacion tranquila.',
+          includedItems: ['Capitan'],
+        },
+      },
+      updatedBy: 'admin@bacalar.test',
+    })
+
+    expect(contentCache.clear).toHaveBeenCalledTimes(1)
   })
 })
