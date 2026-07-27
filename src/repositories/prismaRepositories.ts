@@ -466,12 +466,12 @@ function mapTourItem(tour: {
   duration: string
   priceFrom: string
   bestFor: string
-  description: string
+  description?: string
   operatorName: string
   imageUrls: string[]
   sortOrder: number
   featuredOrder: number | null
-  translation: { name: string }
+  translation: { name: string; description?: string | null }
   approvedSubmissions?: SubmissionWithImages[]
 }): TourItem & { sortOrder: number; featuredOrder?: number | null } {
   const translation = tour.translation
@@ -487,7 +487,10 @@ function mapTourItem(tour: {
     priceFrom: tour.priceFrom,
     priceFromValue: parseTourPriceFrom(tour.priceFrom),
     bestFor: tour.bestFor,
-    description: tour.description,
+    description:
+      tour.translation.description ??
+      tour.description ??
+      `${translation.name} is one of Bacalar's current tour picks.`,
     operatorName: tour.operatorName,
     route: `/tours/${tour.slug}`,
     image: withImageAlt(image, translation.name),
@@ -1604,20 +1607,25 @@ export function createPrismaRepositories(
 
         const searchTerm = pagination.search?.trim().toLowerCase()
         const filteredTourItems = tourItems.filter((tour) => {
+          const priceFromValue =
+            tour.priceFromValue ?? parseTourPriceFrom(tour.priceFrom)
+          const durationHoursValue =
+            tour.durationHoursValue ?? parseTourDurationHours(tour.duration)
+
           if (pagination.category && tour.category !== pagination.category) {
             return false
           }
 
           if (
             typeof pagination.priceMin === 'number' &&
-            tour.priceFromValue < pagination.priceMin
+            priceFromValue < pagination.priceMin
           ) {
             return false
           }
 
           if (
             typeof pagination.priceMax === 'number' &&
-            tour.priceFromValue > pagination.priceMax
+            priceFromValue > pagination.priceMax
           ) {
             return false
           }
@@ -1625,7 +1633,7 @@ export function createPrismaRepositories(
           if (
             pagination.durationHours &&
             pagination.durationHours.length > 0 &&
-            !pagination.durationHours.includes(tour.durationHoursValue)
+            !pagination.durationHours.includes(durationHoursValue)
           ) {
             return false
           }
@@ -1656,9 +1664,14 @@ export function createPrismaRepositories(
           title: intro.title,
           description: intro.description,
           categories,
-          durationOptions: [
-            ...new Set(tourItems.map((item) => item.durationHoursValue)),
-          ].sort((left, right) => left - right),
+          durationOptions: [...new Set(
+            tourItems
+              .map(
+                (item) =>
+                  item.durationHoursValue ?? parseTourDurationHours(item.duration),
+              )
+              .filter((value): value is number => Number.isFinite(value)),
+          )].sort((left, right) => left - right),
           featuredItems: selectFeaturedTours(featuredTourItems, FEATURED_ITEMS_CAP),
           items: paginatedTours.items,
           totalCount: filteredTourItems.length,

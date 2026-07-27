@@ -305,20 +305,29 @@ export function createInMemoryRepositories(): ContentRepositories {
         const filteredItems = allItems
           .filter((item) => !featuredIds.has(item.id))
           .filter((item) => {
+            const priceFromValue =
+              item.priceFromValue ??
+              Number.parseInt(item.priceFrom.replace(/[^\d]/g, ''), 10) ??
+              0
+            const durationHoursValue =
+              item.durationHoursValue ??
+              Number.parseInt(item.duration.replace(/[^\d]/g, ''), 10) ??
+              0
+
             if (pagination.category && item.category !== pagination.category) {
               return false
             }
 
             if (
               typeof pagination.priceMin === 'number' &&
-              item.priceFromValue < pagination.priceMin
+              priceFromValue < pagination.priceMin
             ) {
               return false
             }
 
             if (
               typeof pagination.priceMax === 'number' &&
-              item.priceFromValue > pagination.priceMax
+              priceFromValue > pagination.priceMax
             ) {
               return false
             }
@@ -326,7 +335,7 @@ export function createInMemoryRepositories(): ContentRepositories {
             if (
               pagination.durationHours &&
               pagination.durationHours.length > 0 &&
-              !pagination.durationHours.includes(item.durationHoursValue)
+              !pagination.durationHours.includes(durationHoursValue)
             ) {
               return false
             }
@@ -353,9 +362,15 @@ export function createInMemoryRepositories(): ContentRepositories {
 
         return {
           ...content,
-          durationOptions: [
-            ...new Set(allItems.map((item) => item.durationHoursValue)),
-          ].sort((left, right) => left - right),
+          durationOptions: [...new Set(
+            allItems
+              .map(
+                (item) =>
+                  item.durationHoursValue ??
+                  Number.parseInt(item.duration.replace(/[^\d]/g, ''), 10),
+              )
+              .filter((value): value is number => Number.isFinite(value)),
+          )].sort((left, right) => left - right),
           featuredItems: selectFeaturedTours(allItems, FEATURED_ITEMS_CAP),
           items: paginatedTours.items,
           totalCount: filteredItems.length,

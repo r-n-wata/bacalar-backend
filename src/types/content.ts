@@ -88,7 +88,7 @@ export type EventItem = {
   title: string
   dateLabel: string
   venue: string
-  description: string
+  description?: string
   category: EventCategory
   startsAt?: string
   endsAt?: string
@@ -107,7 +107,7 @@ export type EventsContent = {
   description: string
   featuredItems: EventItem[]
   items: EventItem[]
-  totalCount: number
+  totalCount?: number
   pagination: EventsPagination
 }
 
@@ -118,7 +118,7 @@ export type RestaurantItem = {
   vibe: string
   priceBand: '$' | '$$' | '$$$'
   moments: RestaurantMoment[]
-  description: string
+  description?: string
   route: string
   image?: FeaturedListItemImage
 }
@@ -134,7 +134,7 @@ export type RestaurantsContent = {
   description: string
   featuredItems: RestaurantItem[]
   items: RestaurantItem[]
-  totalCount: number
+  totalCount?: number
   pagination: RestaurantsPagination
 }
 
@@ -143,11 +143,11 @@ export type TourItem = {
   name: string
   category: TourCategory
   duration: string
-  durationHoursValue: number
+  durationHoursValue?: number
   priceFrom: string
-  priceFromValue: number
+  priceFromValue?: number
   bestFor: string
-  description: string
+  description?: string
   operatorName: string
   route: string
   image?: FeaturedListItemImage
@@ -163,10 +163,10 @@ export type ToursContent = {
   title: string
   description: string
   categories: TourCategory[]
-  durationOptions: number[]
+  durationOptions?: number[]
   featuredItems: TourItem[]
   items: TourItem[]
-  totalCount: number
+  totalCount?: number
   pagination: ToursPagination
 }
 
