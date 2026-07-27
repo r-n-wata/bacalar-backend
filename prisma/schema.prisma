@@ -239,6 +239,7 @@ model TourSubmission {
   mapUrl          String?
   mapEmbedUrl     String?
   description     String
+  includedItems   String[]             @default([])
   contactName     String
   contactMethod   String
   instagram       String?
@@ -381,6 +382,7 @@ model TourTranslation {
   name         String
   description  String?
   included     String?
+  includedItems String[] @default([])
   whatToBring  String?
   operatorDescription String?
   createdAt    DateTime @default(now())

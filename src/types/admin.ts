@@ -113,6 +113,7 @@ export type AdminTourSubmissionDetail = AdminSubmissionDetailBase & {
   durationHours: number
   priceFrom: number
   description: string
+  includedItems?: string[]
 }
 
 export type AdminSubmissionDetail =
@@ -217,6 +218,7 @@ type AdminPublishedTourTranslations = AdminLocalizedValue<{
   name: string
   description: string
   included?: string
+  includedItems?: string[]
   whatToBring?: string
   operatorDescription?: string
 }>
@@ -402,6 +404,7 @@ const tourTranslationSchema = z.object({
   name: editableTrimmedString(140),
   description: editableTrimmedString(4000),
   included: optionalTrimmedString(2000),
+  includedItems: z.array(z.string().trim().min(1).max(160)).max(20).optional(),
   whatToBring: optionalTrimmedString(2000),
   operatorDescription: optionalTrimmedString(4000),
 })

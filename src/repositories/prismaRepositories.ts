@@ -40,6 +40,11 @@ import {
   selectFeaturedRestaurants,
 } from './restaurantsPagination'
 import { paginateTours, selectFeaturedTours } from './toursPagination'
+import {
+  normalizeIncludedItems,
+  resolveIncludedItems,
+  serializeIncludedItems,
+} from '../lib/tourIncludedItems'
 
 const FEATURED_ITEMS_CAP = 5
 
@@ -86,6 +91,7 @@ type TourTranslationWithLocale = {
   name: string
   description?: string | null
   included?: string | null
+  includedItems: string[]
   whatToBring?: string | null
   operatorDescription?: string | null
 }
@@ -152,6 +158,7 @@ function emptyTourTranslation() {
     name: '',
     description: '',
     included: '',
+    includedItems: [] as string[],
     whatToBring: '',
     operatorDescription: '',
   }
@@ -857,6 +864,10 @@ function mapTourDetailItem(tour: {
         name: translation.name,
         description: translation.description ?? '',
         included: translation.included ?? '',
+        includedItems: resolveIncludedItems(
+          translation.includedItems,
+          translation.included,
+        ),
         whatToBring: translation.whatToBring ?? '',
         operatorDescription: translation.operatorDescription ?? '',
       }),
@@ -1588,6 +1599,10 @@ export function createPrismaRepositories(
             translation.description ??
             `${translation.name} is one of Bacalar's curated tours.`,
           included: translation.included ?? undefined,
+          includedItems: resolveIncludedItems(
+            translation.includedItems,
+            translation.included,
+          ),
           whatToBring: translation.whatToBring ?? undefined,
           meetingPoint: tour.meetingPoint ?? undefined,
           address: tour.address ?? undefined,
@@ -1980,7 +1995,11 @@ export function createPrismaPublishedContentRepository(
                       update: {
                         name: input.translations.en.name,
                         description: input.translations.en.description,
-                        included: input.translations.en.included,
+                        included: serializeIncludedItems(
+                          input.translations.en.includedItems,
+                        ),
+                        includedItems:
+                          normalizeIncludedItems(input.translations.en.includedItems),
                         whatToBring: input.translations.en.whatToBring,
                         operatorDescription: input.translations.en.operatorDescription,
                       },
@@ -1988,7 +2007,11 @@ export function createPrismaPublishedContentRepository(
                         localeId: localeIds.en,
                         name: input.translations.en.name,
                         description: input.translations.en.description,
-                        included: input.translations.en.included,
+                        included: serializeIncludedItems(
+                          input.translations.en.includedItems,
+                        ),
+                        includedItems:
+                          normalizeIncludedItems(input.translations.en.includedItems),
                         whatToBring: input.translations.en.whatToBring,
                         operatorDescription: input.translations.en.operatorDescription,
                       },
@@ -2003,7 +2026,11 @@ export function createPrismaPublishedContentRepository(
                       update: {
                         name: input.translations.es.name,
                         description: input.translations.es.description,
-                        included: input.translations.es.included,
+                        included: serializeIncludedItems(
+                          input.translations.es.includedItems,
+                        ),
+                        includedItems:
+                          normalizeIncludedItems(input.translations.es.includedItems),
                         whatToBring: input.translations.es.whatToBring,
                         operatorDescription: input.translations.es.operatorDescription,
                       },
@@ -2011,7 +2038,11 @@ export function createPrismaPublishedContentRepository(
                         localeId: localeIds.es,
                         name: input.translations.es.name,
                         description: input.translations.es.description,
-                        included: input.translations.es.included,
+                        included: serializeIncludedItems(
+                          input.translations.es.includedItems,
+                        ),
+                        includedItems:
+                          normalizeIncludedItems(input.translations.es.includedItems),
                         whatToBring: input.translations.es.whatToBring,
                         operatorDescription: input.translations.es.operatorDescription,
                       },

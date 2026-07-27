@@ -43,6 +43,7 @@ export type CreateTourSubmissionInput = {
   mapUrl?: string
   mapEmbedUrl?: string
   description: string
+  includedItems?: string[]
   contactName: string
   contactMethod: string
   instagram?: string
@@ -67,6 +68,7 @@ export type TourSubmissionRecord = {
   mapUrl?: string
   mapEmbedUrl?: string
   description: string
+  includedItems?: string[]
   contactName: string
   contactMethod: string
   instagram?: string
@@ -121,6 +123,7 @@ export const createTourSubmissionSchema = z
     mapUrl: optionalMapUrlSchema,
     mapEmbedUrl: optionalMapEmbedUrlSchema,
     description: z.string().trim().min(20).max(4000),
+    includedItems: z.array(z.string().trim().min(1).max(160)).max(20).optional(),
     contactName: z.string().trim().min(2).max(120),
     contactMethod: z.string().trim().min(3).max(220),
     instagram: z.string().trim().max(120).optional(),
@@ -133,6 +136,10 @@ export const createTourSubmissionSchema = z
     address: value.address || undefined,
     mapUrl: value.mapUrl || undefined,
     mapEmbedUrl: value.mapEmbedUrl || undefined,
+    includedItems:
+      value.includedItems
+        ?.map((item) => item.trim())
+        .filter((item) => item.length > 0) || undefined,
     instagram: value.instagram || undefined,
     whatsapp: value.whatsapp || undefined,
   })) satisfies z.ZodType<CreateTourSubmissionInput>

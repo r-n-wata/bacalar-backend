@@ -206,6 +206,7 @@ export type TourDetail = {
   suitableForKids: string
   description: string
   included?: string
+  includedItems?: string[]
   whatToBring?: string
   meetingPoint?: string
   address?: string

@@ -8,6 +8,7 @@ import {
   type RestaurantSubmissionStatus,
   type TourSubmissionStatus,
 } from '@prisma/client'
+import { normalizeIncludedItems } from '../lib/tourIncludedItems'
 import type {
   AdminEventSubmissionDetail,
   AdminEventSubmissionListItem,
@@ -173,13 +174,19 @@ function assertFound<T>(record: T | null, missingMessage: string) {
   return record
 }
 
-function parseEmail(value: string) {
-  const trimmed = value.trim()
+function parseEmail(value?: string | null) {
+  const trimmed = value?.trim()
+  if (!trimmed) {
+    return undefined
+  }
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) ? trimmed : undefined
 }
 
-function parsePhone(value: string) {
-  const trimmed = value.trim()
+function parsePhone(value?: string | null) {
+  const trimmed = value?.trim()
+  if (!trimmed) {
+    return undefined
+  }
   return /\d{6,}/.test(trimmed.replace(/\D/g, '')) ? trimmed : undefined
 }
 
@@ -372,6 +379,7 @@ function mapTourDetail(record: {
   mapUrl: string | null
   mapEmbedUrl: string | null
   description: string
+  includedItems: string[]
   contactName: string
   contactMethod: string
   instagram: string | null
@@ -385,6 +393,7 @@ function mapTourDetail(record: {
   return {
     ...mapTourListItem(record),
     description: record.description,
+    includedItems: record.includedItems.length > 0 ? record.includedItems : undefined,
     contactName: record.contactName,
     contactMethod: record.contactMethod,
     address: record.address ?? undefined,
@@ -721,6 +730,7 @@ export function createPrismaAdminModerationRepository(
                     localeId,
                     name: submission.name,
                     description: submission.description,
+                    includedItems: normalizeIncludedItems(submission.includedItems),
                   },
                 },
               },

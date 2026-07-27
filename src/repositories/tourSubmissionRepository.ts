@@ -20,6 +20,7 @@ function mapSubmission(record: {
   mapUrl: string | null
   mapEmbedUrl: string | null
   description: string
+  includedItems: string[]
   contactName: string
   contactMethod: string
   instagram: string | null
@@ -52,6 +53,7 @@ function mapSubmission(record: {
     mapUrl: record.mapUrl ?? undefined,
     mapEmbedUrl: record.mapEmbedUrl ?? undefined,
     description: record.description,
+    includedItems: record.includedItems.length > 0 ? record.includedItems : undefined,
     contactName: record.contactName,
     contactMethod: record.contactMethod,
     instagram: record.instagram ?? undefined,
@@ -92,6 +94,7 @@ export function createPrismaTourSubmissionRepository(
           mapUrl: input.mapUrl,
           mapEmbedUrl: input.mapEmbedUrl,
           description: input.description,
+          includedItems: input.includedItems ?? [],
           contactName: input.contactName,
           contactMethod: input.contactMethod,
           instagram: input.instagram,
