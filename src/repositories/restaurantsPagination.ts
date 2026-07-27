@@ -4,6 +4,8 @@ export type RestaurantPaginationInput = {
   cursor?: string
   limit: number
   category?: RestaurantMoment
+  search?: string
+  priceBand?: '$' | '$$' | '$$$'
 }
 
 type RestaurantCursorPayload = {

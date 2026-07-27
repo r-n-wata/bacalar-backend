@@ -162,9 +162,54 @@ export function createInMemoryRepositories(): ContentRepositories {
             .filter((item) => !content.featuredItems.some((featured) => featured.id === item.id))
             .filter((item) =>
               pagination.category ? item.category === pagination.category : true,
-            ),
+            )
+            .filter((item) => {
+              const searchTerm = pagination.search?.trim().toLowerCase()
+
+              if (!searchTerm) {
+                return true
+              }
+
+              return [
+                item.title,
+                item.venue,
+                item.category,
+                item.dateLabel,
+                item.description,
+              ]
+                .join(' ')
+                .toLowerCase()
+                .includes(searchTerm)
+            }),
           pagination,
         )
+        const filteredEvents = content.items
+          .map((item, index) => ({
+            ...item,
+            sortOrder: index,
+          }))
+          .filter((item) => !content.featuredItems.some((featured) => featured.id === item.id))
+          .filter((item) =>
+            pagination.category ? item.category === pagination.category : true,
+          )
+          .filter((item) => {
+            const searchTerm = pagination.search?.trim().toLowerCase()
+
+            if (!searchTerm) {
+              return true
+            }
+
+            return [
+              item.title,
+              item.venue,
+              item.category,
+              item.dateLabel,
+              item.description,
+            ]
+              .join(' ')
+              .toLowerCase()
+              .includes(searchTerm)
+          })
 
         return {
           ...content,
@@ -177,6 +222,7 @@ export function createInMemoryRepositories(): ContentRepositories {
             FEATURED_ITEMS_CAP,
           ),
           items,
+          totalCount: filteredEvents.length,
           pagination: pageMeta,
         }
       },
@@ -205,6 +251,28 @@ export function createInMemoryRepositories(): ContentRepositories {
               ? item.moments.includes(pagination.category)
               : true,
           )
+          .filter((item) =>
+            pagination.priceBand ? item.priceBand === pagination.priceBand : true,
+          )
+          .filter((item) => {
+            const searchTerm = pagination.search?.trim().toLowerCase()
+
+            if (!searchTerm) {
+              return true
+            }
+
+            return [
+              item.name,
+              item.cuisine,
+              item.vibe,
+              item.description,
+              item.moments.join(' '),
+              item.priceBand,
+            ]
+              .join(' ')
+              .toLowerCase()
+              .includes(searchTerm)
+          })
 
         const paginatedRestaurants = paginateRestaurants(filteredItems, pagination)
 
@@ -212,6 +280,7 @@ export function createInMemoryRepositories(): ContentRepositories {
           ...content,
           featuredItems: selectFeaturedRestaurants(allItems, FEATURED_ITEMS_CAP),
           items: paginatedRestaurants.items,
+          totalCount: filteredItems.length,
           pagination: paginatedRestaurants.pagination,
         }
       },
@@ -235,15 +304,61 @@ export function createInMemoryRepositories(): ContentRepositories {
         const featuredIds = new Set(content.featuredItems.map((item) => item.id))
         const filteredItems = allItems
           .filter((item) => !featuredIds.has(item.id))
-          .filter((item) =>
-            pagination.category ? item.category === pagination.category : true,
-          )
+          .filter((item) => {
+            if (pagination.category && item.category !== pagination.category) {
+              return false
+            }
+
+            if (
+              typeof pagination.priceMin === 'number' &&
+              item.priceFromValue < pagination.priceMin
+            ) {
+              return false
+            }
+
+            if (
+              typeof pagination.priceMax === 'number' &&
+              item.priceFromValue > pagination.priceMax
+            ) {
+              return false
+            }
+
+            if (
+              pagination.durationHours &&
+              pagination.durationHours.length > 0 &&
+              !pagination.durationHours.includes(item.durationHoursValue)
+            ) {
+              return false
+            }
+
+            const searchTerm = pagination.search?.trim().toLowerCase()
+
+            if (!searchTerm) {
+              return true
+            }
+
+            const haystack = [
+              item.name,
+              item.operatorName,
+              item.category,
+              item.bestFor,
+              item.description,
+            ]
+              .join(' ')
+              .toLowerCase()
+
+            return haystack.includes(searchTerm)
+          })
         const paginatedTours = paginateTours(filteredItems, pagination)
 
         return {
           ...content,
+          durationOptions: [
+            ...new Set(allItems.map((item) => item.durationHoursValue)),
+          ].sort((left, right) => left - right),
           featuredItems: selectFeaturedTours(allItems, FEATURED_ITEMS_CAP),
           items: paginatedTours.items,
+          totalCount: filteredItems.length,
           pagination: paginatedTours.pagination,
         }
       },

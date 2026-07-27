@@ -30,6 +30,16 @@ function resolveQueryStringValue(
   return typeof value === 'string' ? value : undefined
 }
 
+function resolveQueryStringValues(
+  value: Request['query'][string],
+): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((entry): entry is string => typeof entry === 'string')
+  }
+
+  return typeof value === 'string' ? [value] : []
+}
+
 const DEFAULT_EVENTS_LIMIT = 10
 const MAX_EVENTS_LIMIT = 24
 const DEFAULT_RESTAURANTS_LIMIT = 10
@@ -42,6 +52,7 @@ const restaurantMoments = [
   'lunch',
   'dinner',
 ] satisfies RestaurantMoment[]
+const restaurantPriceBands = ['$', '$$', '$$$'] as const
 function resolveEventCategory(
   value: string | undefined,
 ): EventCategory | undefined {
@@ -68,6 +79,7 @@ function resolveEventsPagination(query: Request['query']): EventPaginationInput 
     limit,
     cursor: resolveQueryStringValue(query.cursor),
     category: resolveEventCategory(resolveQueryStringValue(query.category)),
+    search: resolveQueryStringValue(query.search)?.trim() || undefined,
   }
 }
 
@@ -98,10 +110,22 @@ function resolveRestaurantsPagination(
       ? Math.min(parsedLimit, MAX_RESTAURANTS_LIMIT)
       : DEFAULT_RESTAURANTS_LIMIT
 
+  const priceBandValue = resolveQueryStringValue(query.priceBand)
+  if (
+    priceBandValue &&
+    !restaurantPriceBands.includes(
+      priceBandValue as (typeof restaurantPriceBands)[number],
+    )
+  ) {
+    throw new HttpError(400, 'Unsupported restaurant price band query parameter')
+  }
+
   return {
     limit,
     cursor: resolveQueryStringValue(query.cursor),
     category: resolveRestaurantMoment(resolveQueryStringValue(query.category)),
+    search: resolveQueryStringValue(query.search)?.trim() || undefined,
+    priceBand: priceBandValue as '$' | '$$' | '$$$' | undefined,
   }
 }
 
@@ -123,10 +147,29 @@ function resolveToursPagination(query: Request['query']): TourPaginationInput {
       ? Math.min(parsedLimit, MAX_TOURS_LIMIT)
       : DEFAULT_TOURS_LIMIT
 
+  const priceMinValue = resolveQueryStringValue(query.priceMin)
+  const priceMaxValue = resolveQueryStringValue(query.priceMax)
+  const durationValues = resolveQueryStringValues(query.durationHours)
+  const parsedPriceMin =
+    typeof priceMinValue === 'string' ? Number.parseInt(priceMinValue, 10) : NaN
+  const parsedPriceMax =
+    typeof priceMaxValue === 'string' ? Number.parseInt(priceMaxValue, 10) : NaN
+  const parsedDurationHours = durationValues
+    .flatMap((value) => value.split(','))
+    .map((value) => Number.parseInt(value, 10))
+    .filter((value) => Number.isFinite(value) && value > 0)
+
   return {
     limit,
     cursor: resolveQueryStringValue(query.cursor),
     category: resolveTourCategory(resolveQueryStringValue(query.category)),
+    search: resolveQueryStringValue(query.search)?.trim() || undefined,
+    priceMin: Number.isFinite(parsedPriceMin) && parsedPriceMin > 0 ? parsedPriceMin : undefined,
+    priceMax: Number.isFinite(parsedPriceMax) && parsedPriceMax > 0 ? parsedPriceMax : undefined,
+    durationHours:
+      parsedDurationHours.length > 0
+        ? [...new Set(parsedDurationHours)].sort((left, right) => left - right)
+        : undefined,
   }
 }
 

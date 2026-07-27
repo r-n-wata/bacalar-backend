@@ -4,6 +4,10 @@ export type TourPaginationInput = {
   cursor?: string
   limit: number
   category?: TourCategory
+  search?: string
+  priceMin?: number
+  priceMax?: number
+  durationHours?: number[]
 }
 
 type TourCursorPayload = {

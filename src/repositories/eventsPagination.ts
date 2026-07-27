@@ -4,6 +4,7 @@ export type EventPaginationInput = {
   cursor?: string
   limit: number
   category?: EventCategory
+  search?: string
 }
 
 type EventCursorPayload = {

@@ -85,9 +85,14 @@ export function createContentService(
       )
     },
     getEvents(language, pagination) {
+      const filterKey = JSON.stringify({
+        category: pagination.category ?? 'all',
+        search: pagination.search ?? '',
+      })
+
       return getCachedContent(
         cache,
-        `events:${language}:${pagination.category ?? 'all'}:${pagination.limit}:${pagination.cursor ?? 'start'}`,
+        `events:${language}:${filterKey}:${pagination.limit}:${pagination.cursor ?? 'start'}`,
         cachePolicies.events,
         () => repositories.events.getEventsContent(language, pagination),
       )
@@ -101,9 +106,15 @@ export function createContentService(
       )
     },
     getRestaurants(language, pagination) {
+      const filterKey = JSON.stringify({
+        category: pagination.category ?? 'all',
+        search: pagination.search ?? '',
+        priceBand: pagination.priceBand ?? '',
+      })
+
       return getCachedContent(
         cache,
-        `restaurants:${language}:${pagination.category ?? 'all'}:${pagination.limit}:${pagination.cursor ?? 'start'}`,
+        `restaurants:${language}:${filterKey}:${pagination.limit}:${pagination.cursor ?? 'start'}`,
         cachePolicies.restaurants,
         () => repositories.restaurants.getRestaurantsContent(language, pagination),
       )
@@ -117,9 +128,17 @@ export function createContentService(
       )
     },
     getTours(language, pagination) {
+      const filterKey = JSON.stringify({
+        category: pagination.category ?? 'all',
+        search: pagination.search ?? '',
+        priceMin: pagination.priceMin ?? null,
+        priceMax: pagination.priceMax ?? null,
+        durationHours: pagination.durationHours ?? [],
+      })
+
       return getCachedContent(
         cache,
-        `tours:${language}:${pagination.category ?? 'all'}:${pagination.limit}:${pagination.cursor ?? 'start'}`,
+        `tours:${language}:${filterKey}:${pagination.limit}:${pagination.cursor ?? 'start'}`,
         cachePolicies.tours,
         () => repositories.tours.getToursContent(language, pagination),
       )

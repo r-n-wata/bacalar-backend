@@ -407,7 +407,7 @@ function mapEventItem(event: {
   endsAt: Date | null
   sortOrder: number
   featuredOrder: number | null
-  translations: Array<{ title: string; dateLabel: string; venue: string }>
+  translations: Array<{ title: string; dateLabel: string; venue: string; description?: string | null }>
   approvedSubmissions?: SubmissionWithImages[]
 }): EventItem & { sortOrder: number; featuredOrder?: number | null } {
   const translation = event.translations[0]
@@ -418,6 +418,9 @@ function mapEventItem(event: {
     title: translation.title,
     dateLabel: translation.dateLabel,
     venue: translation.venue,
+    description:
+      translation.description ??
+      `${translation.title} is part of Bacalar's upcoming events.`,
     category: event.category as EventItem['category'],
     startsAt: event.startsAt?.toISOString(),
     endsAt: event.endsAt?.toISOString(),
@@ -434,7 +437,7 @@ function mapRestaurantItem(restaurant: {
   moments: RestaurantMoment[]
   sortOrder: number
   featuredOrder: number | null
-  translation: { name: string; cuisine: string; vibe: string }
+  translation: { name: string; cuisine: string; vibe: string; description?: string | null }
   approvedSubmissions?: SubmissionWithImages[]
 }): RestaurantItem & { sortOrder: number; featuredOrder?: number | null } {
   const translation = restaurant.translation
@@ -447,6 +450,9 @@ function mapRestaurantItem(restaurant: {
     vibe: translation.vibe,
     priceBand: restaurant.priceBand as '$' | '$$' | '$$$',
     moments: restaurant.moments,
+    description:
+      translation.description ??
+      `${translation.name} is one of Bacalar's current dining picks.`,
     route: `/restaurants/${restaurant.slug}`,
     image: withImageAlt(image, translation.name),
     sortOrder: restaurant.sortOrder,
@@ -460,6 +466,7 @@ function mapTourItem(tour: {
   duration: string
   priceFrom: string
   bestFor: string
+  description: string
   operatorName: string
   imageUrls: string[]
   sortOrder: number
@@ -476,8 +483,11 @@ function mapTourItem(tour: {
     name: translation.name,
     category: tour.category as TourCategory,
     duration: tour.duration,
+    durationHoursValue: parseTourDurationHours(tour.duration),
     priceFrom: tour.priceFrom,
+    priceFromValue: parseTourPriceFrom(tour.priceFrom),
     bestFor: tour.bestFor,
+    description: tour.description,
     operatorName: tour.operatorName,
     route: `/tours/${tour.slug}`,
     image: withImageAlt(image, translation.name),
@@ -1220,12 +1230,28 @@ export function createPrismaRepositories(
           }),
         ])
 
-        const paginatedEvents = paginateEvents(
-          listEvents
-            .filter((event) => event.translations.length > 0)
-            .map(mapEventItem),
-          pagination,
-        )
+        const eventItems = listEvents
+          .filter((event) => event.translations.length > 0)
+          .map(mapEventItem)
+        const searchTerm = pagination.search?.trim().toLowerCase()
+        const filteredEvents = eventItems.filter((event) => {
+          if (!searchTerm) {
+            return true
+          }
+
+          const haystack = [
+            event.title,
+            event.venue,
+            event.category,
+            event.dateLabel,
+            event.description,
+          ]
+            .join(' ')
+            .toLowerCase()
+
+          return haystack.includes(searchTerm)
+        })
+        const paginatedEvents = paginateEvents(filteredEvents, pagination)
 
         const featuredItems = selectFeaturedEvents(
           featuredEvents
@@ -1240,6 +1266,7 @@ export function createPrismaRepositories(
           description: intro.description,
           featuredItems,
           items: paginatedEvents.items,
+          totalCount: filteredEvents.length,
           pagination: paginatedEvents.pagination,
         }
       },
@@ -1376,8 +1403,31 @@ export function createPrismaRepositories(
           })
           .filter(isPresent)
 
+        const searchTerm = pagination.search?.trim().toLowerCase()
+        const filteredRestaurants = restaurantItems.filter((restaurant) => {
+          if (pagination.priceBand && restaurant.priceBand !== pagination.priceBand) {
+            return false
+          }
+
+          if (!searchTerm) {
+            return true
+          }
+
+          const haystack = [
+            restaurant.name,
+            restaurant.cuisine,
+            restaurant.vibe,
+            restaurant.description,
+            restaurant.moments.join(' '),
+            restaurant.priceBand,
+          ]
+            .join(' ')
+            .toLowerCase()
+
+          return haystack.includes(searchTerm)
+        })
         const paginatedRestaurants = paginateRestaurants(
-          restaurantItems,
+          filteredRestaurants,
           pagination,
         )
 
@@ -1390,6 +1440,7 @@ export function createPrismaRepositories(
             FEATURED_ITEMS_CAP,
           ),
           items: paginatedRestaurants.items,
+          totalCount: filteredRestaurants.length,
           pagination: paginatedRestaurants.pagination,
         }
       },
@@ -1511,6 +1562,9 @@ export function createPrismaRepositories(
               duration: tour.duration,
               priceFrom: tour.priceFrom,
               bestFor: tour.bestFor,
+              description:
+                translation.description ??
+                `${translation.name} is one of Bacalar's curated tours.`,
               operatorName: tour.operatorName,
               imageUrls: tour.imageUrls,
               sortOrder: tour.sortOrder,
@@ -1535,6 +1589,9 @@ export function createPrismaRepositories(
               duration: tour.duration,
               priceFrom: tour.priceFrom,
               bestFor: tour.bestFor,
+              description:
+                translation.description ??
+                `${translation.name} is one of Bacalar's curated tours.`,
               operatorName: tour.operatorName,
               imageUrls: tour.imageUrls,
               sortOrder: tour.sortOrder,
@@ -1545,9 +1602,50 @@ export function createPrismaRepositories(
           })
           .filter(isPresent)
 
-        const filteredTourItems = tourItems.filter((tour) =>
-          pagination.category ? tour.category === pagination.category : true,
-        )
+        const searchTerm = pagination.search?.trim().toLowerCase()
+        const filteredTourItems = tourItems.filter((tour) => {
+          if (pagination.category && tour.category !== pagination.category) {
+            return false
+          }
+
+          if (
+            typeof pagination.priceMin === 'number' &&
+            tour.priceFromValue < pagination.priceMin
+          ) {
+            return false
+          }
+
+          if (
+            typeof pagination.priceMax === 'number' &&
+            tour.priceFromValue > pagination.priceMax
+          ) {
+            return false
+          }
+
+          if (
+            pagination.durationHours &&
+            pagination.durationHours.length > 0 &&
+            !pagination.durationHours.includes(tour.durationHoursValue)
+          ) {
+            return false
+          }
+
+          if (!searchTerm) {
+            return true
+          }
+
+          const haystack = [
+            tour.name,
+            tour.operatorName,
+            tour.category,
+            tour.bestFor,
+            tour.description,
+          ]
+            .join(' ')
+            .toLowerCase()
+
+          return haystack.includes(searchTerm)
+        })
         const paginatedTours = paginateTours(filteredTourItems, pagination)
         const categories = [...new Set(tourItems.map((item) => item.category))].sort(
           (left, right) => left.localeCompare(right),
@@ -1558,8 +1656,12 @@ export function createPrismaRepositories(
           title: intro.title,
           description: intro.description,
           categories,
+          durationOptions: [
+            ...new Set(tourItems.map((item) => item.durationHoursValue)),
+          ].sort((left, right) => left - right),
           featuredItems: selectFeaturedTours(featuredTourItems, FEATURED_ITEMS_CAP),
           items: paginatedTours.items,
+          totalCount: filteredTourItems.length,
           pagination: paginatedTours.pagination,
         }
       },
